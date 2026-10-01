@@ -6,7 +6,7 @@ BACKEND_RUN := docker run --rm -v "$(CURDIR)/backend":/app -w /app -e PYTHONDONT
 # Outils (tools/) : dépôt complet monté, commandes lancées depuis sa racine
 TOOLS_RUN := docker run --rm -v "$(CURDIR)":/repo -w /repo -e PYTHONDONTWRITEBYTECODE=1 $(PY_IMAGE) sh -c
 
-.PHONY: help setup dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats \
+.PHONY: help setup dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report \
 	deploy deploy-api deploy-front deploy-lexicon rollback deploy-status suggestions-pull \
 	lexicon-download lexicon-build lexicon-export lexicon-stats \
 	curator curator-bg curator-stop curator-logs curator-check curator-urls \
@@ -154,6 +154,18 @@ deploy-status: ## Versions de l'API en service et précédente
 
 stats: ## Mesure d'usage : chiffres du jour, de 7 et de 30 jours (ADR 0016), sans charger le lexique
 	docker compose exec -e LEXICON_LOAD=0 api flask stats
+
+seed-demo: ## Remplit la mesure d'usage locale d'événements fictifs, pour le poste de pilotage (refusé en production)
+	docker compose exec -e LEXICON_LOAD=0 api flask usage seed-demo
+
+system-tick: ## Un passage du minuteur en local : échantillon système, ménage, alertes, bilan s'il est dû (ADR 0022)
+	docker compose exec -e LEXICON_LOAD=0 api flask system tick
+
+test-alert: ## Envoie une alerte d'essai (en local : dans Mailpit, http://localhost:8025)
+	docker compose exec -e LEXICON_LOAD=0 api flask system test-alert
+
+weekly-report: ## Envoie le bilan de la semaine maintenant (en local : dans Mailpit)
+	docker compose exec -e LEXICON_LOAD=0 api flask system weekly-report
 
 db-restore-check: ## Restaure FILE=backups/... dans une base jetable et compte les lignes (la base en service n'est pas touchée)
 	@test -n "$(FILE)" || (echo "Usage : make db-restore-check FILE=backups/terminator-....dump" && exit 1)

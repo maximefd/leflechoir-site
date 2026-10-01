@@ -5,10 +5,65 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Éditeur : déplacer les cases définitions** (roadmap, point 5A) : une case vidée peut devenir une case
+  définition, une case définition peut redevenir une case lettre ; les mots et les flèches se recalculent, et
+  l'annulation suit. Un changement qui sort des conventions (case qui n'annoncera aucune définition, lettre
+  isolée, mot sans case définition, case qui annonce trop de mots) demande d'abord confirmation (« Transformer
+  quand même »), puis reste signalé dans un encadré « Pas conventionnel ». Les raccourcis clavier, Tab en tête,
+  sont affichés en permanence sous la grille.
+- **Poste de pilotage : système, alertes et bilan hebdomadaire** ([#129](https://github.com/maximefd/terminator-app/issues/129),
+  [#132](https://github.com/maximefd/terminator-app/issues/132), Phase 8, lot 2,
+  [ADR 0022](docs/adr/0022-echantillons-systeme-et-alertes.md), proposée) :
+  - **échantillons système** : chaque minute, `flask system tick` note la mémoire du serveur et celle de l'API,
+    le CPU, les places de génération prises, la taille de la base, la dernière sauvegarde copiée hors du serveur
+    et si l'API répond. Gardés 30 jours, puis résumés par jour et gardés 13 mois (migration additive `0011`,
+    trois tables). Tout se lit dans `/proc`, sans dépendance de plus ;
+  - **rubrique « Système »** de `/admin` (`GET /api/admin/system`) : mémoire et sauvegarde en indicateurs,
+    24 heures et 30 jours en graphiques, et le journal des envois. Elle dit aussi quand le minuteur manque ou
+    s'est arrêté ;
+  - **alertes par e-mail** : mémoire au-delà de 75 %, refus « occupé » et p95 au-delà des seuils de l'ADR 0013,
+    pic d'erreurs 500, sauvegarde manquante, API qui ne répond plus ; **bilan de la semaine** le lundi matin ;
+  - **envois plafonnés** : une alerte par type et par 24 heures, dix envois par 24 heures tous types confondus,
+    chaque envoi inscrit au journal avant de partir ; objets fixes ; rien ne part sans `ALERT_EMAIL` ;
+  - **le déclencheur** : un minuteur du serveur (`tools/monitor/tick.sh`, par cron), **à installer par
+    l'auteur** ([PRODUCTION.md](docs/PRODUCTION.md)). En local : `make system-tick`, `make test-alert`,
+    `make weekly-report` ; `make seed-demo` remplit aussi le serveur fictif.
+- **Poste de pilotage : usage, générations, erreurs** ([#129](https://github.com/maximefd/terminator-app/issues/129),
+  Phase 8, lot 1). `/admin` répond aux questions des rubriques « Usage », « Générations » et « Erreurs », à partir
+  des seuls événements déjà collectés (ni table, ni champ, ni migration) :
+  - l'évolution par jour sur 30 jours : visiteurs, recherches, générations et grilles obtenues, comptes créés,
+    grilles conservées, durée p95, refus « occupé », erreurs dont 5xx ;
+  - le parcours, en visiteurs d'un jour : visite → recherche ou génération → grille obtenue → compte créé →
+    grille conservée, sur 7 et 30 jours ;
+  - les générations par format et par issue (grille, délai dépassé, mots qui n'entrent pas, mots non placés,
+    sans solution), avec médiane et p95, puis selon le nombre de mots imposés et la **longueur** du plus long,
+    et leur croisement (de quoi nourrir [#73](https://github.com/maximefd/terminator-app/issues/73)) ;
+  - les refus « occupé » séparés (serveur, visiteur), les pays comptés en visiteurs ;
+  - les seuils de l'ADR 0013 en trois états : vert, orange dès 80 % du seuil, rouge au-delà, sur 30 et 7 jours.
+
+  Les graphiques sont des SVG dessinés par un petit composant, sans bibliothèque ; chaque valeur se lit aussi
+  dans un tableau, et un contrôle axe couvre l'écran. Sources, langues des navigateurs et temps passé attendent
+  la balise ([#130](https://github.com/maximefd/terminator-app/issues/130)).
+- **Données fictives pour le poste de pilotage** (Phase 8, prérequis de
+  [#129](https://github.com/maximefd/terminator-app/issues/129)) : `make seed-demo` (`flask usage seed-demo`)
+  remplit la mesure d'usage d'une base locale de six semaines d'événements vraisemblables — générations de toutes
+  issues, recherches, comptes, grilles conservées, erreurs, pays, mots imposés absents du lexique, un jour
+  d'incident. Refusée en production, relançable sans doublon, sans toucher aux vrais événements
+  ([CONTRIBUTING.md](CONTRIBUTING.md)).
 - **Le format qui donne le plus de chances, en un clic** ([#73](https://github.com/maximefd/terminator-app/issues/73)) :
   quand un autre format ferait mieux d'au moins 15 points avec les mots imposés, l'estimation le nomme et propose
   « Passer en 10 × 13 » ; à chances égales, le plus petit format. Les formats qui accueillent un mot trop long
   sont eux aussi cliquables.
+- **Étude de faisabilité des grilles à thème par IA** ([docs/ETUDE-GRILLES-THEME-IA.md](docs/ETUDE-GRILLES-THEME-IA.md),
+  [#140](https://github.com/maximefd/terminator-app/issues/140), [#141](https://github.com/maximefd/terminator-app/issues/141),
+  [#142](https://github.com/maximefd/terminator-app/issues/142)) : mots de thème mesurés sur le moteur (souhaités,
+  obligatoires, imposition incrémentale), place d'une définition dans sa case, coût de l'IA, concurrence, paiement
+  et TVA, AI Act et RGPD, trois scénarios économiques, plan par jalons et ADR à écrire. Aucune décision prise.
+  - mesures refaites le 01/10/2026 avant et après #182 (mots souhaités posés en tête) : 60 mots de thème en
+    mots souhaités donnent 2,3 à 2,8 mots placés par grille au lieu de 0,2 à 0,4 ; mots obligatoires et
+    imposition incrémentale inchangés ; la recommandation ne change pas ;
+  - scripts de mesure versionnés : `backend/benchmarks/theme_study.py` (`wish`, `must`, `incremental`, option
+    `--backend` pour mesurer un autre commit), `theme_lists.py` et `clue_fit.py`.
 - **Guide « Comment créer des mots fléchés »** (`/creer-des-mots-fleches`, Phase 9 recadrée le 29/09/2026) :
   la première page de contenu, pour les passionnés. Une introduction au sujet, puis la méthode de l'auteur, à la
   première personne, sur une grille 7 × 9 construite à la main (layout 7x9-001, vingt mots courants), impasse
@@ -458,6 +513,12 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 - Lint Python avec ruff (`make lint-backend`, `ruff.toml`, règles tolérantes pour commencer) et couverture des tests en CI : 80 % minimum sur le moteur, 70 % sur les outils (#5).
 
 ### Corrigé
+- **Mots obligatoires et mots souhaités ensemble** (suite de [#182](https://github.com/maximefd/terminator-app/pull/182)) :
+  quand les mots obligatoires ne tiennent pas dans la mise en page tirée, le moteur en change tout de suite, au
+  lieu d'y rejouer des milliers d'essais pendant le premier quart du budget. Une demande impossible est refusée
+  en 0,1 s au lieu de 5 s. La durée d'une grille réussie ne baisse pas : ce temps sert désormais à poser des mots
+  souhaités, ce qui reste à régler par format (`backend/benchmarks/README.md`). Sans mot obligatoire, rien ne
+  change (780/780, baseline identique).
 - **Une seule normalisation des mots** ([#127](https://github.com/maximefd/terminator-app/issues/127)) :
   « porte-monnaie », « Porte monnaie » et « PORTEMONNAIE » sont le même mot, comme « cœur » et « COEUR », partout
   (lexique, recherche, mots imposés et souhaités, dictionnaires). Les mots des dictionnaires personnels existants

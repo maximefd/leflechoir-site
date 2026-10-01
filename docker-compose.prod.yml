@@ -56,6 +56,10 @@ services:
       SMTP_STARTTLS: "true"
       SMTP_USER: ${SMTP_USER:?Remplir .env.production}
       SMTP_PASSWORD: ${SMTP_PASSWORD:?Remplir .env.production}
+      # Alertes et bilan hebdomadaire (ADR 0022) : vide, rien ne part. Plafond d'envois par 24 heures : le
+      # quota de Brevo est partagé avec les e-mails du compte
+      ALERT_EMAIL: ${ALERT_EMAIL:-}
+      ALERT_DAILY_CAP: ${ALERT_DAILY_CAP:-10}
       # Suivi des erreurs (projet Sentry dans l'UE) : vide, rien n'est envoyé
       SENTRY_DSN: ${SENTRY_DSN:-}
       RELEASE: ${RELEASE:-local}

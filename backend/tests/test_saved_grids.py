@@ -365,3 +365,35 @@ def test_the_list_carries_the_shape_of_each_grid(grid_app, client):
     assert resume["shape"] == ["x--", "---"]
     # La forme suffit à dessiner : ni lettres ni mots ne transitent
     assert "cells" not in resume and "words" not in resume
+
+
+def test_a_cleared_cell_can_become_a_definition(grid_app, client):
+    """Roadmap 5A : l'auteur efface une lettre, puis fait de la case une case définition."""
+    headers = auth_headers(client)
+    grid_id = save(client, headers).get_json()["id"]
+
+    refus = send(client, "patch", f"/api/grids/{grid_id}", {"blocks": [{"x": 2, "y": 1, "is_black": True}]}, headers)
+    assert refus.status_code == 400
+
+    send(client, "patch", f"/api/grids/{grid_id}", {"cells": [{"x": 2, "y": 1, "char": ""}]}, headers)
+    response = send(client, "patch", f"/api/grids/{grid_id}", {"blocks": [{"x": 2, "y": 1, "is_black": True}]}, headers)
+
+    assert response.status_code == 200, response.get_json()
+    grid = response.get_json()["grid"]
+    mots = {(w["x"], w["y"], w["direction"]): w["text"] for w in grid["words"]}
+    assert mots[(0, 1, "across")] == "IL"
+    assert isinstance(grid["layout_warnings"], list)
+
+
+def test_a_preview_says_what_the_change_would_break_without_saving(grid_app, client):
+    """L'auteur est prévenu avant : l'aperçu ne touche pas à la grille."""
+    headers = auth_headers(client)
+    grid_id = save(client, headers).get_json()["id"]
+    avant = client.get(f"/api/grids/{grid_id}", headers=headers).get_json()["grid"]["cells"]
+
+    response = send(client, "patch", f"/api/grids/{grid_id}",
+                    {"blocks": [{"x": 0, "y": 0, "is_black": False}], "preview": True}, headers)
+
+    assert response.status_code == 200
+    assert {w["kind"] for w in response.get_json()["layout_warnings"]} >= {"mot_sans_definition"}
+    assert client.get(f"/api/grids/{grid_id}", headers=headers).get_json()["grid"]["cells"] == avant

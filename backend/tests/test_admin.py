@@ -44,7 +44,7 @@ def admin_headers(test_app, client):
 
 
 def test_the_admin_space_has_routes(test_app):
-    assert admin_routes(test_app) == ["/api/admin/stats", "/api/admin/suggestions"]
+    assert admin_routes(test_app) == ["/api/admin/stats", "/api/admin/suggestions", "/api/admin/system"]
 
 
 def test_a_visitor_gets_the_same_404_as_an_unknown_address(test_app, client):
@@ -84,7 +84,7 @@ def test_the_admin_sees_aggregates_and_nothing_personal(grid_app, client, admin_
     assert data["periods"][0]["register"] >= 1
     assert data["periods"][0]["grids"] >= 1
     assert data["thresholds"]["p95_limit_ms"] == 15000
-    assert {"format": "5x5", "grid": 1, "failed": 0} in data["formats"]
+    assert [(row["format"], row["total"], row["grid"]) for row in data["formats"]] == [("5x5", 1, 1)]
     # Les dernières générations, sans rien qui désigne un visiteur
     assert data["latest"] and all(
         set(item) == {"at", "format", "layout", "outcome", "duration_ms", "must"} for item in data["latest"])

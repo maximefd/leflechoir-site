@@ -25,6 +25,7 @@ Chaque décision structurante du projet est consignée dans un court document : 
 | [0019](0019-deploiement.md) | Déploiement : un commit envoyé par SSH et construit sur le serveur, le site envoyé à Pages | Acceptée |
 | [0020](0020-suggestions-et-ajouts-au-lexique.md) | Suggestions des utilisateurs et mots ajoutés au lexique | Acceptée |
 | [0021](0021-moteur-prive-site-public.md) | Le moteur en privé, le site et l'API en open source | Acceptée |
+| [0022](0022-echantillons-systeme-et-alertes.md) | Échantillons système et alertes : un minuteur du serveur, des envois plafonnés | Proposée |
 
 ## Modèle
 

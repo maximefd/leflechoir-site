@@ -10,7 +10,8 @@ Terminator : outil personnel de création de mots fléchés (recherche par motif
 - Outils / lexique : `make test-tools`, `make lexicon-build`, `make lexicon-stats`, `make lexicon-export` ([docs/LEXICON.md](docs/LEXICON.md)) ; ne jamais réécrire `data/lexicon/decisions.csv` (ajout seul)
 - Dev : `make dev-api` (API :5001 + Postgres) et `make dev-front` (:3000)
 - Déploiement ([ADR 0019](docs/adr/0019-deploiement.md), [docs/PRODUCTION.md](docs/PRODUCTION.md)) : `make deploy` (API puis site), `make rollback` ; migrations additives seulement
-- Mesure d'usage : `make stats` (`flask stats` dans le conteneur de l'API, sans charger le lexique)
+- Mesure d'usage : `make stats` (`flask stats` dans le conteneur de l'API, sans charger le lexique) ; `make seed-demo` la remplit d'événements fictifs en local, pour le poste de pilotage (refusé en production)
+- Système et alertes ([ADR 0022](docs/adr/0022-echantillons-systeme-et-alertes.md)) : `make system-tick`, `make test-alert`, `make weekly-report` en local (Mailpit) ; sur le serveur, c'est cron qui lance `tools/monitor/tick.sh`, installé par l'auteur
 - Base : `make db-backup` (dans `backups/`, ignoré par git) et `make db-restore-check FILE=…` (restaure dans une base jetable, jamais dans la base en service)
 
 ## Règles

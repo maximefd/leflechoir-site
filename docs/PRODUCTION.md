@@ -159,6 +159,35 @@ Chaque nuit, `tools/db/backup-offsite.sh` fait un dump de la base, **chiffré** 
    Le journal se lit avec `journalctl -t leflechoir-sauvegarde`, et `make deploy-status` affiche la dernière réussite.
 5. **Être prévenu si une nuit échoue** (facultatif) : un contrôle gratuit sur [Healthchecks.io](https://healthchecks.io), ou un moniteur de tâche de Sentry, dont l'adresse va dans `BACKUP_PING_URL`. Le script l'appelle après chaque réussite, et le service envoie un e-mail si l'appel ne vient plus.
 
+## Préparer le minuteur du poste de pilotage (une fois)
+
+Chaque minute, `tools/monitor/tick.sh` lance `flask system tick` dans le conteneur de l'API ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) : un échantillon du serveur (mémoire, CPU, places de génération, taille de la base, dernière sauvegarde), le ménage du jour, les alertes, et le lundi matin le bilan de la semaine. **Sans ce minuteur, la rubrique « Système » du poste de pilotage reste vide et aucune alerte ne part** ; le site, lui, fonctionne pareil.
+
+À faire après le déploiement qui apporte la migration `0011_systeme_et_alertes` :
+
+1. **Le destinataire**, dans `.env.production` : `ALERT_EMAIL=` suivi de l'adresse qui reçoit les alertes et le bilan. Vide, rien ne part. Puis `make deploy-api`, depuis le Mac, pour que l'API le lise (comme pour « Changer un secret »).
+2. **Un premier passage à la main**, puis une alerte d'essai et un bilan :
+
+   ```bash
+   C="docker compose -p leflechoir -f /opt/leflechoir/current/docker-compose.prod.yml --env-file /opt/leflechoir/.env.production"
+   sh /opt/leflechoir/current/tools/monitor/tick.sh && echo "passage réussi"
+   $C exec -e LEXICON_LOAD=0 api flask system test-alert       # « Alerte d'essai envoyée. »
+   $C exec -e LEXICON_LOAD=0 api flask system weekly-report    # « Bilan envoyé. »
+   ```
+   Les deux messages doivent arriver, et `https://leflechoir.fr/admin` montrer un premier échantillon dans « Système ».
+3. **La tâche de chaque minute** :
+
+   ```bash
+   ( crontab -l 2>/dev/null; echo '* * * * * sh /opt/leflechoir/current/tools/monitor/tick.sh 2>&1 | systemd-cat -t leflechoir-minuteur' ) | crontab -
+   ```
+   Le script se tait quand tout va bien : `journalctl -t leflechoir-minuteur` ne montre que les passages en échec. Il ne lance rien si le passage précédent tourne encore, ni si le conteneur de l'API est arrêté.
+
+**Ce qu'il coûte** : 2 à 3 s de CPU par minute (environ 2 % des deux cœurs) et 84 Mo le temps du passage, mesurés hors du serveur ; à relire sur le VPS dans « Système » après une journée.
+
+**Ce qui plafonne les envois** : une alerte par type et par 24 heures, dix envois par 24 heures tous types confondus (`ALERT_DAILY_CAP`), essais et bilan compris. Le quota gratuit de Brevo, 300 e-mails par jour, est partagé avec les e-mails du compte.
+
+**Pour l'arrêter** : `crontab -e`, retirer la ligne. Pour couper seulement les envois : vider `ALERT_EMAIL`.
+
 ## Préparer le Mac (une fois)
 
 Dans le `.env` du dépôt (jamais versionné) :
@@ -273,6 +302,8 @@ C="docker compose -p leflechoir -f /opt/leflechoir/current/docker-compose.prod.y
 |--------|----------|
 | Mesure d'usage ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md)) | `$C exec -e LEXICON_LOAD=0 api flask stats`, ou le poste de pilotage : `https://leflechoir.fr/admin` |
 | Donner le rôle d'administrateur (une fois, sur une adresse confirmée) | `$C exec -e LEXICON_LOAD=0 api flask admin grant ADRESSE` ; `revoke` pour le retirer, `list` pour les voir |
+| Alerte d'essai, bilan de la semaine sans attendre lundi ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) | `$C exec -e LEXICON_LOAD=0 api flask system test-alert`, `… flask system weekly-report` ; ils comptent dans le plafond quotidien |
+| Passages du minuteur en échec | `journalctl -t leflechoir-minuteur` |
 | Journaux de l'API | `$C logs -f api` (JSON, une ligne par requête) |
 | État | `$C ps` |
 
@@ -288,6 +319,11 @@ C="docker compose -p leflechoir -f /opt/leflechoir/current/docker-compose.prod.y
   - un moniteur HTTP sur `https://leflechoir.fr`.
 
   Alertes par e-mail.
+- **Le minuteur du poste de pilotage** ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)), une fois installé :
+  - alertes par e-mail : mémoire au-delà de 75 %, refus « occupé » et p95 au-delà des seuils de l'[ADR 0013](adr/0013-cible-hebergement-production.md), pic d'erreurs 500, sauvegarde de plus de 26 heures, API qui ne répond plus ;
+  - le bilan de la semaine, le lundi matin.
+
+  Il ne remplace pas UptimeRobot : si le conteneur de l'API est arrêté, ou le tunnel coupé, il ne voit rien.
 
 ## Mis en ligne le 25/09/2026
 
@@ -342,6 +378,7 @@ Sur une machine de test, avec Docker et une configuration factice :
 
 - ***Always Use HTTPS*** dans la zone : le dernier point de la checklist de [SECURITY.md](SECURITY.md).
 - **UptimeRobot** : les deux moniteurs (« Surveillance »).
+- **Le minuteur du poste de pilotage** : `ALERT_EMAIL`, un passage d'essai, puis la ligne de cron (« Préparer le minuteur du poste de pilotage »).
 - **Sentry** : *Prevent Storing of IP Addresses* dans l'organisation, que la page de confidentialité promet.
 - **Les liens des e-mails du compte** : s'ils passent par `mail.leflechoir.fr` (suivi des clics de Brevo), couper ce suivi, car les jetons de confirmation et de mot de passe transiteraient par Brevo.
 - **Search Console et Bing Webmaster**, sitemap soumis (Phase 6g).

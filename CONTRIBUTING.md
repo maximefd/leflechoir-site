@@ -44,6 +44,27 @@ Un seul tunnel suffit : il mène au frontend, et `next dev` relaie `/api` vers l
 | `make lexicon-build`, `lexicon-stats`, `lexicon-export` | Pipeline du lexique (voir [LEXICON.md](docs/LEXICON.md)) |
 | `make curator` | Mini-app de curation du lexique (PIN dans `.env`) |
 | `make test-e2e` | Parcours end-to-end et contrôle d'accessibilité axe (API et frontend démarrés) |
+| `make stats` | Chiffres de la mesure d'usage, dans le conteneur de l'API |
+| `make seed-demo` | Remplit la mesure d'usage locale d'événements fictifs (voir ci-dessous) |
+
+### Un poste de pilotage rempli, sans la production
+
+Le poste de pilotage (`/admin`, [ADR 0016](docs/adr/0016-mesure-d-usage-sans-cookie.md)) lit les événements d'usage. Une base locale n'en contient presque aucun, et personne ne développe sur les données de production. Une commande y met six semaines d'événements **fictifs** (`backend/usage_demo.py`) :
+
+```bash
+make seed-demo    # API démarrée (make dev-api) ; puis make stats, ou http://localhost:3000/admin
+```
+
+- Ce qu'elle écrit : des générations de toutes issues (grille, délai dépassé, mots obligatoires refusés ou non placés, refus « occupé », limite de débit), des recherches, des étapes de compte, des grilles conservées, des erreurs par route, des pays, des mots imposés absents du lexique, et un jour d'incident (refus « occupé » et erreurs 500 en rafale, il y a neuf jours).
+- **Relançable** : elle efface ses propres événements avant de les réécrire, sans toucher aux vrais. Ils se reconnaissent à leur empreinte, qui commence par `demo`.
+- **Refusée en production** (`APP_ENV=production`).
+- Ni compte ni sel fictifs.
+- **Le serveur aussi** : deux jours d'échantillons système à la minute, un résumé par jour avant eux, et quelques alertes au journal. Ces tables ne disent pas d'où vient une ligne : la commande **remplace** les échantillons et résumés de la base locale.
+- Options, dans le conteneur de l'API : `docker compose exec -e LEXICON_LOAD=0 api flask usage seed-demo --days 90 --seed 3`, et `--clear` pour tout retirer.
+
+Les alertes et le bilan hebdomadaire ([ADR 0022](docs/adr/0022-echantillons-systeme-et-alertes.md)) s'essaient de même : `make system-tick` prend un vrai échantillon de la machine, `make test-alert` et `make weekly-report` envoient leurs messages dans Mailpit (http://localhost:8025).
+
+Pour ouvrir `/admin` en local : s'inscrire sur le site, suivre le lien de confirmation reçu dans Mailpit (http://localhost:8025), puis `docker compose exec -e LEXICON_LOAD=0 api flask admin grant ADRESSE`.
 
 Les parcours end-to-end créent un compte jetable par exécution. La pile de développement desserre donc
 `RATELIMIT_REGISTER` à 100 par heure (`docker-compose.yml`), et la CI fait de même ; la valeur du code

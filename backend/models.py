@@ -238,3 +238,89 @@ class WordSuggestion(db.Model):
             "status": self.status,
             "created_at": self.created_at.isoformat(timespec="seconds") + "Z",
         }
+
+
+class SystemSample(db.Model):
+    """Un échantillon du serveur, pris chaque minute (ADR 0016, point 3 ; system_samples.py).
+
+    Rien de personnel : la machine, pas ses visiteurs. Gardé 30 jours, puis résumé en `SystemDaily`.
+    """
+    __tablename__ = 'system_sample'
+    id = db.Column(db.Integer, primary_key=True)
+    # La minute de l'échantillon (UTC) : une seule ligne par site et par minute, même si deux minuteurs se croisent
+    created_at = db.Column(db.DateTime, nullable=False, index=True)
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    # Mémoire de la machine (/proc/meminfo) : utilisée = totale - disponible
+    mem_total_mb = db.Column(db.Integer, nullable=True)
+    mem_used_mb = db.Column(db.Integer, nullable=True)
+    # Mémoire propre à l'API, lexique partagé compté une fois (PSS de ses processus) : l'ADR 0013 demande de
+    # surveiller l'érosion du partage entre workers
+    api_mem_mb = db.Column(db.Integer, nullable=True)
+    # Compteurs cumulés de /proc/stat, et la part de CPU occupée depuis l'échantillon précédent (tous cœurs)
+    cpu_busy = db.Column(db.BigInteger, nullable=True)
+    cpu_total = db.Column(db.BigInteger, nullable=True)
+    cpu_percent = db.Column(db.Float, nullable=True)
+    # Places de génération prises à cet instant, sur combien (generation_slots.py)
+    slots_busy = db.Column(db.Integer, nullable=True)
+    slots_total = db.Column(db.Integer, nullable=True)
+    db_size_mb = db.Column(db.Float, nullable=True)
+    # Dernière sauvegarde copiée hors du serveur (trace de tools/db/backup-offsite.sh)
+    last_backup_at = db.Column(db.DateTime, nullable=True)
+    # L'API répond-elle sur /api/status ? Vide : non vérifié
+    api_ok = db.Column(db.Boolean, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('site', 'created_at', name='uix_system_sample_site_minute'),
+    )
+
+
+class SystemDaily(db.Model):
+    """Le résumé d'une journée d'échantillons : ce qui reste après 30 jours, gardé 13 mois (ADR 0016, point 5)."""
+    __tablename__ = 'system_daily'
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.Date, nullable=False)
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    samples = db.Column(db.Integer, nullable=False)
+    mem_total_mb = db.Column(db.Integer, nullable=True)
+    mem_used_avg_mb = db.Column(db.Integer, nullable=True)
+    mem_used_max_mb = db.Column(db.Integer, nullable=True)
+    api_mem_max_mb = db.Column(db.Integer, nullable=True)
+    cpu_avg_percent = db.Column(db.Float, nullable=True)
+    cpu_max_percent = db.Column(db.Float, nullable=True)
+    slots_busy_max = db.Column(db.Integer, nullable=True)
+    # Nombre d'échantillons où toutes les places étaient prises : les minutes où une demande aurait été refusée
+    slots_full = db.Column(db.Integer, nullable=True)
+    db_size_mb = db.Column(db.Float, nullable=True)
+    last_backup_at = db.Column(db.DateTime, nullable=True)
+    api_down = db.Column(db.Integer, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('site', 'day', name='uix_system_daily_site_day'),
+    )
+
+
+class AlertSent(db.Model):
+    """Une alerte ou un bilan envoyé à l'auteur (alerts.py, #132) : le journal qui plafonne les envois.
+
+    Le quota gratuit de Brevo (300 e-mails par jour) est partagé avec les e-mails du compte. La ligne est écrite
+    **avant** l'envoi : une alerte qui échoue ou un minuteur qui s'emballe ne peut pas la renvoyer. `period`
+    interdit deux alertes du même type pour la même période, même lancées au même instant.
+    """
+    __tablename__ = 'alert_sent'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow(), index=True)
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    # ram, busy, p95, server_errors, backup, api_down, test, weekly
+    kind = db.Column(db.String(20), nullable=False)
+    # Le jour (alerte), la semaine (bilan) ou l'instant (essai)
+    period = db.Column(db.String(20), nullable=False)
+    # Ce qui a déclenché l'envoi, en une ligne : des chiffres, rien de personnel
+    summary = db.Column(db.String(200), nullable=False, default="", server_default="")
+    delivered = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+
+    __table_args__ = (
+        db.UniqueConstraint('site', 'kind', 'period', name='uix_alert_sent_site_kind_period'),
+    )

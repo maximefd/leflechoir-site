@@ -187,8 +187,9 @@ export function GridSvg({
   const unknown = new Set(unknownCells ?? []);
 
   const fillOf = (cell: { x: number; y: number; is_black: boolean }) => {
-    if (cell.is_black) return PAPER.definition;
+    // En correction des lettres, une case définition se sélectionne aussi : elle peut redevenir lettre
     if (selectedCell && selectedCell.x === cell.x && selectedCell.y === cell.y) return PAPER.selected;
+    if (cell.is_black) return PAPER.definition;
     if (lit.has(`${cell.x}-${cell.y}`)) return PAPER.highlight;
     if (variant !== "vierge") return SOURCE_TINT[cellSources?.[`${cell.x}-${cell.y}`] ?? ""] ?? PAPER.cell;
     return PAPER.cell;
@@ -334,20 +335,18 @@ export function GridSvg({
 
       {letterMode &&
         onSelectCell &&
-        grid.cells
-          .filter((cell) => !cell.is_black)
-          .map((cell) => (
-            <rect
-              key={`clic-${cell.x}-${cell.y}`}
-              x={cell.x * CELL}
-              y={cell.y * CELL}
-              width={CELL}
-              height={CELL}
-              fill="transparent"
-              className="cursor-text"
-              onClick={() => onSelectCell({ x: cell.x, y: cell.y })}
-            />
-          ))}
+        grid.cells.map((cell) => (
+          <rect
+            key={`clic-${cell.x}-${cell.y}`}
+            x={cell.x * CELL}
+            y={cell.y * CELL}
+            width={CELL}
+            height={CELL}
+            fill="transparent"
+            className={cell.is_black ? "cursor-pointer" : "cursor-text"}
+            onClick={() => onSelectCell({ x: cell.x, y: cell.y })}
+          />
+        ))}
 
       {/* Le cadre extérieur par-dessus tout : c'est lui qui ferme la grille */}
       {frame && (

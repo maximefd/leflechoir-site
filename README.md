@@ -108,6 +108,7 @@ terminator-app/
 | [Sécurité](docs/SECURITY.md) | Modèle de menace, mesures, limites connues |
 | [Production](docs/PRODUCTION.md) | Conteneurs sur le VPS, tunnel, mise en route, exploitation |
 | [Registre RGPD](docs/RGPD.md) | Données personnelles traitées, durées, sous-traitants |
+| [Étude : grilles à thème par IA](docs/ETUDE-GRILLES-THEME-IA.md) | Faisabilité de la Phase 11 : moteur mesuré, IA, marché, paiement, droit, économie |
 | [Décisions (ADR)](docs/adr/) | Choix d'architecture et leurs raisons |
 | [Contribuer](CONTRIBUTING.md) | Installation, tests, conventions, processus de PR |
 | [Changelog](CHANGELOG.md) | Historique des versions |

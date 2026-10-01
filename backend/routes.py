@@ -12,8 +12,8 @@ from models import db, Dictionary, PersonalWord, SavedGrid
 from engine.difficulty import request_difficulty
 from engine.word_repository import WholeLexicon
 from engine.grid_edit import (
-    HOLE, allowed_letters, apply_letters, cells_of_slot, fill_ratio, letters_of, slot_at,
-    words_from_cells,
+    HOLE, allowed_letters, apply_blocks, apply_letters, cells_of_slot, fill_ratio, layout_warnings, letters_of,
+    slot_at, words_from_cells,
 )
 from generation_slots import GenerationBusy, generation_slot
 from grid_generator import GridGenerator, LayoutNotFoundError
@@ -482,6 +482,8 @@ def annotated_grid(user, grid: SavedGrid) -> dict:
     for word in mots:
         word["in_lexicon"] = word["text"] in connus if word["text"] in termines else None
     data["grid"]["unknown_words"] = sorted(termines - connus)
+    # Cases définitions déplacées par l'auteur : ce qui sort des conventions est signalé, pas refusé
+    data["grid"]["layout_warnings"] = layout_warnings(data["grid"].get("cells", []))
     return data
 
 
@@ -582,13 +584,17 @@ def update_grid(grid_id):
     if payload.archived is not None:
         grid.archived = payload.archived
 
-    if payload.cells is not None:
+    if payload.cells is not None or payload.blocks is not None:
         contenu = dict(grid.payload or {})
         words_before = contenu.get("words")
-        cells, problemes = apply_letters(contenu.get("cells", []),
-                                         [edit.model_dump() for edit in payload.cells])
+        cells, problemes = apply_blocks(contenu.get("cells", []),
+                                        [edit.model_dump() for edit in payload.blocks or []])
+        if not problemes:
+            cells, problemes = apply_letters(cells, [edit.model_dump() for edit in payload.cells or []])
         if problemes:
             return jsonify({"error": "Modification refusée.", "details": problemes}), 400
+        if payload.preview:
+            return jsonify({"layout_warnings": layout_warnings(cells)}), 200
         contenu["cells"] = cells
         # Les mots se recalculent depuis les lettres : c'est la règle de l'ADR 0012
         contenu["words"] = words_from_cells(cells, contenu.get("words"))
@@ -599,7 +605,7 @@ def update_grid(grid_id):
         grid.payload = contenu
 
     db.session.commit()
-    if payload.cells is not None:
+    if payload.cells is not None or payload.blocks is not None:
         return jsonify(annotated_grid(get_current_user(), grid)), 200
     return jsonify(grid.summary()), 200
 

@@ -25,6 +25,8 @@ L'éditeur du site, un particulier, à titre non professionnel. Son identité n'
 
 Ce qui n'est **pas** traité : le texte des motifs cherchés, les grilles générées sans être conservées, l'adresse IP en base, tout script ou cookie de mesure dans le navigateur, la publicité. La balise de pages vues (Phase 8) ajoutera sa ligne ici et dans la page de confidentialité.
 
+Les échantillons système et le journal des alertes ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) ne sont pas des traitements de données personnelles : ils décrivent la machine (mémoire, CPU, taille de la base, date de la sauvegarde) et des compteurs. Les alertes partent à l'éditeur seul, par Brevo.
+
 ## Sous-traitants (art. 28)
 
 | Sous-traitant | Rôle | Localisation des données | Garanties |

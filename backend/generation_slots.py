@@ -41,6 +41,26 @@ def _try_lock(path: str):
     return handle
 
 
+def busy_places(lock_dir: str, max_concurrent: int) -> int:
+    """Combien de places sont prises à cet instant, pour les échantillons système (system_samples.py).
+
+    On regarde sans prendre : un verrou **partagé**, rendu aussitôt, échoue seulement si une génération tient
+    la place. Aucun fichier n'est créé : une place jamais servie n'a pas de fichier, donc pas de génération.
+    """
+    busy = 0
+    for slot in range(max_concurrent):
+        try:
+            handle = open(os.path.join(lock_dir, f"place-{slot}.lock"))
+        except OSError:
+            continue
+        with handle:
+            try:
+                fcntl.flock(handle, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            except BlockingIOError:
+                busy += 1
+    return busy
+
+
 @contextlib.contextmanager
 def generation_slot(lock_dir: str, visitor: str, max_concurrent: int):
     """Réserve une place de génération pour `visitor` le temps du bloc ; lève GenerationBusy sinon."""

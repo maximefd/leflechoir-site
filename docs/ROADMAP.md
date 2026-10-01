@@ -394,6 +394,8 @@ contrat de l'[ADR 0007](adr/0007-contrat-de-generation.md) restant à implément
   - Premier tableau : les chiffres de `flask stats` (#129, en partie) ; le système et les échantillons restent à faire.
 
   Renfort possible : Cloudflare Access ou un second facteur.
+- ✅ **Tableaux sur les événements déjà collectés** (#129, lot 1) : évolution par jour, parcours, générations par format et par issue, selon le nombre et la longueur des mots imposés, refus « occupé », erreurs, seuils en trois états. Se développent sur un jeu de données fictives (`make seed-demo`). Restent, de la liste ci-dessous : sources et langues des navigateurs (balise).
+- ✅ **Système, alertes et bilan hebdomadaire** (#129, #132, lot 2, [ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) : un échantillon par minute (mémoire, CPU, places de génération, taille de la base, dernière sauvegarde), 30 jours puis un résumé par jour gardé 13 mois ; alertes par e-mail et bilan du lundi, sous plafonds. **Reste à installer sur le serveur** : le minuteur ([PRODUCTION.md](PRODUCTION.md)).
 - **Tableaux :**
   - visiteurs et comptes ;
   - générations par format et par issue, selon le nombre ou la longueur des mots imposés (nourrit #73) ;
@@ -464,6 +466,8 @@ Chaque langue demande :
 - un échantillon du lexique a été relu par un locuteur natif.
 
 ## Phase 11 — Grilles à thème par IA (offre payante)
+
+> **Étude de faisabilité du 30/09/2026** : [ETUDE-GRILLES-THEME-IA.md](ETUDE-GRILLES-THEME-IA.md). Mesuré sur le moteur : 60 mots de thème en mots souhaités donnaient moins d'un mot placé par grille, et en donnent deux à trois depuis #182 (remesuré le 01/10/2026, scripts dans `backend/benchmarks/theme_study.py`) ; l'étude recommande de commencer par des définitions proposées par l'IA, gratuites avec quota, et quelques mots personnels, après la curation, et de ne passer au payant qu'au-delà de seuils chiffrés. Le cadrage ci-dessous reste celui de l'auteur, à trancher.
 
 **Le principe** : une grille ultra-personnalisée.
 1. L'utilisateur décrit un thème.
@@ -550,10 +554,10 @@ flowchart LR
    - réussir 4 à 5 mots obligatoires ;
    - placer davantage de mots souhaités en moyenne, y compris depuis un dictionnaire de 200 à 1 000 mots, sans toujours les mêmes et en ralentissant le moins possible ;
    - une estimation de réussite fiable, avec des conseils (quels mots passer en souhaités), et les mots absents du lexique ou trop longs pour le format signalés tout de suite.
-5. **Éditeur** :
-   - ajouter ou retirer une case définition, au choix de l'utilisateur et dans les règles de layout (jamais de mot d'une lettre), les flèches étant recalculées par le logiciel ;
-   - créer une grille à la main, depuis un format vide ou un layout existant, avec l'aide de la recherche par motif, sans remplissage automatique ;
-   - les layouts ainsi créés peuvent enrichir le catalogue, après choix de l'auteur (lié à #15).
+5. **Éditeur**, cadré avec l'auteur le 01/10/2026 (le point 4, moteur et mots imposés, est livré : #177, #178, #180 à #182) :
+   - **A. Cases définitions dans une grille conservée** : une lettre effacée laisse une case vide, que l'auteur peut transformer en case définition ; une case définition peut redevenir une case lettre. Les flèches sont recalculées. Ce qui sort des règles de layout (mot d'une lettre, lettre isolée, plus de deux définitions par case) **n'est pas refusé** : l'éditeur prévient que ce n'est pas conventionnel ;
+   - **B. Créer une grille à la main**, depuis un layout du catalogue ou depuis une grille vide de **4 à 20 cases** de côté, où l'on place soi-même les cases définitions. Aide au remplissage : un clic sur un emplacement montre les mots du lexique et des dictionnaires qui correspondent à son motif ; un emplacement qui ne croise encore aucun mot écrit est libre (« Lance-toi, écris ton premier mot ! »). Réservé aux comptes ; sans compte, on peut parcourir les layouts vides, avec une invitation à créer un compte ;
+   - **C. Layouts proposés au catalogue** : une grille créée à la main peut être proposée ; l'auteur accepte ou refuse dans un onglet du curateur (lié à #15).
 6. **Poste de pilotage, suite (Phase 8)** : système, audience sans cookie, formulaire de contact et « Signaler ce problème », alertes (#129 à #132).
 7. **Petits plus** : recherche avancée (#83), choix du layout et du seed (#89), définitions des dictionnaires dans l'éditeur (#91).
 

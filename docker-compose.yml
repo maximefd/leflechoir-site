@@ -52,6 +52,8 @@ services:
       - SMTP_HOST=mail
       - SMTP_PORT=1025
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      # Alertes et bilan hebdomadaire (ADR 0022) : en local, ils arrivent dans Mailpit comme les autres e-mails
+      - ALERT_EMAIL=${ALERT_EMAIL:-pilote@exemple.fr}
     depends_on:
       db:
         condition: service_healthy

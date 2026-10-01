@@ -1,0 +1,1195 @@
+{
+ "now": "2026-10-01T15:30:00Z",
+ "periods": [
+  {
+   "label": "Aujourd'hui",
+   "days": 1,
+   "visitors": 24,
+   "searches": 52,
+   "generations": 55,
+   "grids": 43,
+   "success": "81 %",
+   "busy": 2,
+   "busy_server": 1,
+   "busy_visitor": 1,
+   "rate_limited": 0,
+   "p50": 487,
+   "p95": 5522,
+   "cpu_s": 129.905,
+   "cpu_share": 0.0007517650462962963,
+   "register": 4,
+   "verify": 1,
+   "login": 0,
+   "delete": 0,
+   "saved": 2,
+   "errors": 16,
+   "server_errors": 0,
+   "funnel": {
+    "visits": 24,
+    "active": 24,
+    "searched": 15,
+    "generated": 21,
+    "grid": 19,
+    "registered": 4,
+    "saved": 2
+   }
+  },
+  {
+   "label": "7 jours",
+   "days": 7,
+   "visitors": 246,
+   "searches": 560,
+   "generations": 401,
+   "grids": 327,
+   "success": "84 %",
+   "busy": 9,
+   "busy_server": 5,
+   "busy_visitor": 4,
+   "rate_limited": 1,
+   "p50": 526,
+   "p95": 6726,
+   "cpu_s": 1162.319,
+   "cpu_share": 0.0009609118716931217,
+   "register": 13,
+   "verify": 9,
+   "login": 37,
+   "delete": 1,
+   "saved": 17,
+   "errors": 108,
+   "server_errors": 1,
+   "funnel": {
+    "visits": 246,
+    "active": 239,
+    "searched": 159,
+    "generated": 182,
+    "grid": 170,
+    "registered": 13,
+    "saved": 17
+   }
+  },
+  {
+   "label": "30 jours",
+   "days": 30,
+   "visitors": 922,
+   "searches": 1978,
+   "generations": 1502,
+   "grids": 1222,
+   "success": "85 %",
+   "busy": 56,
+   "busy_server": 41,
+   "busy_visitor": 15,
+   "rate_limited": 7,
+   "p50": 467,
+   "p95": 6683,
+   "cpu_s": 3987.874,
+   "cpu_share": 0.0007692658179012346,
+   "register": 56,
+   "verify": 34,
+   "login": 132,
+   "delete": 1,
+   "saved": 79,
+   "errors": 398,
+   "server_errors": 37,
+   "funnel": {
+    "visits": 922,
+    "active": 887,
+    "searched": 577,
+    "generated": 668,
+    "grid": 622,
+    "registered": 56,
+    "saved": 79
+   }
+  }
+ ],
+ "thresholds": {
+  "p95_ms": 6683,
+  "p95_limit_ms": 15000,
+  "p95_level": "ok",
+  "busy_share": 0.037283621837549935,
+  "busy_limit": 0.05,
+  "busy_level": "ok",
+  "near_share": 0.8,
+  "week": {
+   "p95_ms": 6726,
+   "p95_level": "ok",
+   "busy_share": 0.022443890274314215,
+   "busy_level": "ok"
+  }
+ },
+ "daily": [
+  {
+   "day": "2026-09-02",
+   "visitors": 23,
+   "searches": 37,
+   "generations": 33,
+   "grids": 31,
+   "busy": 0,
+   "registers": 1,
+   "saved": 2,
+   "errors": 2,
+   "server_errors": 0,
+   "p95": 5141
+  },
+  {
+   "day": "2026-09-03",
+   "visitors": 20,
+   "searches": 31,
+   "generations": 33,
+   "grids": 31,
+   "busy": 1,
+   "registers": 3,
+   "saved": 5,
+   "errors": 2,
+   "server_errors": 0,
+   "p95": 11775
+  },
+  {
+   "day": "2026-09-04",
+   "visitors": 19,
+   "searches": 23,
+   "generations": 40,
+   "grids": 34,
+   "busy": 0,
+   "registers": 0,
+   "saved": 0,
+   "errors": 6,
+   "server_errors": 0,
+   "p95": 7656
+  },
+  {
+   "day": "2026-09-05",
+   "visitors": 36,
+   "searches": 60,
+   "generations": 58,
+   "grids": 44,
+   "busy": 2,
+   "registers": 2,
+   "saved": 1,
+   "errors": 23,
+   "server_errors": 1,
+   "p95": 7357
+  },
+  {
+   "day": "2026-09-06",
+   "visitors": 30,
+   "searches": 105,
+   "generations": 41,
+   "grids": 32,
+   "busy": 1,
+   "registers": 3,
+   "saved": 4,
+   "errors": 12,
+   "server_errors": 0,
+   "p95": 3387
+  },
+  {
+   "day": "2026-09-07",
+   "visitors": 18,
+   "searches": 21,
+   "generations": 34,
+   "grids": 28,
+   "busy": 2,
+   "registers": 3,
+   "saved": 4,
+   "errors": 10,
+   "server_errors": 0,
+   "p95": 6489
+  },
+  {
+   "day": "2026-09-08",
+   "visitors": 31,
+   "searches": 38,
+   "generations": 51,
+   "grids": 47,
+   "busy": 1,
+   "registers": 2,
+   "saved": 3,
+   "errors": 9,
+   "server_errors": 0,
+   "p95": 6227
+  },
+  {
+   "day": "2026-09-09",
+   "visitors": 21,
+   "searches": 42,
+   "generations": 32,
+   "grids": 24,
+   "busy": 4,
+   "registers": 1,
+   "saved": 1,
+   "errors": 13,
+   "server_errors": 0,
+   "p95": 3171
+  },
+  {
+   "day": "2026-09-10",
+   "visitors": 21,
+   "searches": 21,
+   "generations": 32,
+   "grids": 25,
+   "busy": 1,
+   "registers": 1,
+   "saved": 2,
+   "errors": 9,
+   "server_errors": 0,
+   "p95": 5193
+  },
+  {
+   "day": "2026-09-11",
+   "visitors": 15,
+   "searches": 41,
+   "generations": 19,
+   "grids": 15,
+   "busy": 0,
+   "registers": 1,
+   "saved": 1,
+   "errors": 7,
+   "server_errors": 0,
+   "p95": 5779
+  },
+  {
+   "day": "2026-09-12",
+   "visitors": 38,
+   "searches": 80,
+   "generations": 66,
+   "grids": 53,
+   "busy": 3,
+   "registers": 3,
+   "saved": 3,
+   "errors": 16,
+   "server_errors": 0,
+   "p95": 2511
+  },
+  {
+   "day": "2026-09-13",
+   "visitors": 26,
+   "searches": 67,
+   "generations": 58,
+   "grids": 48,
+   "busy": 2,
+   "registers": 2,
+   "saved": 4,
+   "errors": 14,
+   "server_errors": 0,
+   "p95": 6339
+  },
+  {
+   "day": "2026-09-14",
+   "visitors": 24,
+   "searches": 26,
+   "generations": 26,
+   "grids": 22,
+   "busy": 1,
+   "registers": 1,
+   "saved": 2,
+   "errors": 8,
+   "server_errors": 0,
+   "p95": 4368
+  },
+  {
+   "day": "2026-09-15",
+   "visitors": 28,
+   "searches": 50,
+   "generations": 43,
+   "grids": 36,
+   "busy": 1,
+   "registers": 2,
+   "saved": 3,
+   "errors": 13,
+   "server_errors": 0,
+   "p95": 13195
+  },
+  {
+   "day": "2026-09-16",
+   "visitors": 33,
+   "searches": 73,
+   "generations": 38,
+   "grids": 33,
+   "busy": 0,
+   "registers": 1,
+   "saved": 2,
+   "errors": 9,
+   "server_errors": 0,
+   "p95": 4327
+  },
+  {
+   "day": "2026-09-17",
+   "visitors": 33,
+   "searches": 83,
+   "generations": 43,
+   "grids": 39,
+   "busy": 2,
+   "registers": 0,
+   "saved": 2,
+   "errors": 6,
+   "server_errors": 0,
+   "p95": 4073
+  },
+  {
+   "day": "2026-09-18",
+   "visitors": 34,
+   "searches": 102,
+   "generations": 62,
+   "grids": 57,
+   "busy": 1,
+   "registers": 2,
+   "saved": 2,
+   "errors": 6,
+   "server_errors": 0,
+   "p95": 9208
+  },
+  {
+   "day": "2026-09-19",
+   "visitors": 46,
+   "searches": 139,
+   "generations": 79,
+   "grids": 69,
+   "busy": 3,
+   "registers": 5,
+   "saved": 4,
+   "errors": 15,
+   "server_errors": 1,
+   "p95": 11184
+  },
+  {
+   "day": "2026-09-20",
+   "visitors": 48,
+   "searches": 116,
+   "generations": 97,
+   "grids": 77,
+   "busy": 2,
+   "registers": 2,
+   "saved": 2,
+   "errors": 22,
+   "server_errors": 0,
+   "p95": 6968
+  },
+  {
+   "day": "2026-09-21",
+   "visitors": 29,
+   "searches": 57,
+   "generations": 27,
+   "grids": 23,
+   "busy": 0,
+   "registers": 0,
+   "saved": 1,
+   "errors": 8,
+   "server_errors": 0,
+   "p95": 3311
+  },
+  {
+   "day": "2026-09-22",
+   "visitors": 39,
+   "searches": 65,
+   "generations": 83,
+   "grids": 34,
+   "busy": 19,
+   "registers": 4,
+   "saved": 7,
+   "errors": 60,
+   "server_errors": 34,
+   "p95": 4103
+  },
+  {
+   "day": "2026-09-23",
+   "visitors": 32,
+   "searches": 46,
+   "generations": 60,
+   "grids": 51,
+   "busy": 1,
+   "registers": 2,
+   "saved": 2,
+   "errors": 11,
+   "server_errors": 0,
+   "p95": 7208
+  },
+  {
+   "day": "2026-09-24",
+   "visitors": 29,
+   "searches": 76,
+   "generations": 48,
+   "grids": 44,
+   "busy": 0,
+   "registers": 1,
+   "saved": 3,
+   "errors": 7,
+   "server_errors": 0,
+   "p95": 9237
+  },
+  {
+   "day": "2026-09-25",
+   "visitors": 28,
+   "searches": 57,
+   "generations": 53,
+   "grids": 41,
+   "busy": 2,
+   "registers": 0,
+   "saved": 2,
+   "errors": 13,
+   "server_errors": 1,
+   "p95": 10389
+  },
+  {
+   "day": "2026-09-26",
+   "visitors": 46,
+   "searches": 92,
+   "generations": 62,
+   "grids": 55,
+   "busy": 1,
+   "registers": 4,
+   "saved": 2,
+   "errors": 11,
+   "server_errors": 0,
+   "p95": 8844
+  },
+  {
+   "day": "2026-09-27",
+   "visitors": 42,
+   "searches": 131,
+   "generations": 68,
+   "grids": 61,
+   "busy": 1,
+   "registers": 3,
+   "saved": 5,
+   "errors": 13,
+   "server_errors": 0,
+   "p95": 5359
+  },
+  {
+   "day": "2026-09-28",
+   "visitors": 27,
+   "searches": 69,
+   "generations": 40,
+   "grids": 30,
+   "busy": 0,
+   "registers": 2,
+   "saved": 3,
+   "errors": 17,
+   "server_errors": 0,
+   "p95": 6989
+  },
+  {
+   "day": "2026-09-29",
+   "visitors": 38,
+   "searches": 71,
+   "generations": 65,
+   "grids": 52,
+   "busy": 3,
+   "registers": 0,
+   "saved": 1,
+   "errors": 20,
+   "server_errors": 0,
+   "p95": 7665
+  },
+  {
+   "day": "2026-09-30",
+   "visitors": 31,
+   "searches": 67,
+   "generations": 42,
+   "grids": 30,
+   "busy": 0,
+   "registers": 0,
+   "saved": 2,
+   "errors": 17,
+   "server_errors": 0,
+   "p95": 5264
+  },
+  {
+   "day": "2026-10-01",
+   "visitors": 24,
+   "searches": 52,
+   "generations": 55,
+   "grids": 43,
+   "busy": 2,
+   "registers": 4,
+   "saved": 2,
+   "errors": 16,
+   "server_errors": 0,
+   "p95": 5522
+  }
+ ],
+ "outcomes": [
+  {
+   "outcome": "grid",
+   "count": 1222
+  },
+  {
+   "outcome": "timeout",
+   "count": 67
+  },
+  {
+   "outcome": "must_words",
+   "count": 64
+  },
+  {
+   "outcome": "must_words_unplaced",
+   "count": 50
+  },
+  {
+   "outcome": "busy_server",
+   "count": 41
+  },
+  {
+   "outcome": "http_500",
+   "count": 25
+  },
+  {
+   "outcome": "busy_visitor",
+   "count": 15
+  },
+  {
+   "outcome": "rate_limited",
+   "count": 7
+  },
+  {
+   "outcome": "invalid_request",
+   "count": 6
+  },
+  {
+   "outcome": "no_solution",
+   "count": 5
+  }
+ ],
+ "formats": [
+  {
+   "format": "6x7",
+   "total": 309,
+   "grid": 250,
+   "timeout": 7,
+   "must_words": 43,
+   "must_words_unplaced": 3,
+   "no_solution": 0,
+   "other": 6,
+   "refused": 9,
+   "p50": 46,
+   "p95": 206
+  },
+  {
+   "format": "10x13",
+   "total": 268,
+   "grid": 244,
+   "timeout": 8,
+   "must_words": 0,
+   "must_words_unplaced": 10,
+   "no_solution": 2,
+   "other": 4,
+   "refused": 11,
+   "p50": 986,
+   "p95": 4849
+  },
+  {
+   "format": "14x9",
+   "total": 138,
+   "grid": 120,
+   "timeout": 7,
+   "must_words": 0,
+   "must_words_unplaced": 8,
+   "no_solution": 0,
+   "other": 3,
+   "refused": 7,
+   "p50": 735,
+   "p95": 3502
+  },
+  {
+   "format": "7x9",
+   "total": 120,
+   "grid": 111,
+   "timeout": 1,
+   "must_words": 3,
+   "must_words_unplaced": 4,
+   "no_solution": 0,
+   "other": 1,
+   "refused": 6,
+   "p50": 139,
+   "p95": 964
+  },
+  {
+   "format": "13x16",
+   "total": 117,
+   "grid": 88,
+   "timeout": 13,
+   "must_words": 0,
+   "must_words_unplaced": 10,
+   "no_solution": 2,
+   "other": 4,
+   "refused": 9,
+   "p50": 3068,
+   "p95": 12378
+  },
+  {
+   "format": "11x17",
+   "total": 110,
+   "grid": 94,
+   "timeout": 10,
+   "must_words": 0,
+   "must_words_unplaced": 6,
+   "no_solution": 0,
+   "other": 0,
+   "refused": 3,
+   "p50": 2984,
+   "p95": 11184
+  },
+  {
+   "format": "6x6",
+   "total": 98,
+   "grid": 78,
+   "timeout": 0,
+   "must_words": 17,
+   "must_words_unplaced": 0,
+   "no_solution": 0,
+   "other": 3,
+   "refused": 3,
+   "p50": 31,
+   "p95": 147
+  },
+  {
+   "format": "11x9",
+   "total": 83,
+   "grid": 77,
+   "timeout": 3,
+   "must_words": 0,
+   "must_words_unplaced": 2,
+   "no_solution": 0,
+   "other": 1,
+   "refused": 1,
+   "p50": 423,
+   "p95": 2422
+  },
+  {
+   "format": "12x15",
+   "total": 70,
+   "grid": 62,
+   "timeout": 5,
+   "must_words": 0,
+   "must_words_unplaced": 2,
+   "no_solution": 0,
+   "other": 1,
+   "refused": 4,
+   "p50": 1927,
+   "p95": 10432
+  },
+  {
+   "format": "11x6",
+   "total": 67,
+   "grid": 64,
+   "timeout": 1,
+   "must_words": 1,
+   "must_words_unplaced": 0,
+   "no_solution": 0,
+   "other": 1,
+   "refused": 2,
+   "p50": 242,
+   "p95": 899
+  },
+  {
+   "format": "13x18",
+   "total": 53,
+   "grid": 34,
+   "timeout": 12,
+   "must_words": 0,
+   "must_words_unplaced": 5,
+   "no_solution": 1,
+   "other": 1,
+   "refused": 1,
+   "p50": 6400,
+   "p95": 18488
+  }
+ ],
+ "must_counts": [
+  {
+   "must": 0,
+   "total": 1003,
+   "grid": 949,
+   "timeout": 33,
+   "must_words": 0,
+   "must_words_unplaced": 0,
+   "no_solution": 3,
+   "other": 18
+  },
+  {
+   "must": 1,
+   "total": 205,
+   "grid": 148,
+   "timeout": 14,
+   "must_words": 23,
+   "must_words_unplaced": 18,
+   "no_solution": 0,
+   "other": 2
+  },
+  {
+   "must": 2,
+   "total": 121,
+   "grid": 77,
+   "timeout": 8,
+   "must_words": 21,
+   "must_words_unplaced": 11,
+   "no_solution": 0,
+   "other": 4
+  },
+  {
+   "must": 3,
+   "total": 66,
+   "grid": 35,
+   "timeout": 5,
+   "must_words": 13,
+   "must_words_unplaced": 11,
+   "no_solution": 2,
+   "other": 0
+  },
+  {
+   "must": 4,
+   "total": 21,
+   "grid": 7,
+   "timeout": 3,
+   "must_words": 5,
+   "must_words_unplaced": 5,
+   "no_solution": 0,
+   "other": 1
+  },
+  {
+   "must": 5,
+   "total": 17,
+   "grid": 6,
+   "timeout": 4,
+   "must_words": 2,
+   "must_words_unplaced": 5,
+   "no_solution": 0,
+   "other": 0
+  }
+ ],
+ "must_lengths": [
+  {
+   "band": "2 à 4",
+   "total": 56,
+   "grid": 50,
+   "timeout": 4,
+   "must_words": 0,
+   "must_words_unplaced": 2,
+   "no_solution": 0,
+   "other": 0
+  },
+  {
+   "band": "5 à 6",
+   "total": 103,
+   "grid": 87,
+   "timeout": 5,
+   "must_words": 0,
+   "must_words_unplaced": 9,
+   "no_solution": 1,
+   "other": 1
+  },
+  {
+   "band": "7 à 8",
+   "total": 201,
+   "grid": 114,
+   "timeout": 17,
+   "must_words": 40,
+   "must_words_unplaced": 25,
+   "no_solution": 0,
+   "other": 5
+  },
+  {
+   "band": "9 à 10",
+   "total": 39,
+   "grid": 12,
+   "timeout": 6,
+   "must_words": 13,
+   "must_words_unplaced": 7,
+   "no_solution": 0,
+   "other": 1
+  },
+  {
+   "band": "11 et plus",
+   "total": 31,
+   "grid": 10,
+   "timeout": 2,
+   "must_words": 11,
+   "must_words_unplaced": 7,
+   "no_solution": 1,
+   "other": 0
+  }
+ ],
+ "must_matrix": [
+  {
+   "must": 1,
+   "band": "2 à 4",
+   "total": 49,
+   "grid": 44
+  },
+  {
+   "must": 1,
+   "band": "5 à 6",
+   "total": 62,
+   "grid": 53
+  },
+  {
+   "must": 1,
+   "band": "7 à 8",
+   "total": 77,
+   "grid": 44
+  },
+  {
+   "must": 1,
+   "band": "9 à 10",
+   "total": 10,
+   "grid": 2
+  },
+  {
+   "must": 1,
+   "band": "11 et plus",
+   "total": 7,
+   "grid": 5
+  },
+  {
+   "must": 2,
+   "band": "2 à 4",
+   "total": 4,
+   "grid": 3
+  },
+  {
+   "must": 2,
+   "band": "5 à 6",
+   "total": 34,
+   "grid": 28
+  },
+  {
+   "must": 2,
+   "band": "7 à 8",
+   "total": 62,
+   "grid": 37
+  },
+  {
+   "must": 2,
+   "band": "9 à 10",
+   "total": 11,
+   "grid": 5
+  },
+  {
+   "must": 2,
+   "band": "11 et plus",
+   "total": 10,
+   "grid": 4
+  },
+  {
+   "must": 3,
+   "band": "2 à 4",
+   "total": 3,
+   "grid": 3
+  },
+  {
+   "must": 3,
+   "band": "5 à 6",
+   "total": 7,
+   "grid": 6
+  },
+  {
+   "must": 3,
+   "band": "7 à 8",
+   "total": 62,
+   "grid": 33
+  },
+  {
+   "must": 3,
+   "band": "9 à 10",
+   "total": 18,
+   "grid": 5
+  },
+  {
+   "must": 3,
+   "band": "11 et plus",
+   "total": 14,
+   "grid": 1
+  }
+ ],
+ "must_bands": [
+  "2 à 4",
+  "5 à 6",
+  "7 à 8",
+  "9 à 10",
+  "11 et plus"
+ ],
+ "unknown_words": [
+  {
+   "word": "WIFI",
+   "count": 16
+  },
+  {
+   "word": "LOULOU",
+   "count": 16
+  },
+  {
+   "word": "MAELYS",
+   "count": 12
+  },
+  {
+   "word": "TIKTOK",
+   "count": 12
+  },
+  {
+   "word": "PAPOU",
+   "count": 11
+  },
+  {
+   "word": "PODCAST",
+   "count": 10
+  },
+  {
+   "word": "CAMILLE",
+   "count": 9
+  },
+  {
+   "word": "SUDOKU",
+   "count": 9
+  },
+  {
+   "word": "MAMIE",
+   "count": 9
+  },
+  {
+   "word": "NOLAN",
+   "count": 9
+  },
+  {
+   "word": "EMOJI",
+   "count": 8
+  },
+  {
+   "word": "PADEL",
+   "count": 8
+  },
+  {
+   "word": "COVOIT",
+   "count": 7
+  },
+  {
+   "word": "LEFLECHOIR",
+   "count": 5
+  }
+ ],
+ "countries": [
+  {
+   "country": "FR",
+   "events": 3054,
+   "visitors": 714
+  },
+  {
+   "country": "BE",
+   "events": 303,
+   "visitors": 75
+  },
+  {
+   "country": "CA",
+   "events": 132,
+   "visitors": 36
+  },
+  {
+   "country": "CH",
+   "events": 123,
+   "visitors": 30
+  },
+  {
+   "country": "DE",
+   "events": 86,
+   "visitors": 21
+  },
+  {
+   "country": "US",
+   "events": 69,
+   "visitors": 22
+  },
+  {
+   "country": "LU",
+   "events": 56,
+   "visitors": 13
+  },
+  {
+   "country": "MA",
+   "events": 33,
+   "visitors": 5
+  },
+  {
+   "country": "?",
+   "events": 24,
+   "visitors": 6
+  }
+ ],
+ "errors": [
+  {
+   "route": "/api/grids/generate",
+   "status": 422,
+   "count": 186
+  },
+  {
+   "route": "/api/grids/generate",
+   "status": 429,
+   "count": 63
+  },
+  {
+   "route": "/api/users/me",
+   "status": 401,
+   "count": 28
+  },
+  {
+   "route": "/api/grids/generate",
+   "status": 500,
+   "count": 25
+  },
+  {
+   "route": "/api/auth/login",
+   "status": 401,
+   "count": 14
+  },
+  {
+   "route": "/api/search",
+   "status": 400,
+   "count": 13
+  },
+  {
+   "route": "/api/auth/refresh",
+   "status": 401,
+   "count": 11
+  },
+  {
+   "route": "/api/auth/register",
+   "status": 409,
+   "count": 9
+  },
+  {
+   "route": "/api/search",
+   "status": 429,
+   "count": 7
+  },
+  {
+   "route": "/api/grids/<int:grid_id>",
+   "status": 404,
+   "count": 7
+  },
+  {
+   "route": "/api/grids/generate",
+   "status": 400,
+   "count": 6
+  },
+  {
+   "route": "/api/dictionaries/<int:dict_id>",
+   "status": 404,
+   "count": 5
+  },
+  {
+   "route": "/api/grids",
+   "status": 500,
+   "count": 5
+  },
+  {
+   "route": "/api/auth/password/reset",
+   "status": 400,
+   "count": 4
+  },
+  {
+   "route": "/api/dictionaries",
+   "status": 500,
+   "count": 4
+  },
+  {
+   "route": "/api/grids/<int:grid_id>",
+   "status": 500,
+   "count": 3
+  },
+  {
+   "route": "/api/grids",
+   "status": 400,
+   "count": 3
+  },
+  {
+   "route": "/api/dictionaries/<int:dict_id>/words",
+   "status": 400,
+   "count": 3
+  },
+  {
+   "route": "/api/auth/login",
+   "status": 429,
+   "count": 2
+  }
+ ],
+ "latest": [
+  {
+   "at": "2026-10-01T15:20:48Z",
+   "format": "6x6",
+   "layout": "6x6-002",
+   "outcome": "grid",
+   "duration_ms": 34,
+   "must": 0
+  },
+  {
+   "at": "2026-10-01T15:19:46Z",
+   "format": "12x15",
+   "layout": "12x15-001",
+   "outcome": "grid",
+   "duration_ms": 2477,
+   "must": 0
+  },
+  {
+   "at": "2026-10-01T15:19:19Z",
+   "format": "14x9",
+   "layout": "14x9-007",
+   "outcome": "grid",
+   "duration_ms": 617,
+   "must": 0
+  },
+  {
+   "at": "2026-10-01T15:18:46Z",
+   "format": "6x6",
+   "layout": null,
+   "outcome": "must_words",
+   "duration_ms": 68,
+   "must": 2
+  },
+  {
+   "at": "2026-10-01T14:57:57Z",
+   "format": "11x6",
+   "layout": "11x6-001",
+   "outcome": "grid",
+   "duration_ms": 526,
+   "must": 2
+  },
+  {
+   "at": "2026-10-01T14:56:41Z",
+   "format": "6x7",
+   "layout": null,
+   "outcome": "must_words",
+   "duration_ms": 28,
+   "must": 2
+  },
+  {
+   "at": "2026-10-01T14:18:27Z",
+   "format": "6x7",
+   "layout": "6x7-001",
+   "outcome": "grid",
+   "duration_ms": 21,
+   "must": 0
+  },
+  {
+   "at": "2026-10-01T14:18:16Z",
+   "format": "11x6",
+   "layout": "11x6-001",
+   "outcome": "grid",
+   "duration_ms": 145,
+   "must": 0
+  },
+  {
+   "at": "2026-10-01T14:11:41Z",
+   "format": "10x13",
+   "layout": "10x13-005",
+   "outcome": "grid",
+   "duration_ms": 1424,
+   "must": 0
+  },
+  {
+   "at": "2026-10-01T14:10:59Z",
+   "format": "6x7",
+   "layout": null,
+   "outcome": "must_words",
+   "duration_ms": 29,
+   "must": 2
+  }
+ ]
+}

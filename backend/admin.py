@@ -20,8 +20,10 @@ from flask_jwt_extended.exceptions import JWTExtendedException
 from jwt.exceptions import PyJWTError
 from sqlalchemy import func
 
+import alerts
 import stats
 import suggestions
+import system_samples
 from extensions import db
 from models import User, WordSuggestion
 
@@ -52,6 +54,12 @@ def admin_only():
 def usage_stats():
     """Les chiffres de `flask stats` : visiteurs, générations, comptes, erreurs, seuils de l'ADR 0013."""
     return jsonify(stats.as_json(stats.compute()))
+
+
+@admin_bp.get("/system")
+def system_state():
+    """Le serveur : dernier échantillon, seuils, 24 heures, 30 jours, et le journal des alertes (#129, #132)."""
+    return jsonify({**system_samples.as_json(), "alerts": alerts.recent()})
 
 
 @admin_bp.get("/suggestions")

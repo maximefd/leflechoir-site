@@ -18,6 +18,7 @@ from monitoring import init_sentry
 from usage import init_usage
 from stats import init_stats_cli
 from admin import admin_bp, init_admin_cli
+from alerts import init_system_cli
 from suggestions import init_suggestions
 
 DEV_SECRET = 'default-secret-for-dev'
@@ -96,6 +97,12 @@ DEFAULT_SETTINGS = dict(
     SITE_LANG='fr',
     # Mesure d'usage côté serveur (ADR 0016)
     USAGE_ENABLED=True,
+    # Échantillons système et alertes (ADR 0022). Destinataire des alertes et du bilan : vide, rien ne part
+    ALERT_EMAIL='',
+    # Envois par 24 heures, tous types confondus : le quota de Brevo est partagé avec les e-mails du compte
+    ALERT_DAILY_CAP=10,
+    # Adresse où l'échantillon vérifie que l'API répond ; vide : non vérifié
+    MONITOR_API_URL='',
     MAIL_FROM=DEFAULT_MAIL_FROM,
     SMTP_HOST='localhost',
     SMTP_PORT=25,
@@ -206,6 +213,11 @@ def _load_config_from_env() -> dict:
             os.environ.get('LEXICON_RELOAD_INTERVAL_S', DEFAULT_SETTINGS['LEXICON_RELOAD_INTERVAL_S'])
         ) if app_env != 'production' else 0,
         LEXICON_LOAD=os.environ.get('LEXICON_LOAD', '1').lower() not in ('0', 'false', 'non'),
+        ALERT_EMAIL=os.environ.get('ALERT_EMAIL', '').strip(),
+        ALERT_DAILY_CAP=max(1, int(os.environ.get('ALERT_DAILY_CAP') or DEFAULT_SETTINGS['ALERT_DAILY_CAP'])),
+        # Par défaut, l'API de ce conteneur : `flask system tick` y est lancé à côté d'elle
+        MONITOR_API_URL=os.environ.get(
+            'MONITOR_API_URL', f"http://localhost:{os.environ.get('PORT', '5000')}/api/status").strip(),
     )
 
 
@@ -292,6 +304,7 @@ def create_app(test_config=None):
     init_usage(app)
     init_stats_cli(app)
     init_admin_cli(app)
+    init_system_cli(app)
 
     # Le lexique n'est pas chargé en mode test (les tests fournissent un petit Trie)
     app.dela_trie = None

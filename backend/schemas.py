@@ -198,6 +198,13 @@ class GridCellEdit(ApiModel):
     char: Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True, pattern=r"^[A-Z]?$")]
 
 
+class GridBlockEdit(ApiModel):
+    """Une case lettre devenue case définition, ou l'inverse (roadmap, point 5A)."""
+    x: Annotated[int, Field(ge=0, le=19)]
+    y: Annotated[int, Field(ge=0, le=19)]
+    is_black: StrictBool
+
+
 class GridUpdateRequest(ApiModel):
     """Renommer une grille conservée, écrire ses définitions, ses notes, ou corriger ses lettres."""
     name: Annotated[
@@ -210,6 +217,11 @@ class GridUpdateRequest(ApiModel):
     archived: StrictBool | None = None
     # Lettres corrigées à la main : seules les cases changées sont envoyées
     cells: Annotated[list[GridCellEdit], Field(max_length=400)] | None = None
+    # Cases définitions déplacées : appliquées avant les lettres de la même requête
+    blocks: Annotated[list[GridBlockEdit], Field(max_length=400)] | None = None
+    # Aperçu : la grille n'est pas enregistrée, on renvoie seulement ce que le changement ferait sortir
+    # des conventions, pour que l'auteur confirme en connaissance de cause
+    preview: StrictBool = False
 
 
 class SlotRef(ApiModel):

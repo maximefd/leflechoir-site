@@ -30,5 +30,7 @@ docs/archive/amelioration-generate.md
 docs/adr/0005-pipeline-du-lexique-et-decisions.md
 docs/adr/0008-regles-automatiques-et-revision.md
 docs/adr/0009-annoncer-la-difficulte.md
+# Mesures du solveur (mots souhaités, mots obligatoires) et stratégie de l'offre : privé par défaut
+docs/ETUDE-GRILLES-THEME-IA.md
 # La CI, les modèles d'issues et dependabot restent sur le dépôt de travail, privé
 .github

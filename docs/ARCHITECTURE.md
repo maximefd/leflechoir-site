@@ -44,6 +44,10 @@ Il n'y a **pas de déploiement en ligne** pour l'instant : tout tourne en local 
 | `generation_slots.py` | Places de génération : au plus 2 générations à la fois, une par visiteur (verrous de fichiers partagés entre workers) |
 | `models.py` / `extensions.py` | Modèles SQLAlchemy et instances des extensions |
 | `usage.py` / `stats.py` | Mesure d'usage côté serveur ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md)) : un événement par génération, recherche, étape de compte, grille conservée ou erreur, écrit en fin de requête ; empreinte du jour, purge quotidienne ; lecture par `flask stats` |
+| `usage_demo.py` | Événements d'usage fictifs pour développer le poste de pilotage (`flask usage seed-demo`, `make seed-demo`) : refusé en production, relançable sans doublon |
+| `system_samples.py` | Échantillons système ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) : RAM, CPU, places de génération, taille de la base, dernière sauvegarde, lus dans `/proc` ; 30 jours, puis un résumé par jour gardé 13 mois |
+| `alerts.py` | Alertes par e-mail et bilan hebdomadaire, sous plafonds ; `flask system tick`, lancé chaque minute par un minuteur du serveur (`tools/monitor/tick.sh`) |
+| `admin.py` | Espace d'administration `/api/admin/*` : un seul contrôle d'accès, 404 pour tout autre compte ; chiffres d'usage, système, suggestions |
 | `trie_engine.py` | `DictionnaireTrie` : normalisation des mots et recherche par motif (`P??LE`) |
 | `grid_generator.py` | Chef d'orchestre de la génération (choix du layout, dépôt de mots, solveur) |
 | `engine/` | Moteur de génération, sans dépendance Flask (voir [ENGINE.md](ENGINE.md)) |

@@ -39,7 +39,15 @@ import { LetterPanel, WordReview, type PlacedWord } from "@/components/grid/lett
 import type { GridData } from "@/components/grid/grid-display";
 import { exportJson, exportPdf } from "@/lib/grid-export";
 
-type GridContent = GridData & { clues?: Clue[]; words: PlacedWord[]; unknown_words?: string[] };
+/** Ce qui sort des conventions des layouts : signalé, jamais refusé (roadmap, point 5A). */
+type LayoutWarning = { kind: string; message: string; cells: [number, number][] };
+
+type GridContent = GridData & {
+  clues?: Clue[];
+  words: PlacedWord[];
+  unknown_words?: string[];
+  layout_warnings?: LayoutWarning[];
+};
 
 type SavedGrid = {
   id: number;
@@ -63,6 +71,10 @@ const STEPS: { mode: Mode; label: string }[] = [
 ];
 
 type CellEdit = { x: number; y: number; char: string };
+/** Une case lettre devenue case définition, ou l'inverse. */
+type BlockEdit = { x: number; y: number; is_black: boolean };
+/** Une modification de la grille, telle qu'on l'envoie et telle qu'on l'annule. */
+type GridEdit = { cells?: CellEdit[]; blocks?: BlockEdit[] };
 
 /**
  * La grille tient dans la fenêtre, quelle qu'elle soit.
@@ -104,8 +116,10 @@ export function GridEditor({ gridId }: { gridId: number }) {
   const [pendingPdf, setPendingPdf] = useState<boolean | null>(null);
   // Annulation : on garde les **lettres d'avant**, pas des copies de grille. Une correction ne
   // touche que quelques cases, et l'inverse d'une pose de lettre est une autre pose de lettre.
-  const [past, setPast] = useState<CellEdit[][]>([]);
-  const [future, setFuture] = useState<CellEdit[][]>([]);
+  const [past, setPast] = useState<GridEdit[]>([]);
+  // Changement de case en attente de confirmation : il sortirait des conventions des layouts
+  const [pendingBlock, setPendingBlock] = useState<{ edit: GridEdit; warnings: LayoutWarning[] } | null>(null);
+  const [future, setFuture] = useState<GridEdit[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const blankRef = useRef<HTMLDivElement>(null);
@@ -250,6 +264,17 @@ export function GridEditor({ gridId }: { gridId: number }) {
   );
 
   const currentWord = wordAt(cursor, direction);
+  const cursorCell = cursor ? content?.cells.find((cell) => cell.x === cursor.x && cell.y === cursor.y) ?? null : null;
+  // Un même avertissement peut viser plusieurs endroits : on le dit une fois, avec le compte
+  const layoutWarnings = useMemo(() => {
+    const counts = new Map<string, number>();
+    // Une case définition qui n'annonce rien existe dans deux layouts du catalogue : on ne la signale
+    // qu'au moment où l'auteur en crée une (demande de confirmation)
+    for (const warning of (content?.layout_warnings ?? []).filter((w) => w.kind !== "case_vide")) {
+      counts.set(warning.message, (counts.get(warning.message) ?? 0) + 1);
+    }
+    return [...counts].map(([message, count]) => ({ message, count }));
+  }, [content]);
   const crossingWord = wordAt(cursor, direction === "across" ? "down" : "across");
   const litCells = currentWord
     ? Array.from({ length: currentWord.length ?? currentWord.text.length }, (_, i) =>
@@ -272,17 +297,22 @@ export function GridEditor({ gridId }: { gridId: number }) {
   }, [content]);
 
   /** Ce qu'il faudrait réécrire pour revenir à l'état actuel de ces cases. */
-  const inverseOf = (cells: CellEdit[]): CellEdit[] =>
-    cells.map(({ x, y }) => ({
-      x,
-      y,
-      char: content?.cells.find((cell) => cell.x === x && cell.y === y)?.char ?? "",
-    }));
+  const inverseOf = (edit: GridEdit): GridEdit => {
+    const cellAt = (x: number, y: number) => content?.cells.find((cell) => cell.x === x && cell.y === y);
+    return {
+      ...(edit.cells ? { cells: edit.cells.map(({ x, y }) => ({ x, y, char: cellAt(x, y)?.char ?? "" })) } : {}),
+      ...(edit.blocks
+        ? { blocks: edit.blocks.map(({ x, y }) => ({ x, y, is_black: Boolean(cellAt(x, y)?.is_black) })) }
+        : {}),
+    };
+  };
 
-  const writeLetters = async (cells: CellEdit[], remember = true) => {
-    const before = inverseOf(cells);
+  const writeLetters = (cells: CellEdit[], remember = true) => writeEdit({ cells }, remember);
+
+  const writeEdit = async (edit: GridEdit, remember = true) => {
+    const before = inverseOf(edit);
     try {
-      const updated = await apiFetch(`/api/grids/${gridId}`, { method: "PATCH", body: { cells } });
+      const updated = await apiFetch(`/api/grids/${gridId}`, { method: "PATCH", body: edit });
       setContent(updated.grid);
       if (remember) {
         setPast((stack) => [...stack.slice(-49), before]);
@@ -296,10 +326,32 @@ export function GridEditor({ gridId }: { gridId: number }) {
     }
   };
 
+  /**
+   * Transforme une case, après avoir prévenu si le changement sort des conventions des layouts :
+   * l'auteur décide, mais en connaissance de cause. Seuls les avertissements nouveaux comptent.
+   */
+  const toggleBlock = async (block: BlockEdit) => {
+    const edit: GridEdit = { blocks: [block] };
+    try {
+      const preview = await apiFetch(`/api/grids/${gridId}`, { method: "PATCH", body: { ...edit, preview: true } });
+      const before = content?.layout_warnings ?? [];
+      const same = (a: LayoutWarning, b: LayoutWarning) =>
+        a.kind === b.kind && JSON.stringify(a.cells) === JSON.stringify(b.cells);
+      const added = (preview.layout_warnings as LayoutWarning[]).filter((w) => !before.some((b) => same(w, b)));
+      if (added.length > 0) {
+        setPendingBlock({ edit, warnings: added });
+        return;
+      }
+    } catch {
+      // Sans aperçu, on applique : le serveur refusera de toute façon ce qui est impossible
+    }
+    void writeEdit(edit);
+  };
+
   const undo = async () => {
     const last = past[past.length - 1];
     if (!last) return;
-    const redoEntry = await writeLetters(last, false);
+    const redoEntry = await writeEdit(last, false);
     if (!redoEntry) return;
     setPast((stack) => stack.slice(0, -1));
     setFuture((stack) => [...stack, redoEntry]);
@@ -308,13 +360,14 @@ export function GridEditor({ gridId }: { gridId: number }) {
   const redo = async () => {
     const next = future[future.length - 1];
     if (!next) return;
-    const undoEntry = await writeLetters(next, false);
+    const undoEntry = await writeEdit(next, false);
     if (!undoEntry) return;
     setFuture((stack) => stack.slice(0, -1));
     setPast((stack) => [...stack, undoEntry]);
   };
 
   const selectCell = (cell: { x: number; y: number }) => {
+    setPendingBlock(null);
     // Un second clic sur la même case change de sens : c'est le geste des grilles croisées.
     // Mais seulement si un mot y passe dans l'autre sens — sinon le panneau se viderait sans raison.
     if (cursor && cursor.x === cell.x && cursor.y === cell.y) {
@@ -344,6 +397,8 @@ export function GridEditor({ gridId }: { gridId: number }) {
       return;
     }
     if (!cursor) return;
+    // Une case définition ne reçoit pas de lettre : elle se transforme depuis le panneau
+    if (content.cells.some((cell) => cell.x === cursor.x && cell.y === cursor.y && cell.is_black)) return;
 
     const isLetter = /^[a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ]$/.test(event.key);
     const inGrid = (cell: { x: number; y: number }) =>
@@ -741,17 +796,78 @@ export function GridEditor({ gridId }: { gridId: number }) {
                   {past.length} modification{past.length > 1 ? "s" : ""} depuis l&apos;ouverture
                 </span>
               )}
-              <details className="w-full text-sm text-muted-foreground">
-                <summary className="cursor-pointer text-xs">Raccourcis clavier</summary>
-                <p className="mt-1">
-                  Clique une case et tape. <kbd className="rounded border px-1">Tab</kbd> change de sens,
-                  les flèches déplacent le curseur,{" "}
-                  <kbd className="rounded border px-1">Retour arrière</kbd> efface en remontant et{" "}
-                  <kbd className="rounded border px-1">Suppr</kbd> efface sur place. Chaque lettre est
-                  enregistrée aussitôt ; <kbd className="rounded border px-1">Ctrl</kbd>+
-                  <kbd className="rounded border px-1">Z</kbd> annule.
-                </p>
-              </details>
+              {/* Toujours visibles : Tab, pour changer de sens, ne se devine pas */}
+              <p className="w-full text-xs text-muted-foreground">
+                Clique une case et tape. <kbd className="rounded border px-1">Tab</kbd> change de sens (horizontal
+                ou vertical), les <kbd className="rounded border px-1">flèches</kbd> déplacent le curseur,{" "}
+                <kbd className="rounded border px-1">Retour arrière</kbd> efface en remontant,{" "}
+                <kbd className="rounded border px-1">Suppr</kbd> efface sur place,{" "}
+                <kbd className="rounded border px-1">Ctrl</kbd>+<kbd className="rounded border px-1">Z</kbd> annule.
+              </p>
+            </div>
+          )}
+
+          {mode === "lettres" && cursorCell && (
+            <div className="mt-2 flex shrink-0 flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              {cursorCell.is_black ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void toggleBlock({ x: cursorCell.x, y: cursorCell.y, is_black: false })}
+                >
+                  En faire une case lettre
+                </Button>
+              ) : cursorCell.char ? (
+                <span>Efface la lettre pour pouvoir faire de cette case une case définition.</span>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void toggleBlock({ x: cursorCell.x, y: cursorCell.y, is_black: true })}
+                >
+                  En faire une case définition
+                </Button>
+              )}
+            </div>
+          )}
+
+          {mode === "lettres" && pendingBlock && (
+            <div role="alertdialog" aria-label="Confirmer le changement de case" className="mt-2 shrink-0 space-y-2 rounded-md border border-amber-500 p-3 text-xs">
+              <p className="font-medium">Ce changement donne une grille peu conventionnelle :</p>
+              <ul className="list-disc pl-4 text-muted-foreground">
+                {[...new Set(pendingBlock.warnings.map((w) => w.message))].map((message) => (
+                  <li key={message}>{message}</li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    void writeEdit(pendingBlock.edit);
+                    setPendingBlock(null);
+                  }}
+                >
+                  Transformer quand même
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setPendingBlock(null)}>
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Signalé, jamais refusé : l'auteur fait la grille qu'il veut */}
+          {mode === "lettres" && layoutWarnings.length > 0 && (
+            <div role="status" className="mt-2 shrink-0 rounded-md border border-amber-500/50 p-2 text-xs">
+              <p className="font-medium">Pas conventionnel :</p>
+              <ul className="list-disc pl-4 text-muted-foreground">
+                {layoutWarnings.map(({ message, count }) => (
+                  <li key={message}>
+                    {message}
+                    {count > 1 ? ` (${count} fois)` : ""}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
