@@ -542,6 +542,7 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 - Lint Python avec ruff (`make lint-backend`, `ruff.toml`, règles tolérantes pour commencer) et couverture des tests en CI : 80 % minimum sur le moteur, 70 % sur les outils (#5).
 
 ### Corrigé
+- **Icône du site** : l'onglet montrait encore le logo de Vercel, venu du modèle de départ de Next.js. Il montre maintenant une flèche coudée de mots fléchés, noire sur fond blanc (`favicon.ico`, `icon.svg`, et `apple-icon.png` pour l'écran d'accueil des téléphones).
 - **Mots obligatoires et mots souhaités ensemble** (suite de [#182](https://github.com/maximefd/terminator-app/pull/182)) :
   quand les mots obligatoires ne tiennent pas dans la mise en page tirée, le moteur en change tout de suite, au
   lieu d'y rejouer des milliers d'essais pendant le premier quart du budget. Une demande impossible est refusée

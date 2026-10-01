@@ -503,6 +503,8 @@ Chaque langue demande :
 ## Idées retenues, sans date
 - **Importer un dictionnaire en CSV** (connecté, page Dictionnaires) : une colonne de mots, définitions facultatives. À cadrer : format accepté, validation ligne par ligne avec rapport d'erreurs, doublons, plafonds de taille (ceux de la Phase 0), et ce qu'on fait d'un mot déjà présent.
 - **Séparations en pointillé pour les expressions** : dans une grille, un mot en plusieurs mots (`POMME DE TERRE` écrit `POMMEDETERRE`) montre ses coupures par un trait pointillé entre deux cases, à l'écran comme dans le PDF. Suppose que le lexique garde la forme d'origine, espaces et tirets compris — aujourd'hui le moteur ne voit que les lettres.
+- **Charte graphique** : logo, illustrations, couleurs et typographie du site. Aujourd'hui, une icône d'onglet sobre (flèche coudée noire sur fond blanc) et l'emoji 🧩 dans l'en-tête, en attendant. À faire quand le site aura des visiteurs réguliers.
+- **Soutenir le site (« Buy me a logo »)** : un lien de don discret, avec un but concret (financer la charte graphique), à un ou deux endroits (pied de page, page À propos). Les dons restent rares : à envisager seulement avec une audience installée.
 
 ---
 
