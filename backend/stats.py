@@ -1,7 +1,7 @@
 """`flask stats` : ce que disent les événements d'usage ([ADR 0016](../docs/adr/0016-mesure-d-usage-sans-cookie.md)).
 
 Lu sur le serveur, en attendant le poste de pilotage (Phase 8). Chaque question de l'ADR a sa réponse ici,
-sauf le temps passé, qui attend la balise du navigateur :
+sauf le temps passé, que mesure la balise du navigateur (`audience.py`, rubrique « Audience ») :
 - combien de visiteurs, de recherches, de générations, de comptes et de grilles conservées ;
 - quelles générations réussissent, dans quels formats, avec combien de mots imposés ;
 - combien de refus « occupé » ou de rate limiting, face aux seuils de l'ADR 0013 ;
@@ -24,6 +24,7 @@ import click
 from flask import current_app
 from flask.cli import AppGroup
 
+from audience import source_kind
 from models import UsageEvent
 import usage
 import usage_demo
@@ -171,6 +172,66 @@ def _generation_tables(generations: list[UsageEvent]) -> dict:
     return {"formats": formats, "must_counts": must_counts, "must_lengths": must_lengths, "must_matrix": matrix}
 
 
+AUDIENCE_TOP = 15
+SOURCE_KINDS = ("direct", "search", "ai", "other")
+
+
+def _median(values: list[int]) -> float | None:
+    return _percentile(values, 0.5)
+
+
+def _audience(pages: list[UsageEvent], now: datetime) -> dict:
+    """La balise du navigateur (audience.py) : pages vues, temps passé, sources, langues, exports PDF.
+
+    Des événements `page`, à part des autres : ils ne changent aucun des chiffres de l'usage de l'API.
+    """
+    start_of_today = datetime.combine(now.date(), datetime.min.time())
+    periods = []
+    for label, days in PERIODS:
+        start = start_of_today if days == 1 else now - timedelta(days=days)
+        inside = [e for e in pages if e.created_at >= start]
+        views = [e for e in inside if e.outcome == "view"]
+        visible = [e.data.get("visible_ms", 0) for e in views if e.data.get("visible_ms", 0) > 0]
+        periods.append({
+            "label": label, "days": days,
+            "views": len(views),
+            "visitors": len({(e.created_at.date(), e.visitor) for e in views if e.visitor}),
+            "median_visible_ms": _median(visible),
+            "pdf": sum(1 for e in inside if e.outcome == "pdf"),
+        })
+
+    views = [e for e in pages if e.outcome == "view"]
+    by_path = defaultdict(list)
+    for event in views:
+        by_path[event.data.get("path", "?")].append(event.data.get("visible_ms", 0))
+    top_pages = sorted(by_path.items(), key=lambda item: -len(item[1]))[:AUDIENCE_TOP]
+
+    # Sources : un visiteur compte une fois par jour et par origine ; l'accès direct (référent vide) à part
+    visits = {(e.created_at.date(), e.visitor, e.data.get("referrer", "")) for e in views if e.visitor}
+    kinds = Counter(source_kind(referrer) for _, _, referrer in visits)
+    hosts = Counter(referrer for _, _, referrer in visits if referrer)
+    langs = Counter(e.data.get("browser_lang") or "?" for e in views)
+
+    daily = []
+    for offset in range(DAILY_DAYS - 1, -1, -1):
+        day = (now - timedelta(days=offset)).date()
+        of_day = [e for e in views if e.created_at.date() == day]
+        daily.append({"day": day.isoformat(), "views": len(of_day),
+                      "visitors": len({e.visitor for e in of_day if e.visitor})})
+
+    return {
+        "periods": periods,
+        "pages": [{"path": path, "views": len(times),
+                   "median_visible_ms": _median([t for t in times if t > 0])} for path, times in top_pages],
+        "source_kinds": {kind: kinds[kind] for kind in SOURCE_KINDS},
+        # À égalité, l'ordre alphabétique : `visits` est un ensemble, dont l'ordre change d'une exécution à l'autre
+        "sources": [{"host": host, "kind": source_kind(host), "visits": count}
+                    for host, count in sorted(hosts.items(), key=lambda item: (-item[1], item[0]))[:AUDIENCE_TOP]],
+        "langs": [{"lang": lang, "views": count} for lang, count in langs.most_common(10)],
+        "daily": daily,
+    }
+
+
 def _period_figures(events: list[UsageEvent], days: int, cpu_count: int) -> dict:
     by_kind = defaultdict(list)
     for event in events:
@@ -211,7 +272,10 @@ def compute(now: datetime | None = None, cpu_count: int | None = None) -> dict:
     now = now or datetime.now(timezone.utc).replace(tzinfo=None)
     cpu_count = cpu_count or os.cpu_count() or 1
     since = now - timedelta(days=30)
-    events = UsageEvent.query.filter(UsageEvent.created_at >= since).order_by(UsageEvent.created_at).all()
+    recent = UsageEvent.query.filter(UsageEvent.created_at >= since).order_by(UsageEvent.created_at).all()
+    # Les pages vues, mesurées par le navigateur, ne se mêlent pas aux faits de l'API : chiffres inchangés
+    events = [e for e in recent if e.kind != "page"]
+    pages = [e for e in recent if e.kind == "page"]
     start_of_today = datetime.combine(now.date(), datetime.min.time())
 
     periods = {}
@@ -238,6 +302,7 @@ def compute(now: datetime | None = None, cpu_count: int | None = None) -> dict:
     return {
         "now": now,
         "periods": periods,
+        "audience": _audience(pages, now),
         "outcomes": Counter(e.outcome for e in generations),
         "formats": formats,
         "by_must_count": by_must_count,
@@ -297,6 +362,7 @@ def as_json(stats: dict) -> dict:
             },
         },
         "daily": stats["daily"],
+        "audience": stats["audience"],
         "outcomes": [{"outcome": outcome or "?", "count": count}
                      for outcome, count in stats["outcomes"].most_common()],
         "formats": [{"format": name, **outcomes(table["outcomes"]), "refused": table["refused"],
@@ -400,6 +466,16 @@ def render(stats: dict) -> str:
     section("Pays des visiteurs (30 jours, événements) :", stats["countries"], limit=10)
     section("Erreurs par route et statut (30 jours) :", stats["errors"],
             lambda key, value: f"{key[1]} {key[0]} : {value}")
+
+    audience = stats["audience"]
+    lines += ["", "Audience (balise du navigateur, hors opposition) :"]
+    for period in audience["periods"]:
+        lines.append(f"  {period['label']:<14} {period['views']} pages vues, {period['visitors']} visiteurs, "
+                     f"temps visible médian {_seconds(period['median_visible_ms'])}, {period['pdf']} export(s) PDF")
+    kinds = audience["source_kinds"]
+    lines.append("  Sources (visites sur 30 jours) : " + ", ".join(f"{kind} {kinds[kind]}" for kind in SOURCE_KINDS))
+    for row in audience["pages"][:5]:
+        lines.append(f"  {row['path']} : {row['views']} vues")
 
     lines.extend(["", "Dernières générations :"])
     if not stats["latest"]:

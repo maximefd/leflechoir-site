@@ -19,9 +19,11 @@ from generation_slots import GenerationBusy, generation_slot
 from grid_generator import GridGenerator, LayoutNotFoundError
 from layout_catalog import (available_formats, catalog, fit_by_format, format_slot_count, must_words_fit,
                             suggest_layouts_for)
+from layout_catalog import list_layouts as catalog_entries
 from auth import password_matches
 from schemas import (
     AccountDeletionRequest,
+    BlankGridRequest,
     DictionaryCreateRequest,
     DifficultyRequest,
     DictionaryUpdateRequest,
@@ -451,6 +453,44 @@ def save_grid():
     return jsonify(saved.summary()), 201
 
 
+@main_bp.route('/grids/blank', methods=['POST'])
+@jwt_required()
+def create_blank_grid():
+    """Une grille à remplir à la main (roadmap, point 5B) : les cases d'un layout du catalogue, ou toute vide.
+
+    Toute vide, elle n'a encore aucune case définition : l'auteur les pose lui-même dans l'éditeur.
+    """
+    user = get_current_user()
+    payload = parse_body(BlankGridRequest)
+    maximum = current_app.config['MAX_GRIDS_PER_USER']
+    if SavedGrid.query.filter_by(user_id=user.id).count() >= maximum:
+        accord = "s" if maximum > 1 else ""
+        return jsonify({'error': f"Limite atteinte : {maximum} grille{accord} conservée{accord} au maximum."}), 400
+
+    if payload.layout:
+        entry = next((e for e in catalog_entries(current_app.config.get('LAYOUTS_DIR'))
+                      if e["id"] == payload.layout and e["report"]["valid"]), None)
+        if entry is None:
+            return jsonify({"error": "Mise en page introuvable.", "reason": "layout_not_found"}), 404
+        rows = entry["report"]["rows"]
+        width, height, layout = entry["width"], entry["height"], payload.layout
+    else:
+        width, height, layout = payload.width, payload.height, "manuel"
+        rows = ["-" * width] * height
+    cells = [{"x": x, "y": y, "char": "", "is_black": char == "x"}
+             for y, row in enumerate(rows) for x, char in enumerate(row)]
+    grid = {"width": width, "height": height, "layout": layout, "seed": None, "cells": cells,
+            "words": words_from_cells(cells), "fill_ratio": 0.0, "wish_ratio": 0.0, "must_words": []}
+
+    saved = SavedGrid(name=payload.name or f"{width}×{height} à la main du {datetime.now():%d/%m/%Y}",
+                      layout_id=layout, width=width, height=height, seed=None, payload=grid, user_id=user.id)
+    db.session.add(saved)
+    db.session.commit()
+    # Le même événement qu'une grille conservée, mêmes champs : rien de nouveau n'est mesuré (ADR 0016)
+    usage.describe("grid", "saved", user=user, data={"format": f"{width}x{height}"})
+    return jsonify(saved.summary()), 201
+
+
 def known_words(user, words: set[str]) -> set[str]:
     """Parmi ces mots, ceux que l'auteur peut considérer comme connus : le lexique, plus les siens.
 
@@ -510,6 +550,34 @@ def get_grid(grid_id):
     return jsonify(annotated_grid(user, get_owned_grid(user, grid_id))), 200
 
 
+def shorter_suggestions(grid_cells: list[dict], slot: dict, motif: str, allowed: list[set[str]], posees: dict,
+                        limite: int) -> dict:
+    """Des mots plus courts que l'emplacement, chacun suivi d'une case définition (roadmap 5B).
+
+    Sans eux, une grille vide se remplit de mots qui courent d'un bord à l'autre. Un mot de `k` lettres
+    n'est proposé que si la case qui le suit est vide (elle deviendra case définition) et s'il ne laisse
+    pas, au bout de l'emplacement, une lettre **isolée** : une lettre seule qui appartient à un mot dans
+    l'autre sens est permise (retour de l'auteur). Les plus courants d'abord, toutes longueurs mêlées.
+    """
+    dela_trie = current_app.dela_trie
+    positions = cells_of_slot(slot)
+    perpendicular = "down" if slot["direction"] == "across" else "across"
+    retenus = []
+    for k in range(slot["length"] - 1, 1, -1):
+        reste = slot["length"] - k - 1
+        if posees.get(positions[k]):
+            continue
+        if reste == 1 and slot_at(grid_cells, positions[-1][0], positions[-1][1], perpendicular) is None:
+            continue
+        for mot in dela_trie.search_pattern(motif[:k], limit=limite * 10):
+            if all(not lettres or mot[i] in lettres for i, lettres in enumerate(allowed[:k])):
+                retenus.append(mot)
+    retenus.sort(key=lambda mot: (-dela_trie.frequency(mot), mot))
+    return {"pattern": motif, "allowed": ["".join(sorted(lettres)) for lettres in allowed],
+            "words": retenus[:limite], "truncated": len(retenus) > limite,
+            "current": "".join(posees.get(position) or HOLE for position in positions), "shorter": True}
+
+
 @main_bp.route('/grids/<int:grid_id>/suggestions', methods=['POST'])
 @jwt_required()
 def grid_suggestions(grid_id):
@@ -549,6 +617,8 @@ def grid_suggestions(grid_id):
             motif += "?"
 
     limite = current_app.config['MAX_SUGGESTIONS']
+    if payload.shorter:
+        return jsonify(shorter_suggestions(cells, slot, motif, allowed, posees, limite)), 200
     candidats = dela_trie.search_pattern(motif, limit=limite * 20)
     retenus = [
         mot for mot in candidats

@@ -11,6 +11,18 @@ import { AccountBenefits } from "@/components/account/account-benefits";
 import { GridSvg } from "@/components/grid/grid-svg";
 import { DEMO_DEFINITIONS, DEMO_GRID } from "@/components/home/demo-grid";
 import { ExampleDictionary, ExamplePattern } from "@/components/home/example-grid";
+import { GUIDE_STEPS } from "@/components/guide/guide-steps";
+import { toGrid } from "@/components/guide/guide-figures";
+
+/** La grille du guide, en cours de construction : deux mots posés, le reste à trouver. */
+const EN_COURS = GUIDE_STEPS[3];
+
+const A_LA_MAIN = [
+  "Pars d'une grille vide, de la taille que tu veux, ou d'une mise en page du catalogue.",
+  "Place les cases définitions où tu veux : l'allure classique se prépare en un clic.",
+  "Clique un emplacement : les mots qui gardent les croisements valides te sont proposés, plus courts si tu veux.",
+  "Un tutoriel t'accompagne pas à pas sur ta première grille.",
+];
 
 /**
  * L'accueil : ce que Terminator fait, dans l'ordre où on s'en sert.
@@ -46,20 +58,27 @@ export function Landing() {
   return (
     <main className="container mx-auto px-4 py-12 md:py-16">
       <section className="mx-auto max-w-2xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Une grille de mots fléchés, générée pour toi</h1>
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+          Tes grilles de mots fléchés, générées ou faites à la main
+        </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          {site.name} génère ta grille. À toi ensuite de la modifier, de choisir tes mots et d&apos;écrire tes
-          définitions.
+          {site.name} génère une grille en quelques secondes, ou t&apos;accompagne pour la construire toi-même, case
+          par case. À toi ensuite de choisir tes mots et d&apos;écrire tes définitions.
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild size="lg">
             <Link href="/grid">Générer une grille</Link>
           </Button>
           <Button asChild size="lg" variant="outline">
+            <Link href="/grids/new">Créer à la main</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
             <Link href="/search">Chercher un mot</Link>
           </Button>
         </div>
-        <p className="mt-4 text-sm text-muted-foreground">Gratuit, sans compte, tout de suite.</p>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Gratuit. Générer et chercher se font sans compte ; créer à la main demande un compte gratuit.
+        </p>
       </section>
 
       {/* Une grille finie, produite par le moteur : c'est l'argument, autant le montrer */}
@@ -112,6 +131,39 @@ export function Landing() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* La création à la main : un outil à part entière, à côté de la génération et de la recherche */}
+      <section className="mt-16 grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="order-2 lg:order-1">
+          <h2 className="text-xl font-semibold">Ou construis-la toi-même</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Le plaisir de la fabrication, sans la gomme : tu choisis chaque mot, {site.name} t&apos;aide à les faire
+            tenir ensemble.
+          </p>
+          <ul className="mt-4 space-y-2 text-sm">
+            {A_LA_MAIN.map((point) => (
+              <li key={point} className="flex gap-2">
+                <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+            <Button asChild>
+              <Link href="/grids/new">Créer une grille à la main</Link>
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href="/creer-des-mots-fleches">Comment s&apos;y prendre : le guide</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="order-1 mx-auto w-full max-w-sm lg:order-2">
+          <GridSvg grid={toGrid(EN_COURS)} variant="edition" />
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Une grille en construction : deux mots posés, le reste à trouver.
+          </p>
+        </div>
       </section>
 
       {/* Ce qui accompagne la génération : les parties moins automatisées de la création d'une grille */}

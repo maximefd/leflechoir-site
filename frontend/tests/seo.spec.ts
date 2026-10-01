@@ -23,7 +23,7 @@ const PUBLIC_PAGES = [
   { path: "/terms", title: "Conditions d'utilisation | Le Fléchoir", canonical: `${SITE_URL}/terms` },
 ];
 
-const PRIVATE_PAGES = ["/admin", "/account", "/grids", "/grids/edit?id=1", "/dictionaries", "/login", "/register",
+const PRIVATE_PAGES = ["/admin", "/account", "/grids", "/grids/new", "/grids/edit?id=1", "/dictionaries", "/login", "/register",
   "/forgot-password", "/reset-password", "/verify-email"];
 
 for (const { path, title, canonical } of PUBLIC_PAGES) {

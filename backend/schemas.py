@@ -11,7 +11,8 @@ from typing import Annotated, Literal, TypeVar
 
 from email_validator import EmailNotValidError, validate_email
 from flask import request
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints, ValidationError, field_validator
+from pydantic import (BaseModel, ConfigDict, Field, StrictBool, StringConstraints, ValidationError, field_validator,
+                      model_validator)
 
 # Lettres françaises (avec accents et ligatures)
 LETTERS = "A-Za-zÀ-ÖØ-öø-ÿŒœÆæ"
@@ -107,6 +108,19 @@ class SuggestionRequest(ApiModel):
     source: Literal["search", "search_empty", "grid", "editor", "editor_unknown"]
 
 
+class AudienceRequest(ApiModel):
+    """Une page vue, ou un export PDF, signalé par le navigateur (ADR 0016, point 3, #130).
+
+    Tout est borné : un chemin sans paramètres, le nom d'hôte seul du référent, la langue du navigateur.
+    Rien ici ne désigne une personne.
+    """
+    kind: Literal["view", "pdf"]
+    path: Annotated[str, StringConstraints(min_length=1, max_length=100, pattern=r"^/[A-Za-z0-9/_.-]*$")]
+    referrer: Annotated[str, StringConstraints(max_length=100, pattern=r"^[A-Za-z0-9.-]*$")] = ""
+    lang: Annotated[str, StringConstraints(max_length=12, pattern=r"^[A-Za-z0-9-]*$")] = ""
+    visible_ms: Annotated[int, Field(ge=0, le=1_800_000)] = 0
+
+
 # --- Recherche et génération ---
 
 class SearchRequest(ApiModel):
@@ -172,6 +186,23 @@ class GridPayload(ApiModel):
     must_words: Annotated[list[GridWord], Field(max_length=50)] = Field(default_factory=list)
 
 
+class BlankGridRequest(ApiModel):
+    """Créer une grille à la main (roadmap, point 5B) : depuis un layout du catalogue, ou toute vide."""
+    name: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100, pattern=DICTIONARY_NAME_PATTERN)
+    ] | None = None
+    # L'un ou l'autre : un layout du catalogue (« 13x16-003 »), ou une taille libre de 4 à 20 cases
+    layout: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^\d{1,2}x\d{1,2}-\d{3}$")] | None = None
+    width: Annotated[int, Field(ge=4, le=20)] | None = None
+    height: Annotated[int, Field(ge=4, le=20)] | None = None
+
+    @model_validator(mode="after")
+    def one_source(self):
+        if (self.layout is None) == (self.width is None or self.height is None):
+            raise ValueError("donne soit un layout, soit une largeur et une hauteur")
+        return self
+
+
 class SaveGridRequest(ApiModel):
     """Conserver une grille produite. Sans nom, la route en compose un à partir du format et de la date."""
     name: Annotated[
@@ -231,6 +262,8 @@ class SlotRef(ApiModel):
     direction: Literal["across", "down"]
     # Garder les lettres déjà posées (on comble les trous) ou proposer de remplacer tout le mot
     keep_letters: StrictBool = True
+    # Proposer des mots plus courts que l'emplacement, suivis d'une case définition (roadmap 5B)
+    shorter: StrictBool = False
 
 
 class DifficultyRequest(ApiModel):

@@ -64,7 +64,7 @@ async function asAdmin(page: Page, baseURL: string | undefined, server: unknown 
 test("l'administrateur lit l'usage, les générations et les erreurs", async ({ page, baseURL }) => {
   await asAdmin(page, baseURL);
 
-  for (const name of ["Usage", "Générations", "Erreurs et refus"]) {
+  for (const name of ["Usage", "Audience", "Générations", "Erreurs et refus"]) {
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   }
   // Les seuils de l'ADR 0013, en toutes lettres : jamais la couleur seule
@@ -72,6 +72,11 @@ test("l'administrateur lit l'usage, les générations et les erreurs", async ({ 
   // L'évolution par jour : un graphique par mesure, résumé pour qui ne le voit pas
   await expect(page.getByRole("img", { name: /^Visiteurs\. \d/ })).toBeVisible();
   await expect(page.getByRole("img", { name: /^Générations\. .* grilles obtenues/ })).toBeVisible();
+  // L'audience de la balise : pages vues, sources dont les moteurs de réponse IA, langues des navigateurs
+  await expect(page.getByRole("img", { name: /^Pages vues\. \d/ })).toBeVisible();
+  await expect(page.getByRole("rowheader", { name: "Moteurs de réponse IA" })).toBeVisible();
+  await expect(page.getByRole("rowheader", { name: "chatgpt.com" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Pages les plus vues" }).getByRole("rowheader", { name: "/grid", exact: true })).toBeVisible();
   // Le parcours, de la visite à la grille conservée
   for (const step of ["Visites", "Recherche ou génération", "Grille obtenue", "Compte créé", "Grille conservée"]) {
     await expect(page.getByRole("listitem").filter({ hasText: step }).first()).toBeVisible();

@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { MonitoringInit } from "@/components/monitoring/monitoring-init";
+import { AudienceTracker } from "@/components/audience/audience-tracker";
 
 /** Tout ce qui vit dans le navigateur : cache des requêtes, session, notifications. La mise en page racine reste
  *  un composant serveur, pour porter les métadonnées communes (titres, adresse canonique). */
@@ -16,6 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       <MonitoringInit />
+      <AudienceTracker />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <div className="relative flex min-h-screen flex-col">

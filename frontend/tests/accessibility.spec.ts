@@ -15,6 +15,7 @@ const PAGES = [
   { path: "/grid", name: "génération" },
   { path: "/creer-des-mots-fleches", name: "guide de création" },
   { path: "/grids", name: "mes grilles" },
+  { path: "/grids/new", name: "créer une grille à la main" },
   { path: "/dictionaries", name: "dictionnaires" },
   { path: "/login", name: "connexion" },
   { path: "/register", name: "inscription" },

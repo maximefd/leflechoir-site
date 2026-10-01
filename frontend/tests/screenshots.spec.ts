@@ -33,7 +33,7 @@ test("page d'accueil", async ({ page }) => {
   await page.goto("/");
   await hideDevIndicator(page);
 
-  await expect(page.getByRole("heading", { name: "Une grille de mots fléchés, générée pour toi" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tes grilles de mots fléchés, générées ou faites à la main" })).toBeVisible();
 
   await page.screenshot({ path: path.join(IMAGES_DIR, "accueil.png") });
 });

@@ -5,6 +5,35 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Créer une grille à la main** (roadmap, point 5B, `/grids/new`) : depuis une mise en page du catalogue,
+  choisie dans une galerie, ou depuis une grille vide de 4 à 20 cases de côté où l'on place soi-même les cases
+  définitions. La grille s'ouvre dans l'éditeur ; un emplacement que rien ne contraint encore invite à se lancer
+  (« Lance-toi, écris ton premier mot ! »), les autres proposent les mots qui gardent les croisements valides.
+  Sans compte, on parcourt les mises en page, avec une invitation à créer un compte. Outil à part entière :
+  « Créer à la main » dans le menu du haut. Un tutoriel en étapes courtes, au-dessus de la grille (jamais
+  par-dessus), à chaque grille encore vide : placer d'un clic les cases définitions habituelles (une sur deux sur
+  la première ligne et la première colonne), écrire un premier mot, puis un mot qui le croise, remplir la grille ;
+  grille remplie, il propose de passer aux définitions et accompagne la première. Les étapes se valident d'elles-
+  mêmes (ou par « Suivant ») ; il se passe d'un clic, atténue le reste de l'écran pour guider l'œil, et l'encart
+  « Besoin d'aide ? » permet à tout moment de le revoir ou d'ouvrir le guide dans un nouvel onglet. Le
+  préremplissage reste proposé tant que la première ligne et la première colonne sont vides, et aucun
+  avertissement de convention ne s'affiche tant qu'aucune lettre n'est écrite. **« Plus court »** propose des mots
+  qui n'occupent que le début d'un emplacement : les poser met une case définition derrière eux, en un geste.
+  **L'accueil** présente la création à la main comme la troisième fonctionnalité majeure, avec la génération et
+  la recherche : titre, bouton d'entrée et section « Ou construis-la toi-même ». Sur une grille générée,
+  « Revoir le tutoriel » n'apparaît pas (le tutoriel est celui de la grille faite à la main).
+- **Mesure d'audience sans cookie : pages vues, temps passé, exports PDF** ([#130](https://github.com/maximefd/terminator-app/issues/130),
+  [ADR 0016](docs/adr/0016-mesure-d-usage-sans-cookie.md), Phase 8, lot 3a) :
+  - le navigateur signale la page qu'il quitte à `POST /api/audience` (chemin sans paramètres, nom d'hôte seul du
+    référent, langue principale du navigateur, temps visible), en `fetch` JSON avec `keepalive`, **sans cookie ni
+    identifiant** et jamais rattachée à un compte ; l'export d'une grille en PDF est compté de même ;
+  - **opposition** : un lien dans le pied de page et sur la page confidentialité (le refus est la seule chose notée
+    dans le navigateur, `localStorage`), et Global Privacy Control, honoré aussi par le serveur ; elle ne coupe que
+    cette balise. Les robots et les navigateurs pilotés sont écartés ;
+  - la rubrique « Audience » du poste de pilotage : pages vues et visiteurs, temps visible médian, pages les plus
+    vues, sources (accès direct, moteurs de recherche, **moteurs de réponse IA**), langues des navigateurs, exports PDF ;
+    `flask stats` en donne un résumé ; les chiffres de l'API ne changent pas ;
+  - page confidentialité, registre RGPD (traitement 12) et ADR 0016 mis à jour ; jeu de données fictives complété.
 - **Éditeur : déplacer les cases définitions** (roadmap, point 5A) : une case vidée peut devenir une case
   définition, une case définition peut redevenir une case lettre ; les mots et les flèches se recalculent, et
   l'annulation suit. Un changement qui sort des conventions (case qui n'annoncera aucune définition, lettre

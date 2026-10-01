@@ -508,6 +508,327 @@
    "p95": 5522
   }
  ],
+ "audience": {
+  "periods": [
+   {
+    "label": "Aujourd'hui",
+    "days": 1,
+    "views": 48,
+    "visitors": 25,
+    "median_visible_ms": 31648,
+    "pdf": 11
+   },
+   {
+    "label": "7 jours",
+    "days": 7,
+    "views": 530,
+    "visitors": 252,
+    "median_visible_ms": 31058,
+    "pdf": 62
+   },
+   {
+    "label": "30 jours",
+    "days": 30,
+    "views": 2062,
+    "visitors": 908,
+    "median_visible_ms": 30190,
+    "pdf": 194
+   }
+  ],
+  "pages": [
+   {
+    "path": "/",
+    "views": 610,
+    "median_visible_ms": 30921
+   },
+   {
+    "path": "/grid",
+    "views": 576,
+    "median_visible_ms": 27993
+   },
+   {
+    "path": "/search",
+    "views": 417,
+    "median_visible_ms": 32344
+   },
+   {
+    "path": "/creer-des-mots-fleches",
+    "views": 189,
+    "median_visible_ms": 25747
+   },
+   {
+    "path": "/grids",
+    "views": 99,
+    "median_visible_ms": 31583
+   },
+   {
+    "path": "/login",
+    "views": 83,
+    "median_visible_ms": 31242
+   },
+   {
+    "path": "/register",
+    "views": 45,
+    "median_visible_ms": 27293
+   },
+   {
+    "path": "/dictionaries",
+    "views": 25,
+    "median_visible_ms": 29128
+   },
+   {
+    "path": "/privacy",
+    "views": 18,
+    "median_visible_ms": 33780
+   }
+  ],
+  "source_kinds": {
+   "direct": 743,
+   "search": 226,
+   "ai": 72,
+   "other": 38
+  },
+  "sources": [
+   {
+    "host": "google.com",
+    "kind": "search",
+    "visits": 153
+   },
+   {
+    "host": "bing.com",
+    "kind": "search",
+    "visits": 37
+   },
+   {
+    "host": "chatgpt.com",
+    "kind": "ai",
+    "visits": 36
+   },
+   {
+    "host": "duckduckgo.com",
+    "kind": "search",
+    "visits": 25
+   },
+   {
+    "host": "perplexity.ai",
+    "kind": "ai",
+    "visits": 15
+   },
+   {
+    "host": "facebook.com",
+    "kind": "other",
+    "visits": 14
+   },
+   {
+    "host": "copilot.microsoft.com",
+    "kind": "ai",
+    "visits": 11
+   },
+   {
+    "host": "qwant.com",
+    "kind": "search",
+    "visits": 11
+   },
+   {
+    "host": "reddit.com",
+    "kind": "other",
+    "visits": 11
+   },
+   {
+    "host": "claude.ai",
+    "kind": "ai",
+    "visits": 10
+   },
+   {
+    "host": "mots-fleches-forum.example",
+    "kind": "other",
+    "visits": 9
+   },
+   {
+    "host": "lemonde.fr",
+    "kind": "other",
+    "visits": 4
+   }
+  ],
+  "langs": [
+   {
+    "lang": "fr",
+    "views": 1787
+   },
+   {
+    "lang": "en",
+    "views": 175
+   },
+   {
+    "lang": "de",
+    "views": 48
+   },
+   {
+    "lang": "es",
+    "views": 20
+   },
+   {
+    "lang": "nl",
+    "views": 17
+   },
+   {
+    "lang": "?",
+    "views": 15
+   }
+  ],
+  "daily": [
+   {
+    "day": "2026-09-02",
+    "views": 53,
+    "visitors": 21
+   },
+   {
+    "day": "2026-09-03",
+    "views": 50,
+    "visitors": 23
+   },
+   {
+    "day": "2026-09-04",
+    "views": 22,
+    "visitors": 16
+   },
+   {
+    "day": "2026-09-05",
+    "views": 70,
+    "visitors": 33
+   },
+   {
+    "day": "2026-09-06",
+    "views": 72,
+    "visitors": 33
+   },
+   {
+    "day": "2026-09-07",
+    "views": 45,
+    "visitors": 20
+   },
+   {
+    "day": "2026-09-08",
+    "views": 60,
+    "visitors": 29
+   },
+   {
+    "day": "2026-09-09",
+    "views": 63,
+    "visitors": 19
+   },
+   {
+    "day": "2026-09-10",
+    "views": 54,
+    "visitors": 21
+   },
+   {
+    "day": "2026-09-11",
+    "views": 51,
+    "visitors": 19
+   },
+   {
+    "day": "2026-09-12",
+    "views": 84,
+    "visitors": 31
+   },
+   {
+    "day": "2026-09-13",
+    "views": 50,
+    "visitors": 25
+   },
+   {
+    "day": "2026-09-14",
+    "views": 63,
+    "visitors": 24
+   },
+   {
+    "day": "2026-09-15",
+    "views": 60,
+    "visitors": 27
+   },
+   {
+    "day": "2026-09-16",
+    "views": 67,
+    "visitors": 29
+   },
+   {
+    "day": "2026-09-17",
+    "views": 126,
+    "visitors": 38
+   },
+   {
+    "day": "2026-09-18",
+    "views": 69,
+    "visitors": 33
+   },
+   {
+    "day": "2026-09-19",
+    "views": 100,
+    "visitors": 44
+   },
+   {
+    "day": "2026-09-20",
+    "views": 74,
+    "visitors": 44
+   },
+   {
+    "day": "2026-09-21",
+    "views": 68,
+    "visitors": 33
+   },
+   {
+    "day": "2026-09-22",
+    "views": 89,
+    "visitors": 36
+   },
+   {
+    "day": "2026-09-23",
+    "views": 58,
+    "visitors": 26
+   },
+   {
+    "day": "2026-09-24",
+    "views": 57,
+    "visitors": 29
+   },
+   {
+    "day": "2026-09-25",
+    "views": 71,
+    "visitors": 29
+   },
+   {
+    "day": "2026-09-26",
+    "views": 98,
+    "visitors": 47
+   },
+   {
+    "day": "2026-09-27",
+    "views": 73,
+    "visitors": 45
+   },
+   {
+    "day": "2026-09-28",
+    "views": 61,
+    "visitors": 25
+   },
+   {
+    "day": "2026-09-29",
+    "views": 89,
+    "visitors": 39
+   },
+   {
+    "day": "2026-09-30",
+    "views": 72,
+    "visitors": 32
+   },
+   {
+    "day": "2026-10-01",
+    "views": 48,
+    "visitors": 25
+   }
+  ]
+ },
  "outcomes": [
   {
    "outcome": "grid",

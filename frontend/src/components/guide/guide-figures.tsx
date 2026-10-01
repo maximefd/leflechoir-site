@@ -9,8 +9,8 @@ import { GUIDE_STEPS, type GuideStep } from "@/components/guide/guide-steps";
  * ici a l'allure de ce que le site imprime.
  */
 
-/** Une étape en grille : les cases hors du rectangle (« - ») ne sont pas dessinées. */
-function toGrid(step: GuideStep): GridData {
+/** Une étape en grille : les cases hors du rectangle (« - ») ne sont pas dessinées. Sert aussi à l'accueil. */
+export function toGrid(step: GuideStep): GridData {
   const cells = step.rows.flatMap((row, y) =>
     [...row].flatMap((char, x) =>
       char === "-" ? [] : [{ x, y, char: char === "#" || char === "." ? "" : char, is_black: char === "#" }],

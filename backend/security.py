@@ -58,6 +58,7 @@ RATE_LIMITED_ENDPOINTS = {
     "auth.refresh": "RATELIMIT_REFRESH",
     "main.search_words": "RATELIMIT_SEARCH",
     "suggestions.suggest": "RATELIMIT_SUGGEST",
+    "audience.beacon": "RATELIMIT_AUDIENCE",
     "main.grid_difficulty": "RATELIMIT_DIFFICULTY",
     "main.generate_grid": "RATELIMIT_GENERATE",
 }

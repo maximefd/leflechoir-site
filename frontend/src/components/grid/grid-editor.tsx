@@ -36,6 +36,10 @@ import { useAuth } from "@/contexts/auth-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { GridSvg, clueKey, wrapDefinition, type Clue } from "@/components/grid/grid-svg";
 import { LetterPanel, WordReview, type PlacedWord } from "@/components/grid/letter-panel";
+import { HandTutorial, type TutorialStep } from "@/components/grid/hand-tutorial";
+
+/** Les étapes qu'on peut passer (« Je les place moi-même », « Suivant ») et celle qui les suit. */
+const NEXT_STEP: Partial<Record<TutorialStep, TutorialStep>> = { 1: 2, 2: 3, 3: 4, 6: 7 };
 import type { GridData } from "@/components/grid/grid-display";
 import { exportJson, exportPdf } from "@/lib/grid-export";
 
@@ -225,8 +229,9 @@ export function GridEditor({ gridId }: { gridId: number }) {
     return list;
   }, [content]);
 
+  // Le mot choisi peut disparaître quand l'auteur déplace une case définition : on repart du premier
   useEffect(() => {
-    if (!selected && clues.length > 0) setSelected(clueKey(clues[0]));
+    if (clues.length > 0 && !clues.some((clue) => clueKey(clue) === selected)) setSelected(clueKey(clues[0]));
   }, [clues, selected]);
 
   // Sur une grande grille, le mot suivant tombe souvent hors écran : on le ramène sans sautiller
@@ -262,6 +267,80 @@ export function GridEditor({ gridId }: { gridId: number }) {
     },
     [content],
   );
+
+  // Grille vide faite à la main : l'allure classique reste proposée tant que la première ligne et la première
+  // colonne n'ont ni lettre ni toutes leurs cases définitions (l'auteur peut changer d'avis)
+  const classicBlocks: BlockEdit[] = useMemo(
+    () =>
+      (content?.cells ?? [])
+        .filter((cell) => (cell.y === 0 && cell.x % 2 === 0) || (cell.x === 0 && cell.y % 2 === 0))
+        .map((cell) => ({ x: cell.x, y: cell.y, is_black: true })),
+    [content],
+  );
+  const canPrefill = Boolean(
+    content?.layout === "manuel" &&
+      classicBlocks.length > 0 &&
+      (content?.cells ?? []).every((cell) => (cell.x > 0 && cell.y > 0) || !cell.char) &&
+      classicBlocks.some(({ x, y }) => !content?.cells.find((cell) => cell.x === x && cell.y === y)?.is_black),
+  );
+  // Tutoriel de la grille faite à la main : à chaque grille encore vide, une étape à la fois, jusqu'aux
+  // définitions. `guided` reste vrai tant que l'auteur ne l'a pas passé : l'étape suivante revient d'elle-même.
+  const [tutorial, setTutorial] = useState<TutorialStep | null>(null);
+  const [guided, setGuided] = useState(false);
+  const tutorialFor = useRef<number | null>(null);
+  const hasDefinitions = Boolean(content?.cells.some((cell) => cell.is_black));
+  const isEmptyGrid = Boolean(content && !content.cells.some((cell) => cell.char));
+  const isFullGrid = Boolean(
+    content && !isEmptyGrid && content.cells.every((cell) => cell.is_black || cell.char),
+  );
+  const isHandMade = content?.layout === "manuel" || content?.seed === null;
+  useEffect(() => {
+    if (!content || tutorialFor.current === gridId) return;
+    tutorialFor.current = gridId;
+    if (isHandMade && isEmptyGrid) {
+      setGuided(true);
+      setTutorial(hasDefinitions ? 2 : 1);
+    }
+  }, [content, gridId, isHandMade, isEmptyGrid, hasDefinitions]);
+  // Le parcours guidé avance aussi selon ce que fait l'auteur, par n'importe quel chemin (onglet, bouton du
+  // bas, bouton du tutoriel) ; jamais en arrière : `reached` retient l'étape la plus avancée déjà montrée
+  const reached = useRef(0);
+  useEffect(() => {
+    if (tutorial !== null && tutorial > reached.current) reached.current = tutorial;
+  }, [tutorial]);
+  const allDefined = (content?.clues ?? []).length > 0
+    && (content?.clues ?? []).every((clue) => (definitions ?? {})[clueKey(clue)]);
+  useEffect(() => {
+    if (!guided) return;
+    const show = (step: TutorialStep) => {
+      if (step > reached.current) setTutorial(step);
+    };
+    if (mode === "lettres" && isFullGrid) show(5);
+    if (mode === "definitions" && !allDefined) show(6);
+    if (mode === "definitions" && allDefined) show(8);
+  }, [guided, isFullGrid, mode, allDefined]);
+  // Les étapes 2, 3 et 6 avancent d'elles-mêmes dès qu'un mot ou une définition de plus est écrit pendant
+  // l'étape : rejouer le tutoriel sur une grille commencée montre donc chaque étape
+  const completeWords = (content?.words ?? []).filter((word) => !word.text.includes("?")).length;
+  const writtenDefinitions = Object.values(definitions ?? {}).filter(Boolean).length;
+  const progressAtStep = useRef({ words: 0, definitions: 0 });
+  useEffect(() => {
+    progressAtStep.current = { words: completeWords, definitions: writtenDefinitions };
+    // Seulement au changement d'étape : le compte de départ est celui du moment où elle s'ouvre
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tutorial]);
+  useEffect(() => {
+    if ((tutorial === 2 || tutorial === 3) && completeWords > progressAtStep.current.words) {
+      setTutorial(tutorial === 2 ? 3 : 4);
+    }
+    if (tutorial === 6 && writtenDefinitions > progressAtStep.current.definitions) setTutorial(7);
+  }, [tutorial, completeWords, writtenDefinitions]);
+  const replayTutorial = () => {
+    reached.current = 0;
+    setGuided(true);
+    setTutorial(mode === "lettres" ? (hasDefinitions ? 2 : 1) : 6);
+    if (mode === "apercu") setMode("definitions");
+  };
 
   const currentWord = wordAt(cursor, direction);
   const cursorCell = cursor ? content?.cells.find((cell) => cell.x === cursor.x && cell.y === cursor.y) ?? null : null;
@@ -332,6 +411,11 @@ export function GridEditor({ gridId }: { gridId: number }) {
    */
   const toggleBlock = async (block: BlockEdit) => {
     const edit: GridEdit = { blocks: [block] };
+    // Tant qu'aucune lettre n'est écrite, toute case définition est « hors règles » : on ne dérange pas
+    if (isEmptyGrid) {
+      void writeEdit(edit);
+      return;
+    }
     try {
       const preview = await apiFetch(`/api/grids/${gridId}`, { method: "PATCH", body: { ...edit, preview: true } });
       const before = content?.layout_warnings ?? [];
@@ -470,13 +554,14 @@ export function GridEditor({ gridId }: { gridId: number }) {
 
   const replaceWord = (word: string) => {
     if (!currentWord) return;
-    void writeLetters(
-      [...word].map((char, index) => ({
-        x: currentWord.direction === "across" ? currentWord.x + index : currentWord.x,
-        y: currentWord.direction === "down" ? currentWord.y + index : currentWord.y,
-        char,
-      })),
-    );
+    const at = (index: number) => ({
+      x: currentWord.direction === "across" ? currentWord.x + index : currentWord.x,
+      y: currentWord.direction === "down" ? currentWord.y + index : currentWord.y,
+    });
+    const cells = [...word].map((char, index) => ({ ...at(index), char }));
+    // Un mot plus court que l'emplacement est suivi d'une case définition : un seul geste, une seule annulation
+    const length = currentWord.length ?? currentWord.text.length;
+    void writeEdit(word.length < length ? { blocks: [{ ...at(word.length), is_black: true }], cells } : { cells });
   };
 
   if (isSessionLoading || (isAuthenticated && isLoading)) {
@@ -733,12 +818,50 @@ export function GridEditor({ gridId }: { gridId: number }) {
             </ol>
           </nav>
 
+          {/* Le tutoriel, au-dessus de la grille et non par-dessus : toutes les cases restent à portée */}
+          {tutorial !== null && mode !== "apercu" && (
+            <HandTutorial
+              step={tutorial}
+              onPrefill={() => {
+                void writeEdit({ blocks: classicBlocks });
+                setTutorial(2);
+              }}
+              onNext={() => setTutorial((step) => (step === null ? null : NEXT_STEP[step] ?? step))}
+              onDefinitions={() => {
+                setMode("definitions");
+                setTutorial(6);
+              }}
+              onLayout={() => {
+                setMode("apercu");
+                setTutorial(null);
+              }}
+              onDone={() => setTutorial(null)}
+              onSkip={() => {
+                setTutorial(null);
+                setGuided(false);
+              }}
+            />
+          )}
+
+          {/* Grille vide créée à la main : l'allure classique, en un clic (roadmap 5B) */}
+          {mode === "lettres" && canPrefill && tutorial !== 1 && (
+            <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-md border bg-secondary/20 p-2 text-xs">
+              <span>
+                Placer les cases définitions habituelles : une sur deux sur la première ligne et la première
+                colonne ?
+              </span>
+              <Button size="sm" onClick={() => void writeEdit({ blocks: classicBlocks })}>
+                Préremplir
+              </Button>
+            </div>
+          )}
+
           {/* Le mode lettres écoute le clavier : c'est la grille elle-même qui prend le focus */}
           <div
             ref={lettersRef}
             tabIndex={mode === "lettres" ? 0 : -1}
             onKeyDown={mode === "lettres" ? onLetterKey : undefined}
-            className="flex min-h-0 flex-1 items-start justify-center overflow-hidden rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label={mode === "lettres" ? "Grille, correction des lettres" : undefined}
           >
             {mode === "apercu" ? (
@@ -857,7 +980,7 @@ export function GridEditor({ gridId }: { gridId: number }) {
           )}
 
           {/* Signalé, jamais refusé : l'auteur fait la grille qu'il veut */}
-          {mode === "lettres" && layoutWarnings.length > 0 && (
+          {mode === "lettres" && layoutWarnings.length > 0 && !isEmptyGrid && (
             <div role="status" className="mt-2 shrink-0 rounded-md border border-amber-500/50 p-2 text-xs">
               <p className="font-medium">Pas conventionnel :</p>
               <ul className="list-disc pl-4 text-muted-foreground">
@@ -886,7 +1009,29 @@ export function GridEditor({ gridId }: { gridId: number }) {
           </div>
         </div>
 
-        <div className="space-y-4 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1">
+        {/* Pendant le tutoriel, le panneau s'efface, sauf quand l'étape y renvoie (suggestions, définition) */}
+        <div
+          className={`space-y-4 transition-opacity lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1 ${
+            tutorial !== null && [1, 2, 4, 5].includes(tutorial) ? "opacity-40" : ""
+          } ${tutorial === 3 || tutorial === 6 ? "rounded-lg ring-2 ring-primary" : ""}`}
+        >
+          {/* Toujours à portée : revoir le tutoriel ou lire le guide, quand on ne sait plus comment s'y prendre */}
+          {mode !== "apercu" && (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 p-2 text-xs">
+              <span className="font-medium">Besoin d&apos;aide ?</span>
+              {/* Le tutoriel est celui de la grille faite à la main : sans objet sur une grille générée */}
+              {isHandMade && (
+                <Button variant="outline" size="sm" onClick={replayTutorial}>
+                  Revoir le tutoriel
+                </Button>
+              )}
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/creer-des-mots-fleches" target="_blank" rel="noopener">
+                  Lire le guide
+                </Link>
+              </Button>
+            </div>
+          )}
           {mode === "lettres" && (
             <>
               <LetterPanel

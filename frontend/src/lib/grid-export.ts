@@ -3,6 +3,7 @@ import { svg2pdf } from "svg2pdf.js";
 
 import { GRID_FONT } from "@/components/grid/grid-svg";
 import { site } from "@/config/site";
+import { trackPdfExport } from "@/lib/audience";
 
 /**
  * Export d'une grille : PDF vectoriel et fichier de travail.
@@ -94,6 +95,7 @@ export async function exportPdf(name: string, blank: SVGSVGElement, solution: SV
     await drawPage(pdf, solution, `${name} — solution`);
   }
   pdf.save(safeFilename(name, "pdf"));
+  trackPdfExport();
 }
 
 /** Le fichier de travail : la grille, ses définitions, et de quoi savoir d'où elle vient. */

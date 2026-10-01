@@ -20,6 +20,7 @@ from stats import init_stats_cli
 from admin import admin_bp, init_admin_cli
 from alerts import init_system_cli
 from suggestions import init_suggestions
+from audience import audience_bp
 
 DEV_SECRET = 'default-secret-for-dev'
 # Nom public du site (ADR 0017) : Terminator est le nom du moteur, jamais montré aux visiteurs
@@ -61,6 +62,8 @@ DEFAULT_SETTINGS = dict(
     RATELIMIT_SEARCH='120 per minute',
     # Suggestions de mots : aucune limite pour un humain, un plafond anti-robot (roadmap 1e)
     RATELIMIT_SUGGEST='60 per minute',
+    # La balise d'audience : une par page quittée, donc bien moins que le rythme d'un lecteur (#130)
+    RATELIMIT_AUDIENCE='120 per minute',
     RATELIMIT_GENERATE='10 per minute',
     # Appelé à chaque frappe de l'auteur, et sans génération : plafond de la recherche, pas de la génération
     RATELIMIT_DIFFICULTY='120 per minute',
@@ -299,6 +302,7 @@ def create_app(test_config=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(audience_bp)
     init_suggestions(app)
     init_rate_limiting(app)
     init_usage(app)

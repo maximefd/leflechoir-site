@@ -94,3 +94,13 @@
   - **Plausible** : payant.
   - **Umami auto-hébergé** : un service de plus sur 4 Go, qui ne voit pas non plus les événements serveur.
   - **Grafana et Prometheus** : trop lourds pour le VPS.
+
+## Mise à jour du 01/10/2026 : la balise (#130)
+
+La balise du point 3 est faite (`backend/audience.py`, `frontend/src/lib/audience.ts`). Trois précisions :
+
+- **L'opposition est retenue dans le navigateur.** La page confidentialité disait « rien n'est écrit dans ton navigateur » ; un refus exprimé par un lien doit pourtant survivre au rechargement. Le refus (`localStorage`, clé `mesure` = `non`) est donc la seule chose notée, et la page le dit : « Le site ne dépose rien dans ton navigateur pour te mesurer. Si tu refuses, ton refus y est noté pour ne pas te le redemander, et rien d'autre. » Global Privacy Control vaut refus, sans rien à écrire.
+- **L'opposition ne coupe que la balise** (pages vues, temps passé, exports PDF), pas la mesure côté serveur des recherches, des générations et des erreurs : couper celle-ci fausserait les seuils de l'ADR 0013. La page le dit clairement.
+- **Le référent n'est gardé que par son nom d'hôte** : l'adresse complète d'un référent peut contenir une recherche ou un identifiant. La langue du navigateur n'est gardée que par sa langue principale (« fr »).
+
+Un événement `page` de plus dans `usage_event`, avec les mêmes durées de conservation (13 mois). La balise ne part qu'à la sortie de la page (une ligne par page vue), sans cookie (`credentials: "omit"`), et n'est jamais rattachée à un compte. Le poste de pilotage la montre dans sa rubrique « Audience », à part des chiffres de l'API.

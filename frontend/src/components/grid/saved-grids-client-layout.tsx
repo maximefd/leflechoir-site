@@ -110,6 +110,11 @@ export function SavedGridsClientLayout() {
           Les grilles que tu as conservées, telles qu&apos;elles ont été produites — et telles que
           tu les as corrigées depuis.
         </p>
+        <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/grids/new">Créer une grille à la main</Link>
+          </Button>
+        </div>
       </div>
 
       {isSessionLoading || (isAuthenticated && isLoading) ? (

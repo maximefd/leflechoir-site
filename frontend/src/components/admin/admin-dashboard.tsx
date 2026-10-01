@@ -66,9 +66,23 @@ type Outcomes = {
   other: number;
 };
 
+/** La balise d'audience du navigateur (backend/audience.py) : des événements à part de ceux de l'API. */
+type AudiencePeriod = { label: string; days: number; views: number; visitors: number; median_visible_ms: number | null; pdf: number };
+type Audience = {
+  periods: AudiencePeriod[];
+  pages: { path: string; views: number; median_visible_ms: number | null }[];
+  source_kinds: Record<"direct" | "search" | "ai" | "other", number>;
+  sources: { host: string; kind: "direct" | "search" | "ai" | "other"; visits: number }[];
+  langs: { lang: string; views: number }[];
+  daily: { day: string; views: number; visitors: number }[];
+};
+
+const SOURCE_KIND_LABELS = { direct: "Accès direct", search: "Moteurs de recherche", ai: "Moteurs de réponse IA", other: "Autres sites" } as const;
+
 type AdminStats = {
   now: string;
   periods: Period[];
+  audience: Audience;
   thresholds: {
     p95_ms: number | null;
     p95_limit_ms: number;
@@ -350,6 +364,137 @@ function funnelSteps(funnel: Funnel) {
   ];
 }
 
+function AudienceGroup({ audience }: { audience: Audience }) {
+  const days = audience.daily.map((day) => day.day);
+  const month = audience.periods.find((period) => period.days === 30);
+  const kinds = Object.keys(SOURCE_KIND_LABELS) as (keyof typeof SOURCE_KIND_LABELS)[];
+  const visits = kinds.reduce((total, kind) => total + audience.source_kinds[kind], 0);
+
+  return (
+    <Group id="audience" title="Audience">
+      <p className="text-sm text-muted-foreground">
+        Mesurée par le navigateur (pages vues, temps visible, sources, langues) ; les visiteurs qui refusent d&apos;être
+        comptés, et ceux dont le navigateur envoie Global Privacy Control, n&apos;y figurent pas : ces chiffres
+        sous-estiment la fréquentation. Le temps visible ne compte pas les onglets masqués.
+      </p>
+      <Section title="Chiffres" description="Aujourd'hui depuis minuit UTC, puis les 7 et 30 derniers jours.">
+        <Scroll label="Audience par période">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-muted-foreground">
+                <th className="py-2 pr-4 font-medium" scope="col"><span className="sr-only">Mesure</span></th>
+                {audience.periods.map((period) => (
+                  <th key={period.label} className="py-2 pl-4 text-right font-medium" scope="col">{period.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { label: "Pages vues", value: (p: AudiencePeriod) => number.format(p.views) },
+                { label: "Visiteurs (somme par jour)", value: (p: AudiencePeriod) => number.format(p.visitors) },
+                { label: "Temps visible médian par page", value: (p: AudiencePeriod) => seconds(p.median_visible_ms) },
+                { label: "Exports PDF", value: (p: AudiencePeriod) => number.format(p.pdf) },
+              ].map((row) => (
+                <tr key={row.label} className="border-b last:border-0">
+                  <th scope="row" className="py-1.5 pr-4 text-left font-normal">{row.label}</th>
+                  {audience.periods.map((period) => (
+                    <td key={period.label} className="py-1.5 pl-4 text-right tabular-nums">{row.value(period)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Scroll>
+      </Section>
+
+      <Section title="Évolution par jour" description="Les 30 derniers jours (UTC).">
+        <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+          <DailyColumns title="Pages vues" days={days}
+            summary={`${number.format(month?.views ?? 0)} pages vues en 30 jours.`}
+            series={[{ label: "Pages vues", color: "blue", values: audience.daily.map((day) => day.views) }]} />
+          <DailyColumns title="Visiteurs de la balise" days={days}
+            summary={`${number.format(month?.visitors ?? 0)} visiteurs d'un jour en 30 jours.`}
+            series={[{ label: "Visiteurs", color: "blue", values: audience.daily.map((day) => day.visitors) }]} />
+        </div>
+      </Section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Section title="Pages les plus vues" description="30 jours.">
+          {audience.pages.length === 0 ? <Empty /> : (
+            <Scroll label="Pages les plus vues">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th scope="col" className="py-2 pr-4 font-medium">Page</th>
+                    <th scope="col" className="py-2 pl-4 text-right font-medium">Vues</th>
+                    <th scope="col" className="py-2 pl-4 text-right font-medium">Temps visible médian</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {audience.pages.map((row) => (
+                    <tr key={row.path} className="border-b last:border-0 tabular-nums">
+                      <th scope="row" className="py-1.5 pr-4 text-left font-normal">{row.path}</th>
+                      <td className="py-1.5 pl-4 text-right">{number.format(row.views)}</td>
+                      <td className="py-1.5 pl-4 text-right">{seconds(row.median_visible_ms)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Scroll>
+          )}
+        </Section>
+
+        <Section title="D'où viennent les visites" description="30 jours, en visiteurs d'un jour par origine. Le nom d'hôte seul est gardé.">
+          {visits === 0 ? <Empty /> : (
+            <div className="space-y-4">
+              <table className="w-full text-sm">
+                <tbody>
+                  {kinds.map((kind) => (
+                    <tr key={kind} className="border-b last:border-0 tabular-nums">
+                      <th scope="row" className="py-1.5 pr-4 text-left font-normal">{SOURCE_KIND_LABELS[kind]}</th>
+                      <td className="py-1.5 pl-4 text-right">{number.format(audience.source_kinds[kind])}</td>
+                      <td className="py-1.5 pl-4 text-right text-muted-foreground">{rate(audience.source_kinds[kind], visits)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {audience.sources.length > 0 && (
+                <table className="w-full text-sm">
+                  <caption className="pb-1 text-left text-xs text-muted-foreground">Sites d&apos;origine les plus fréquents</caption>
+                  <tbody>
+                    {audience.sources.map((row) => (
+                      <tr key={row.host} className="border-b last:border-0 tabular-nums">
+                        <th scope="row" className="py-1.5 pr-4 text-left font-normal">{row.host}</th>
+                        <td className="py-1.5 pl-4 text-muted-foreground">{SOURCE_KIND_LABELS[row.kind]}</td>
+                        <td className="py-1.5 pl-4 text-right">{number.format(row.visits)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </Section>
+      </div>
+
+      <Section title="Langues des navigateurs" description="30 jours, en pages vues. Éclaire la Phase 10 (autres langues).">
+        {audience.langs.length === 0 ? <Empty /> : (
+          <table className="w-full text-sm">
+            <tbody>
+              {audience.langs.map((row) => (
+                <tr key={row.lang} className="border-b last:border-0 tabular-nums">
+                  <th scope="row" className="py-1.5 pr-4 text-left font-normal">{row.lang === "?" ? "Inconnue" : row.lang}</th>
+                  <td className="py-1.5 pl-4 text-right">{number.format(row.views)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Section>
+    </Group>
+  );
+}
+
 function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggestions?: Suggestions; system?: SystemState }) {
   const { thresholds, daily } = stats;
   // Le titre statique est celui de la page 404 (app/admin/page.tsx) : le vrai n'apparaît qu'ici
@@ -427,7 +572,7 @@ function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggesti
             )}
           </Section>
 
-          <Section title="Pays" description="30 jours (CF-IPCountry). Sources et langues des navigateurs : pas encore mesurées.">
+          <Section title="Pays" description="30 jours (CF-IPCountry). Sources et langues des navigateurs : voir « Audience ».">
             {stats.countries.length === 0 ? <Empty /> : (
               <table className="w-full text-sm">
                 <thead>
@@ -451,6 +596,8 @@ function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggesti
           </Section>
         </div>
       </Group>
+
+      <AudienceGroup audience={stats.audience} />
 
       <Group id="generations" title="Générations">
         <Section title="Formats et issues"

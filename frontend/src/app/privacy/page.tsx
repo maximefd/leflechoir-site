@@ -1,5 +1,6 @@
 import { type Metadata } from "next";
 import Link from "next/link";
+import { AudienceChoice } from "@/components/audience/audience-choice";
 import { linkClass, Section } from "@/components/legal/section";
 import { site } from "@/config/site";
 import { publicPage } from "@/lib/seo";
@@ -36,13 +37,13 @@ export default function PrivacyPage() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <h1 className="text-3xl font-bold">Confidentialité</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 25 septembre 2026</p>
+      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 1er octobre 2026</p>
 
       <div className="mt-8 space-y-8 text-muted-foreground">
         <p className="rounded-lg border bg-secondary/20 p-4 text-foreground">
           {site.name} conserve ton adresse e-mail, ton mot de passe haché, tes dictionnaires et tes grilles, si
           tu crées un compte. Pour savoir ce qui sert et ce qui casse, le serveur compte aussi les recherches, les
-          générations et les erreurs, sans cookie et sans garder ton adresse IP. Pas de publicité, aucun cookie en
+          générations, les erreurs et les pages vues, sans cookie et sans garder ton adresse IP. Pas de publicité, aucun cookie en
           dehors de ceux de ta session, et aucune donnée vendue ni cédée.
         </p>
 
@@ -141,7 +142,7 @@ export default function PrivacyPage() {
             <strong className="text-foreground">empreinte du jour</strong> : un code calculé à partir de ton adresse
             IP et de ton navigateur avec une clé secrète tirée au hasard chaque jour, et détruite le lendemain. Elle
             compte les visiteurs d&apos;une journée sans permettre de te reconnaître d&apos;un jour à l&apos;autre.
-            Ton adresse IP n&apos;est pas enregistrée, et rien n&apos;est écrit dans ton navigateur.
+            Ton adresse IP n&apos;est pas enregistrée.
           </p>
           <p>
             Ces faits ne servent qu&apos;aux statistiques du site (intérêt légitime, RGPD art. 6.1.f). Ils sont
@@ -149,6 +150,38 @@ export default function PrivacyPage() {
             lui. Pour t&apos;y opposer, écris à l&apos;adresse de contact : les faits liés à ton compte seront
             effacés ; les autres ne permettent pas de te retrouver.
           </p>
+        </Section>
+
+        <Section id="audience" title="Les pages vues, sans cookie">
+          <p>
+            Pour savoir quelles pages sont lues, combien de temps et d&apos;où viennent les visiteurs, le navigateur
+            signale chaque page que tu quittes. Sont envoyés :
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li><strong className="text-foreground">la page</strong>, sans ce qui suit le point d&apos;interrogation de son adresse ;</li>
+            <li>
+              <strong className="text-foreground">le site d&apos;où tu viens</strong>, son nom seul (par exemple
+              « www.google.com »), jamais l&apos;adresse complète, qui peut contenir une recherche ;
+            </li>
+            <li><strong className="text-foreground">la langue de ton navigateur</strong> (« fr », « en »…) ;</li>
+            <li>
+              <strong className="text-foreground">le temps pendant lequel la page est restée visible</strong>, et le
+              fait d&apos;avoir exporté une grille en PDF.
+            </li>
+          </ul>
+          <p>
+            Même connecté, rien ne rattache ces pages vues à ton compte : la balise ne porte aucun cookie ni
+            identifiant, seulement l&apos;empreinte du jour décrite plus haut. Ton adresse IP n&apos;est pas
+            enregistrée. Ces données sont gardées 13 mois, comme les autres faits de mesure (intérêt légitime, RGPD
+            art. 6.1.f), et ne servent qu&apos;à améliorer le site : ni publicité, ni profil, ni recoupement.
+          </p>
+          <p>
+            Le site ne dépose rien dans ton navigateur pour te mesurer. Si tu refuses, ton refus y est noté pour ne
+            pas te le redemander, et rien d&apos;autre. Il ne vaut que pour ces pages vues, pas pour le comptage des
+            recherches et des générations décrit plus haut. Un navigateur qui envoie « Global Privacy Control » est
+            considéré comme ayant refusé.
+          </p>
+          <AudienceChoice />
         </Section>
 
         <Section title="Si tu écris à l'adresse de contact">

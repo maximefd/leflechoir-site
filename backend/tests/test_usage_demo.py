@@ -46,7 +46,7 @@ def test_one_command_fills_the_dashboard(test_app, runner):
     assert "événements fictifs sur 42 jours" in result.output
     events = UsageEvent.query.all()
     assert len(events) > 1000
-    assert {e.kind for e in events} == {"generation", "search", "account", "grid", "error"}
+    assert {e.kind for e in events} == {"generation", "search", "account", "grid", "error", "page"}
     outcomes = {e.outcome for e in events if e.kind == "generation"}
     assert {"grid", "timeout", "busy_server", "must_words", "must_words_unplaced", "rate_limited",
             "invalid_request"} <= outcomes

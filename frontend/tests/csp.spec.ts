@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
  * et garde 'unsafe-inline'. Sur le serveur de dev, ces tests sont ignorés.
  */
 const PAGES = ["/", "/admin", "/search", "/grid", "/grids", "/dictionaries", "/login", "/register", "/account", "/contact", "/privacy", "/terms",
-  "/legal", "/creer-des-mots-fleches", "/forgot-password", "/grids/edit?id=1", "/page-inexistante"];
+  "/legal", "/creer-des-mots-fleches", "/forgot-password", "/grids/new", "/grids/edit?id=1", "/page-inexistante"];
 
 for (const path of PAGES) {
   test(`${path} : ses scripts passent, et rien d'autre`, async ({ page }) => {

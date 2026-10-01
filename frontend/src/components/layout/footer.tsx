@@ -30,6 +30,12 @@ export function Footer() {
           </Link>
         </nav>
       </div>
+      <p className="container mx-auto px-4 pb-4 text-center text-xs text-muted-foreground">
+        Le site compte les pages vues, sans cookie ni identifiant.{" "}
+        <Link href="/privacy#audience" className="underline underline-offset-2 hover:text-primary">
+          Tu peux refuser d&apos;être compté.
+        </Link>
+      </p>
     </footer>
   );
 }

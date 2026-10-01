@@ -48,8 +48,10 @@ export function LetterPanel({
 }) {
   const [suggestions, setSuggestions] = useState<Suggestions | null>(null);
   const [isLoading, setLoading] = useState(false);
-  // Par défaut on comble les trous : les lettres laissées en place sont des contraintes voulues
-  const [keepLetters, setKeepLetters] = useState(true);
+  // Par défaut on comble les trous : les lettres laissées en place sont des contraintes voulues.
+  // « Plus court » propose des mots qui laissent la place à une case définition derrière eux (roadmap 5B).
+  const [variant, setVariant] = useState<"combler" | "remplacer" | "court">("combler");
+  const keepLetters = variant !== "remplacer";
 
   useEffect(() => {
     if (!word) {
@@ -60,7 +62,7 @@ export function LetterPanel({
     setLoading(true);
     apiFetch(`/api/grids/${gridId}/suggestions`, {
       method: "POST",
-      body: { x: word.x, y: word.y, direction: word.direction, keep_letters: keepLetters },
+      body: { x: word.x, y: word.y, direction: word.direction, keep_letters: keepLetters, shorter: variant === "court" },
     })
       .then((data) => !cancelled && setSuggestions(data))
       .catch(() => !cancelled && setSuggestions(null))
@@ -68,7 +70,15 @@ export function LetterPanel({
     return () => {
       cancelled = true;
     };
-  }, [gridId, word, keepLetters]);
+  }, [gridId, word, keepLetters, variant]);
+
+  // Un emplacement libre : rien n'y est écrit et aucun croisement ne le contraint encore (roadmap 5B)
+  const isFree = Boolean(
+    variant !== "court" &&
+      suggestions &&
+      !/[A-Z]/.test(suggestions.pattern) &&
+      suggestions.allowed.every((letters) => letters === ""),
+  );
 
   if (!word) {
     return (
@@ -120,17 +130,29 @@ export function LetterPanel({
 
         {/* Combler les trous ou repartir de zéro : deux gestes différents, deux listes différentes */}
         <div className="mt-2 flex w-fit gap-1 rounded-md border p-1">
-          <Toggle size="sm" pressed={keepLetters} onPressedChange={() => setKeepLetters(true)}>
+          <Toggle size="sm" pressed={variant === "combler"} onPressedChange={() => setVariant("combler")}>
             <PenLine className="mr-1 h-3.5 w-3.5" />
             Combler les trous
           </Toggle>
-          <Toggle size="sm" pressed={!keepLetters} onPressedChange={() => setKeepLetters(false)}>
+          <Toggle size="sm" pressed={variant === "remplacer"} onPressedChange={() => setVariant("remplacer")}>
             Remplacer le mot
+          </Toggle>
+          <Toggle size="sm" pressed={variant === "court"} onPressedChange={() => setVariant("court")}>
+            Plus court
           </Toggle>
         </div>
 
         {isLoading ? (
           <p className="mt-3 text-sm text-muted-foreground">Recherche…</p>
+        ) : isFree ? (
+          // Aucune lettre posée, aucun croisement écrit : des milliers de mots iraient, la liste n'aiderait pas
+          <div className="mt-3 space-y-1 text-sm">
+            <p className="font-medium">Lance-toi, écris ton premier mot ! Clique une case et tape.</p>
+            <p className="text-xs text-muted-foreground">
+              Envie d&apos;un mot qui ne remplit pas toute la ligne ? «&nbsp;Plus court&nbsp;» en propose, suivis
+              d&apos;une case définition.
+            </p>
+          </div>
         ) : suggestions?.words.length ? (
           <>
             <ul className="mt-3 flex flex-wrap gap-1.5">
@@ -143,6 +165,10 @@ export function LetterPanel({
                     className="rounded-full bg-secondary px-2.5 py-1 font-mono text-sm font-semibold hover:bg-secondary/70 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {candidate}
+                    {/* La case définition qui suivra le mot, dessinée comme dans la grille */}
+                    {variant === "court" && (
+                      <span aria-label="suivi d'une case définition" className="ml-1 inline-block h-3 w-3 rounded-sm bg-muted-foreground/50 align-middle" />
+                    )}
                   </button>
                 </li>
               ))}

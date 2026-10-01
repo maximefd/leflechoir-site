@@ -54,6 +54,14 @@ COUNTRIES = (("FR", 78), ("BE", 7), ("CH", 4), ("CA", 4), ("LU", 1), ("DE", 2), 
 # Heures UTC : le site vit surtout en journée et en soirée, à l'heure française
 HOUR_WEIGHTS = (1, 1, 1, 1, 1, 2, 4, 7, 9, 10, 9, 8, 8, 9, 9, 8, 9, 11, 13, 14, 11, 6, 3, 2)
 
+# La balise du navigateur (audience.py) : pages, d'où l'on vient, langue du navigateur
+PAGES = (("/", 30), ("/grid", 26), ("/search", 22), ("/creer-des-mots-fleches", 9), ("/grids", 5), ("/login", 4),
+         ("/register", 2), ("/privacy", 1), ("/dictionaries", 1))
+REFERRERS = (("", 62), ("google.com", 17), ("bing.com", 4), ("duckduckgo.com", 3), ("chatgpt.com", 3),
+             ("perplexity.ai", 2), ("copilot.microsoft.com", 1), ("qwant.com", 2), ("facebook.com", 2), ("reddit.com", 1),
+             ("mots-fleches-forum.example", 1), ("lemonde.fr", 1), ("claude.ai", 1))
+BROWSER_LANGS = (("fr", 88), ("en", 7), ("de", 2), ("es", 1), ("nl", 1), ("", 1))
+
 # Mots imposés : ceux que le lexique connaît, et ceux qu'il n'a pas (prénoms, mots récents)
 KNOWN_WORDS = ("ETE", "MER", "CHAT", "NOEL", "FETE", "PLAGE", "ECOLE", "JARDIN", "SOLEIL", "VOYAGE", "MARIAGE",
                "MUSIQUE", "FAMILLE", "CUISINE", "VACANCES", "CHOCOLAT", "RETRAITE", "MONTAGNE", "BRETAGNE",
@@ -184,6 +192,32 @@ def _generation(visit: _Visit, logged_in: bool, incident: bool) -> bool:
     return add("no_solution", 422, rng.randint(200, 6000), computed=True, attempted=True)
 
 
+def _page_events(visit: _Visit, has_grid: bool) -> list[dict]:
+    """Les pages vues de la visite, tirées à part : la graine des autres événements ne bouge pas."""
+    rng = random.Random(visit.common["visitor"])
+    referrer = _weighted(rng, REFERRERS)
+    language = _weighted(rng, BROWSER_LANGS)
+    start = visit.events[0]["created_at"] - timedelta(seconds=rng.uniform(5, 40)) if visit.events else visit.at
+    events = []
+    at = start
+    for index in range(_weighted(rng, ((1, 45), (2, 25), (3, 15), (4, 8), (7, 5), (12, 2)))):
+        visible_ms = int(min(1_800_000, rng.lognormvariate(10.3, 1.0)))  # médiane d'environ 30 s
+        at += timedelta(milliseconds=visible_ms + rng.randint(300, 4000))
+        path = _weighted(rng, PAGES)
+        data = {"path": path, "referrer": referrer if index == 0 else "", "browser_lang": language,
+                "visible_ms": visible_ms}
+        events.append({**visit.common, "created_at": at, "kind": "page", "outcome": "view", "status": 204,
+                       "route": "/api/audience", "duration_ms": rng.randint(2, 12), "cpu_ms": 1, "data": data,
+                       "words": None})
+    if has_grid and rng.random() < 0.35:
+        at += timedelta(seconds=rng.uniform(2, 20))
+        events.append({**visit.common, "created_at": at, "kind": "page", "outcome": "pdf", "status": 204,
+                       "route": "/api/audience", "duration_ms": 4, "cpu_ms": 1,
+                       "data": {"path": "/grids/edit", "referrer": "", "browser_lang": language, "visible_ms": 0},
+                       "words": None})
+    return events
+
+
 def _visit_events(rng: random.Random, start: datetime, site: str, lang: str, incident: bool) -> list[dict]:
     visit = _Visit(rng, start, site, lang)
     logged_in = rng.random() < 0.12
@@ -216,7 +250,10 @@ def _visit_events(rng: random.Random, start: datetime, site: str, lang: str, inc
         visit.add("error", None, 500, _weighted(rng, (("/api/grids", 2), ("/api/dictionaries", 1))), visit.light())
     if logged_in and rng.random() < 0.01:
         visit.add("account", "delete", 200, "/api/users/me", visit.light())
-    return visit.events
+    # Une visite sur sept ne laisse aucune page vue : refus, GPC, robot filtré, navigateur sans JavaScript
+    silent = int(visit.common["visitor"][len(DEMO_PREFIX):], 16) % 7 == 0
+    pages = [] if silent else _page_events(visit, bool(last_format))
+    return visit.events + pages
 
 
 def generate(days: int = DEFAULT_DAYS, seed: int = DEFAULT_SEED, now: datetime | None = None,

@@ -397,3 +397,74 @@ def test_a_preview_says_what_the_change_would_break_without_saving(grid_app, cli
     assert response.status_code == 200
     assert {w["kind"] for w in response.get_json()["layout_warnings"]} >= {"mot_sans_definition"}
     assert client.get(f"/api/grids/{grid_id}", headers=headers).get_json()["grid"]["cells"] == avant
+
+
+# --- Grille à la main (roadmap, point 5B) ---
+
+def test_a_blank_grid_can_be_created_from_a_size(grid_app, client):
+    headers = auth_headers(client)
+
+    response = send(client, "post", "/api/grids/blank", {"width": 4, "height": 5}, headers)
+
+    assert response.status_code == 201, response.get_json()
+    grid = client.get(f"/api/grids/{response.get_json()['id']}", headers=headers).get_json()["grid"]
+    assert (grid["width"], grid["height"], grid["layout"]) == (4, 5, "manuel")
+    assert len(grid["cells"]) == 20 and not any(c["is_black"] or c["char"] for c in grid["cells"])
+    # Pas encore de case définition : chaque ligne et chaque colonne est un mot à écrire
+    assert {(w["direction"], w["length"]) for w in grid["words"]} == {("across", 4), ("down", 5)}
+
+
+def test_a_grid_can_start_from_a_catalogue_layout(grid_app, client):
+    headers = auth_headers(client)
+
+    response = send(client, "post", "/api/grids/blank", {"layout": "5x5-001"}, headers)
+
+    assert response.status_code == 201, response.get_json()
+    grid = client.get(f"/api/grids/{response.get_json()['id']}", headers=headers).get_json()["grid"]
+    assert grid["layout"] == "5x5-001" and sum(c["is_black"] for c in grid["cells"]) > 0
+    assert all(not w["complete"] for w in grid["words"])
+
+
+@pytest.mark.parametrize("body", [{"width": 3, "height": 6}, {"width": 21, "height": 6}, {},
+                                  {"layout": "5x5-001", "width": 5, "height": 5}, {"layout": "../etc"}])
+def test_a_blank_grid_request_is_validated(grid_app, client, body):
+    response = send(client, "post", "/api/grids/blank", body, auth_headers(client))
+    assert response.status_code == 400
+
+
+def test_an_unknown_layout_is_not_found(grid_app, client):
+    response = send(client, "post", "/api/grids/blank", {"layout": "5x5-999"}, auth_headers(client))
+    assert response.status_code == 404
+
+
+def test_a_blank_grid_needs_an_account(grid_app, client):
+    assert client.post("/api/grids/blank", json={"width": 6, "height": 6}).status_code == 401
+
+
+def test_shorter_words_leave_room_for_a_definition_cell(grid_app, client):
+    """Roadmap 5B : sur une ligne vide, des mots plus courts, qui ne laissent pas de lettre seule au bout."""
+    headers = auth_headers(client)
+    grid_id = send(client, "post", "/api/grids/blank", {"width": 6, "height": 4}, headers).get_json()["id"]
+
+    response = send(client, "post", f"/api/grids/{grid_id}/suggestions",
+                    {"x": 0, "y": 0, "direction": "across", "shorter": True}, headers)
+
+    assert response.status_code == 200, response.get_json()
+    body = response.get_json()
+    assert body["shorter"] and body["words"]
+    # 6 cases : un mot de 4 laisse une lettre seule au bout, permise ici car un mot vertical la traverse
+    assert 4 in {len(mot) for mot in body["words"]}
+    assert max(len(mot) for mot in body["words"]) <= 5
+
+
+def test_shorter_words_never_isolate_the_last_letter(grid_app, client):
+    """Une ligne d'une seule rangée : la dernière lettre n'aurait aucun mot vertical, le mot de 4 est écarté."""
+    headers = auth_headers(client)
+    grid_id = send(client, "post", "/api/grids/blank", {"width": 6, "height": 4}, headers).get_json()["id"]
+    # La dernière colonne devient des cases définitions, sauf la case du haut : elle n'a plus de mot vertical
+    blocks = [{"x": 5, "y": y, "is_black": True} for y in (1, 2, 3)]
+    send(client, "patch", f"/api/grids/{grid_id}", {"blocks": blocks}, headers)
+
+    body = send(client, "post", f"/api/grids/{grid_id}/suggestions",
+                {"x": 0, "y": 0, "direction": "across", "shorter": True}, headers).get_json()
+    assert 4 not in {len(mot) for mot in body["words"]}
