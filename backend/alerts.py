@@ -34,7 +34,7 @@ import stats
 import system_samples
 from extensions import db
 from mailer import send_email
-from models import AlertSent, SystemSample, UsageEvent
+from models import AlertSent, ContactMessage, SystemSample, UsageEvent
 
 # Une alerte du même type ne repart pas avant ce délai, que le problème dure ou qu'il revienne
 COOLDOWN = timedelta(hours=24)
@@ -49,6 +49,8 @@ SERVER_ERRORS_SPIKE = 5
 SERVER_ERRORS_WINDOW = timedelta(minutes=15)
 # API injoignable : trois échantillons de suite, pas un redémarrage (un déploiement la coupe une minute ou deux)
 API_DOWN_SAMPLES = 3
+# Messages de contact : une notification chacun jusqu'à ce nombre par 24 heures, puis une seule pour les suivants
+CONTACT_NOTIFY_MAX = 5
 # Bilan : le lundi, à partir de cette heure (UTC)
 WEEKLY_WEEKDAY = 0
 WEEKLY_HOUR = 6
@@ -62,6 +64,8 @@ SUBJECTS = {
     "api_down": "Alerte : API injoignable",
     "test": "Alerte d'essai",
     "weekly": "Bilan de la semaine",
+    "contact": "Nouveau message de contact",
+    "contact_more": "Messages de contact en attente",
 }
 
 logger = logging.getLogger(__name__)
@@ -175,6 +179,27 @@ def deliver(kind: str, period: str, summary: str, body: str, now: datetime | Non
     return entry.delivered
 
 
+def notify_contact(message_id: int, now: datetime | None = None) -> bool:
+    """Prévient l'auteur d'un message de contact, **sans le recopier** : il se lit dans le poste de pilotage.
+
+    Une notification par message jusqu'à `CONTACT_NOTIFY_MAX` par 24 heures, puis une seule pour tous les suivants :
+    un envoi en rafale ne mange ni le quota de Brevo ni la place des alertes. Toujours sous le plafond quotidien.
+    """
+    now = now or _utcnow()
+    config = current_app.config
+    sent = AlertSent.query.filter(AlertSent.site == config["SITE"], AlertSent.kind == "contact",
+                                  AlertSent.created_at > now - COOLDOWN).count()
+    if sent < CONTACT_NOTIFY_MAX:
+        summary = "Un message est arrivé dans la boîte de réception."
+        return deliver("contact", f"m{message_id}", summary,
+                       f"{summary}\n\nSon texte n'est pas recopié ici : il se lit dans le poste de pilotage.",
+                       now, cooldown=False)
+    summary = f"Plus de {CONTACT_NOTIFY_MAX} messages de contact en 24 heures."
+    return deliver("contact_more", now.strftime("%Y-%m-%d"), summary,
+                   f"{summary}\n\nLes suivants ne sont plus signalés un par un : ils t'attendent dans la boîte de "
+                   "réception du poste de pilotage.", now)
+
+
 def run(now: datetime | None = None, backup_watched: bool = False) -> list[str]:
     """Lève les alertes du moment ; renvoie les types réellement envoyés."""
     now = now or _utcnow()
@@ -200,7 +225,8 @@ def weekly_body(now: datetime) -> str:
     """Les sept derniers jours, à côté des sept précédents : visiteurs, générations, erreurs, nouveaux comptes."""
     config = current_app.config
     cpu_count = os.cpu_count() or 1
-    events = UsageEvent.query.filter(UsageEvent.created_at >= now - timedelta(days=14),
+    # Les pages vues (la balise du navigateur) ont leur rubrique : les chiffres de l'API restent ceux de `flask stats`
+    events = UsageEvent.query.filter(UsageEvent.created_at >= now - timedelta(days=14), UsageEvent.kind != "page",
                                      UsageEvent.site == config["SITE"]).all()
     week = stats._period_figures([e for e in events if e.created_at >= now - timedelta(days=7)], 7, cpu_count)
     before = stats._period_figures([e for e in events if e.created_at < now - timedelta(days=7)], 7, cpu_count)
@@ -223,6 +249,11 @@ def weekly_body(now: datetime) -> str:
         line("Erreurs (4xx et 5xx)", "errors"),
         line("  dont 5xx", "server_errors"),
     ]
+
+    messages = ContactMessage.query.filter(ContactMessage.site == config["SITE"])
+    unread = messages.filter(ContactMessage.read_at.is_(None)).count()
+    received = messages.filter(ContactMessage.created_at >= now - timedelta(days=7)).count()
+    lines += ["", f"Messages de contact reçus : {received} cette semaine, {unread} non lu(s) en tout."]
 
     system = system_samples.as_json(now)
     days = [day for day in system["days"][-7:] if day["samples"]]

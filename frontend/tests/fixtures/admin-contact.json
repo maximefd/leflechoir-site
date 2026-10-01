@@ -1,0 +1,65 @@
+{
+ "messages": [
+  {
+   "at": "2026-10-01T14:30:00Z",
+   "from_account": false,
+   "id": 1,
+   "message": "Ce serait bien d'avoir des grilles en 8x8, pour les débutants de mon atelier.",
+   "read": true,
+   "reason": "suggestion",
+   "reply_email": "atelier@exemple.fr",
+   "request_id": "demo-0000"
+  },
+  {
+   "at": "2026-09-28T09:30:00Z",
+   "from_account": false,
+   "id": 2,
+   "message": "La génération en 13x18 avec trois mots imposés m'a répondu « impossible » plusieurs fois de suite.",
+   "read": false,
+   "reason": "problem",
+   "reply_email": null,
+   "request_id": "demo-0001"
+  },
+  {
+   "at": "2026-09-25T04:30:00Z",
+   "from_account": false,
+   "id": 3,
+   "message": "Le mot WIKI manque dans le lexique.",
+   "read": true,
+   "reason": "suggestion",
+   "reply_email": null,
+   "request_id": "demo-0002"
+  },
+  {
+   "at": "2026-09-21T23:30:00Z",
+   "from_account": false,
+   "id": 4,
+   "message": "Je voudrais effacer mon compte et recevoir une copie de mes grilles.",
+   "read": true,
+   "reason": "data",
+   "reply_email": "claire@exemple.fr",
+   "request_id": "demo-0003"
+  },
+  {
+   "at": "2026-09-18T18:30:00Z",
+   "from_account": false,
+   "id": 5,
+   "message": "Sur mon téléphone, l'export PDF ne démarre pas.",
+   "read": true,
+   "reason": "problem",
+   "reply_email": "jean@exemple.fr",
+   "request_id": "demo-0004"
+  },
+  {
+   "at": "2026-09-15T13:30:00Z",
+   "from_account": false,
+   "id": 6,
+   "message": "Merci pour l'outil, la recherche par motif me fait gagner un temps fou.",
+   "read": true,
+   "reason": "suggestion",
+   "reply_email": null,
+   "request_id": "demo-0005"
+  }
+ ],
+ "unread": 1
+}

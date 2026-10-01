@@ -5,6 +5,19 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Formulaire de contact, « Signaler ce problème » et boîte de réception** ([#131](https://github.com/maximefd/terminator-app/issues/131),
+  Phase 8, lot 3b) :
+  - `POST /api/contact` (motif, message de 10 à 2 000 caractères, adresse de réponse facultative) : cinq messages
+    par heure, pot de miel, pas de captcha tiers ; connecté, le message est lié au compte et disparaît avec lui ;
+    ni adresse IP ni empreinte ; gardé 12 mois (migration 0014, additive) ;
+  - « Signaler ce problème » après un refus de génération : la page Contact s'ouvre sur « problème » avec
+    l'identifiant de la requête (`X-Request-ID`, désormais exposé par CORS) ;
+  - la boîte de réception de `/admin` : lire, marquer comme lu, supprimer ; seule exception aux « agrégats, en lecture
+    seule » (ADR 0016, point 6, mis à jour) ; les tests d'autorisation énumèrent les routes d'écriture ;
+  - l'e-mail de notification ne recopie jamais le message : une notification par message jusqu'à cinq par 24 heures,
+    puis une seule pour les suivants, sous le plafond quotidien d'alertes ; « messages reçus » dans le bilan
+    hebdomadaire ;
+  - page confidentialité et registre RGPD (traitement 9) mis à jour.
 - **Proposer sa mise en page au catalogue** (roadmap, point 5C) : une grille faite à la main, finie et sans
   avertissement de mise en page, dont la forme n'est pas déjà au catalogue, peut être proposée depuis l'étape
   « Mise en page et export » de l'éditeur, ou au moment d'imprimer : une fenêtre propose, une seule fois par forme,

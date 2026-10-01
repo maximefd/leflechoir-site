@@ -108,6 +108,39 @@ class SuggestionRequest(ApiModel):
     source: Literal["search", "search_empty", "grid", "editor", "editor_unknown"]
 
 
+class ContactRequest(ApiModel):
+    """Un message du formulaire de contact (Phase 8, #131) : un motif, un texte, une adresse de réponse facultative."""
+    reason: Literal["suggestion", "problem", "data"]
+    message: Annotated[str, StringConstraints(strip_whitespace=True, min_length=10, max_length=2000)]
+    email: Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, max_length=254)] = ""
+    # L'identifiant de la requête qui a échoué (en-tête X-Request-ID), joint par « Signaler ce problème »
+    request_id: Annotated[str, StringConstraints(max_length=64, pattern=r"^[A-Za-z0-9-]*$")] = ""
+    # Le pot de miel : un champ caché que seul un robot remplit
+    website: Annotated[str, StringConstraints(max_length=200)] = ""
+
+    @field_validator("message")
+    @classmethod
+    def check_message(cls, value: str) -> str:
+        if "\x00" in value:  # PostgreSQL refuse le caractère nul dans un texte : ce serait une erreur 500
+            raise ValueError("le message contient un caractère interdit")
+        return value
+
+    @field_validator("email")
+    @classmethod
+    def check_email(cls, value: str) -> str:
+        if value:
+            try:
+                validate_email(value, check_deliverability=False)
+            except EmailNotValidError as exc:
+                raise ValueError("adresse e-mail invalide") from exc
+        return value
+
+
+class ContactReadRequest(ApiModel):
+    """Lu ou non lu : la seule écriture de la boîte de réception avec la suppression."""
+    read: StrictBool
+
+
 class AudienceRequest(ApiModel):
     """Une page vue, ou un export PDF, signalé par le navigateur (ADR 0016, point 3, #130).
 

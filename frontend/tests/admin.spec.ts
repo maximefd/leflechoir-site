@@ -38,6 +38,8 @@ test("la page n'est liée nulle part sur l'accueil", async ({ page }) => {
 const stats = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-stats.json"), "utf-8"));
 // De même pour `GET /api/admin/system` (`backend/tests/test_system_samples.py`)
 const system = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-system.json"), "utf-8"));
+// Et pour `GET /api/admin/contact` (`backend/tests/test_contact.py`)
+const inbox = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-contact.json"), "utf-8"));
 const suggestions = {
   pending: [
     { kind: "add", word: "PADEL", display: "padel", people: 4, sources: { must_unknown: 3, search_empty: 1 } },
@@ -57,6 +59,7 @@ async function asAdmin(page: Page, baseURL: string | undefined, server: unknown 
   await page.route("**/api/admin/stats", (route) => route.fulfill({ json: stats }));
   await page.route("**/api/admin/suggestions", (route) => route.fulfill({ json: suggestions }));
   await page.route("**/api/admin/system", (route) => route.fulfill({ json: server }));
+  await page.route("**/api/admin/contact", (route) => route.fulfill({ json: inbox }));
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "Poste de pilotage" })).toBeVisible();
 }
@@ -179,3 +182,42 @@ for (const viewport of [{ name: "ordinateur", width: 1280, height: 900 }, { name
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
   });
 }
+
+test("l'administrateur lit sa boîte de réception, marque un message lu et le supprime", async ({ page, baseURL }) => {
+  const messages = structuredClone(inbox) as typeof inbox;
+  const calls: string[] = [];
+  await asAdmin(page, baseURL);
+  await page.route("**/api/admin/contact/*", async (route) => {
+    const id = Number(route.request().url().split("/").pop());
+    calls.push(`${route.request().method()} ${id}`);
+    if (route.request().method() === "DELETE") {
+      messages.messages = messages.messages.filter((item: { id: number }) => item.id !== id);
+      await route.fulfill({ status: 204 });
+    } else {
+      const item = messages.messages.find((entry: { id: number }) => entry.id === id);
+      item.read = route.request().postDataJSON().read;
+      messages.unread = messages.messages.filter((entry: { read: boolean }) => !entry.read).length;
+      await route.fulfill({ json: { id, read: item.read } });
+    }
+  });
+  await page.route("**/api/admin/contact", (route) => route.fulfill({ json: messages }));
+  await page.reload();
+
+  const heading = page.getByRole("heading", { name: /^Boîte de réception \(\d+ non lus?\)$/ });
+  await expect(heading).toBeVisible();
+  const first = page.getByRole("listitem").filter({ hasText: "La génération en 13x18" });
+  await expect(first).toContainText("Problème");
+  await expect(first).toContainText("Non lu");
+  await expect(first).toContainText("demo-0001"); // l'identifiant de requête, à chercher dans Sentry
+  // Le texte s'affiche tel quel : jamais interprété
+  await expect(page.getByRole("link", { name: /Répondre à atelier@exemple.fr/ })).toHaveAttribute("href", /^mailto:atelier@exemple\.fr\?subject=/);
+
+  await first.getByRole("button", { name: "Marquer comme lu" }).click();
+  await expect(first).not.toContainText("Non lu");
+  expect(calls).toContain("PATCH 2");
+
+  page.once("dialog", (dialog) => dialog.accept());
+  await first.getByRole("button", { name: "Supprimer" }).click();
+  await expect(page.getByText("La génération en 13x18")).toHaveCount(0);
+  expect(calls).toContain("DELETE 2");
+});

@@ -78,12 +78,15 @@ async function endSession() {
 export class ApiError extends Error {
   readonly status: number;
   readonly data: Record<string, unknown>;
+  /** L'identifiant de la requête (en-tête X-Request-ID), que « Signaler ce problème » joint au message. */
+  readonly requestId: string | null;
 
-  constructor(message: string, status: number, data: Record<string, unknown>) {
+  constructor(message: string, status: number, data: Record<string, unknown>, requestId: string | null = null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.data = data;
+    this.requestId = requestId;
   }
 }
 
@@ -98,7 +101,7 @@ async function readError(response: Response): Promise<ApiError> {
   } catch {
     // Réponse non JSON : on garde le message générique
   }
-  return new ApiError(message, response.status, data);
+  return new ApiError(message, response.status, data, response.headers.get("X-Request-ID"));
 }
 
 export async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, allowRefresh = true) {

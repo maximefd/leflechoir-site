@@ -26,7 +26,7 @@ import click
 from flask import current_app
 
 from extensions import db
-from models import AlertSent, SystemDaily, SystemSample, UsageEvent
+from models import AlertSent, ContactMessage, SystemDaily, SystemSample, UsageEvent
 
 DEMO_PREFIX = "demo"
 DEFAULT_DAYS = 42
@@ -309,6 +309,7 @@ def seed_system(days: int, seed: int, now: datetime, site: str, lang: str) -> in
     for model in (SystemSample, SystemDaily):
         model.query.delete(synchronize_session=False)
     AlertSent.query.filter(AlertSent.period.startswith(DEMO_PREFIX)).delete(synchronize_session=False)
+    ContactMessage.query.filter(ContactMessage.request_id.startswith(DEMO_PREFIX)).delete(synchronize_session=False)
 
     minute = now.replace(second=0, microsecond=0)
     samples, cpu_busy, cpu_total = [], 0, 0
@@ -360,6 +361,30 @@ def seed_system(days: int, seed: int, now: datetime, site: str, lang: str) -> in
     return len(samples) + len(daily) + len(alerts)
 
 
+# La boîte de réception : quelques messages fictifs (motif, texte, adresse, —, lu ou non)
+CONTACT_MESSAGES = (
+    ("suggestion", "Ce serait bien d'avoir des grilles en 8x8, pour les débutants de mon atelier.", "atelier@exemple.fr",
+     False, True),
+    ("problem", "La génération en 13x18 avec trois mots imposés m'a répondu « impossible » plusieurs fois de suite.",
+     None, True, False),
+    ("suggestion", "Le mot WIKI manque dans le lexique.", None, False, True),
+    ("data", "Je voudrais effacer mon compte et recevoir une copie de mes grilles.", "claire@exemple.fr", False, True),
+    ("problem", "Sur mon téléphone, l'export PDF ne démarre pas.", "jean@exemple.fr", True, True),
+    ("suggestion", "Merci pour l'outil, la recherche par motif me fait gagner un temps fou.", None, False, True),
+)
+
+
+def seed_contact(now: datetime, site: str, lang: str) -> int:
+    """Des messages de contact fictifs, reconnaissables à leur identifiant de requête (« demo-… »)."""
+    for index, (reason, text, email, _, read) in enumerate(CONTACT_MESSAGES):
+        at = now - timedelta(days=index * 3, hours=index * 5 + 1)
+        db.session.add(ContactMessage(
+            created_at=at, site=site, lang=lang, reason=reason, message=text, reply_email=email,
+            request_id=f"{DEMO_PREFIX}-{index:04x}", user_id=None,
+            read_at=at + timedelta(hours=4) if read else None))
+    return len(CONTACT_MESSAGES)
+
+
 def clear() -> int:
     """Efface les événements fictifs, et eux seuls ; puis les échantillons système, tous (voir en tête)."""
     _refuse_production()
@@ -380,6 +405,7 @@ def seed_demo(days: int = DEFAULT_DAYS, seed: int = DEFAULT_SEED, now: datetime 
     events = generate(days, seed, now, site=site, lang=lang)
     db.session.bulk_insert_mappings(UsageEvent, events)
     seed_system(days, seed, now, site, lang)
+    seed_contact(now, site, lang)
     db.session.commit()
     # Import tardif : system_samples lit stats, qui porte la commande de ce module
     from system_samples import maintain

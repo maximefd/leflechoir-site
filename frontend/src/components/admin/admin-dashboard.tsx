@@ -7,6 +7,7 @@ import { DailyColumns, FunnelBars, Legend, RateScale, rateTone, ShareBar, type S
 import {
   dateTime, dayMonth, Empty, Group, Indicator, LEVELS, number, percent, Scroll, seconds, Section, type Level,
 } from "@/components/admin/parts";
+import { ContactInbox } from "@/components/admin/contact-inbox";
 import { SystemGroup, type SystemState } from "@/components/admin/system-group";
 import { useAuth } from "@/contexts/auth-context";
 import { ApiError, apiFetch } from "@/lib/api-client";
@@ -528,6 +529,8 @@ function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggesti
           dès {percent(thresholds.near_share, 0)} du seuil.
         </p>
       </section>
+
+      <ContactInbox />
 
       <Group id="usage" title="Usage">
         <Section title="Chiffres" description="Aujourd'hui depuis minuit UTC, puis les 7 et 30 derniers jours.">

@@ -48,7 +48,8 @@ Il n'y a **pas de déploiement en ligne** pour l'instant : tout tourne en local 
 | `system_samples.py` | Échantillons système ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) : RAM, CPU, places de génération, taille de la base, dernière sauvegarde, lus dans `/proc` ; 30 jours, puis un résumé par jour gardé 13 mois |
 | `alerts.py` | Alertes par e-mail et bilan hebdomadaire, sous plafonds ; `flask system tick`, lancé chaque minute par un minuteur du serveur (`tools/monitor/tick.sh`) |
 | `audience.py` | La balise d'audience `POST /api/audience` ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md), #130) : pages vues et temps passé, sans cookie ; oubliée si `Sec-GPC: 1` ou si c'est un robot |
-| `admin.py` | Espace d'administration `/api/admin/*` : un seul contrôle d'accès, 404 pour tout autre compte ; chiffres d'usage, système, suggestions |
+| `contact.py` | Le formulaire de contact `POST /api/contact` (#131) : cinq messages par heure, pot de miel, lié au compte s'il y en a un ; la notification à l'auteur ne recopie pas le message |
+| `admin.py` | Espace d'administration `/api/admin/*` : un seul contrôle d'accès, 404 pour tout autre compte ; chiffres d'usage, système, suggestions, boîte de réception (seule exception à la lecture seule) |
 | `trie_engine.py` | `DictionnaireTrie` : normalisation des mots et recherche par motif (`P??LE`) |
 | `grid_generator.py` | Chef d'orchestre de la génération (choix du layout, dépôt de mots, solveur) |
 | `engine/` | Moteur de génération, sans dépendance Flask (voir [ENGINE.md](ENGINE.md)) |
@@ -83,6 +84,7 @@ Il n'y a **pas de déploiement en ligne** pour l'instant : tout tourne en local 
 | GET / DELETE | `/api/grids/<id>` | ✅ | Relire une grille conservée (cases, flèches, définitions) / la supprimer |
 | PATCH | `/api/grids/<id>` | ✅ | Définitions, notes, archivage, renommage — et **lettres corrigées à la main** (`cells`), qui font recalculer les mots ([ADR 0012](adr/0012-grille-modifiable.md)) |
 | POST | `/api/grids/<id>/suggestions` | ✅ | Les mots qui entrent à un emplacement **sans casser ses croisements** |
+| POST | `/api/contact` | — | Un message pour l'auteur : `{reason: suggestion\|problem\|data, message, email?, request_id?}` ; 201 ; 5 par heure |
 | POST | `/api/audience` | — | La balise d'audience : `{kind: view\|pdf, path, referrer, lang, visible_ms}` ; 204, sans cookie ; la session n'est jamais lue |
 | GET | `/api/users/me` | ✅ | L'adresse e-mail du compte et ce qu'il contient (dictionnaires, mots, grilles) |
 | DELETE | `/api/users/me` | ✅ | Supprime le compte et toutes ses données ; `{password}` redemandé (403 s'il est faux) |

@@ -97,7 +97,7 @@ test("le refus se prend depuis la page confidentialité, et se reprend", async (
   await page.reload();
   await expect(page.getByTestId("audience-choice")).toContainText("ne sont pas comptées");
   await page.waitForTimeout(300);
-  await page.getByRole("link", { name: "Contact", exact: true }).click();
+  await page.getByRole("contentinfo").getByRole("link", { name: "Contact", exact: true }).click();
   await expect(page).toHaveURL(/contact/);
   await page.waitForTimeout(300);
   expect(seen.beacons).toEqual([]);

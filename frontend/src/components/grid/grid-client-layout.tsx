@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Check, Grid3x3, Loader2, RefreshCw } from "lucide-react";
@@ -61,6 +62,16 @@ function RepeatedFailures({ attempts, rate, hardest }: { attempts: number; rate:
   );
 }
 
+/** « Signaler ce problème » : le formulaire de contact, déjà réglé sur « problème » et muni de l'identifiant de la requête. */
+function ReportProblem({ requestId }: { requestId: string | null }) {
+  const href = requestId ? `/contact?reason=problem&request=${encodeURIComponent(requestId)}` : "/contact?reason=problem";
+  return (
+    <p className="text-sm">
+      <Link href={href} className="underline underline-offset-2">Signaler ce problème</Link>
+    </p>
+  );
+}
+
 /** Refus de génération : chaque cause mérite sa propre explication, pas un « impossible » commun. */
 function FailureNotice({
   error,
@@ -115,6 +126,7 @@ function FailureNotice({
       )}
 
       <RepeatedFailures attempts={attempts} rate={rate} hardest={hardest} />
+      <ReportProblem requestId={error.requestId} />
     </div>
   );
 }

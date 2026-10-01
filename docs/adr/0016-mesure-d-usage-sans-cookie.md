@@ -104,3 +104,11 @@ La balise du point 3 est faite (`backend/audience.py`, `frontend/src/lib/audienc
 - **Le référent n'est gardé que par son nom d'hôte** : l'adresse complète d'un référent peut contenir une recherche ou un identifiant. La langue du navigateur n'est gardée que par sa langue principale (« fr »).
 
 Un événement `page` de plus dans `usage_event`, avec les mêmes durées de conservation (13 mois). La balise ne part qu'à la sortie de la page (une ligne par page vue), sans cookie (`credentials: "omit"`), et n'est jamais rattachée à un compte. Le poste de pilotage la montre dans sa rubrique « Audience », à part des chiffres de l'API.
+
+## Mise à jour du 01/10/2026 : la boîte de réception (#131)
+
+Le point 6 dit que les routes `/api/admin/*` « ne donnent que des agrégats, en lecture seule ». Le formulaire de contact y apporte **une exception**, la boîte de réception :
+
+> Elles ne donnent que des agrégats, en lecture seule. **Exception : la boîte de réception des messages de contact (#131).** Elle montre des messages, donc des données personnelles, que leur auteur a choisi d'envoyer à l'éditeur ; ses seules écritures sont « marquer comme lu » et « supprimer ». Chaque lecture et chaque écriture est journalisée, et couverte par les mêmes tests d'autorisation.
+
+Conséquences dans le code : les routes restent dans le blueprint d'administration, derrière son contrôle unique (404 pour tout autre compte, y compris sur les écritures). Le test `test_writing_is_possible_only_in_the_inbox` énumère toutes les routes d'écriture du blueprint et exige qu'il n'y en ait que deux. Les messages sont gardés 12 mois et disparaissent avec le compte qui les a écrits. L'e-mail de notification ne recopie pas le message : seul « un message t'attend » part chez le prestataire d'envoi, et la notification est plafonnée (cinq par 24 heures, puis un résumé, sous le plafond quotidien d'alertes).

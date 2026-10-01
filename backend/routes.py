@@ -37,7 +37,7 @@ from schemas import (
 )
 from security import client_ip
 import usage
-from models import LayoutProposal, UsageEvent, WordSuggestion
+from models import ContactMessage, LayoutProposal, UsageEvent, WordSuggestion
 from suggestions import record_replaced_words
 from layout_proposals import catalog_layout, is_proposed
 
@@ -730,6 +730,7 @@ def delete_self():
     # Les événements d'usage liés au compte partent avec lui (ADR 0016).
     UsageEvent.query.filter_by(user_id=user.id).delete()
     WordSuggestion.query.filter_by(user_id=user.id).delete()
+    ContactMessage.query.filter_by(user_id=user.id).delete()
     LayoutProposal.query.filter_by(user_id=user.id).delete()
     db.session.delete(user)
     db.session.commit()

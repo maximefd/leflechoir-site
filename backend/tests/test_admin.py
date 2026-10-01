@@ -20,6 +20,23 @@ def admin_routes(app) -> list[str]:
     return sorted({rule.rule for rule in app.url_map.iter_rules() if rule.rule.startswith("/api/admin")})
 
 
+def admin_endpoints(app) -> list[tuple[str, str]]:
+    """Chaque route avec chacune de ses méthodes. Une méthode que la route ne connaît pas répond 405 avant le
+    contrôle d'accès du blueprint : ce que le visiteur peut appeler, c'est ce que la route déclare."""
+    return sorted((rule.rule, method.lower()) for rule in app.url_map.iter_rules()
+                  if rule.rule.startswith("/api/admin") for method in rule.methods
+                  if method in ("GET", "POST", "PUT", "PATCH", "DELETE"))
+
+
+def concrete(route: str) -> str:
+    """Une adresse qu'on peut appeler : un identifiant de message quelconque remplace le paramètre."""
+    return route.replace("<int:message_id>", "1")
+
+
+# La boîte de réception des messages de contact : seule exception à « lecture seule » (ADR 0016, point 6)
+INBOX_WRITES = {("/api/admin/contact/<int:message_id>", "PATCH"), ("/api/admin/contact/<int:message_id>", "DELETE")}
+
+
 def confirm(email: str, admin: bool = False) -> None:
     """Dans le contexte d'application du module (conftest), dont la session sert aussi aux requêtes et aux
     commandes : écrire depuis un autre contexte laisserait à celle-ci une copie périmée du compte."""
@@ -44,29 +61,31 @@ def admin_headers(test_app, client):
 
 
 def test_the_admin_space_has_routes(test_app):
-    assert admin_routes(test_app) == ["/api/admin/stats", "/api/admin/suggestions", "/api/admin/system"]
+    assert admin_routes(test_app) == ["/api/admin/contact", "/api/admin/contact/<int:message_id>",
+                                      "/api/admin/stats", "/api/admin/suggestions", "/api/admin/system"]
 
 
 def test_a_visitor_gets_the_same_404_as_an_unknown_address(test_app, client):
     unknown = client.get(UNKNOWN_ADDRESS)
     assert unknown.status_code == 404
-    for route in admin_routes(test_app):
-        response = client.get(route)
-        assert (response.status_code, response.get_json()) == (404, unknown.get_json()), route
+    for route, method in admin_endpoints(test_app):  # les écritures de la boîte de réception aussi
+        response = send(client, method, concrete(route), {"read": True})
+        assert (response.status_code, response.get_json()) == (404, unknown.get_json()), (method, route)
 
 
 def test_an_ordinary_account_gets_404_even_with_a_confirmed_address(test_app, client):
     email, tokens = register(client)
     confirm(email, admin=False)
     headers = {"Authorization": f"Bearer {tokens['access_token']}"}
-    for route in admin_routes(test_app):
-        assert client.get(route, headers=headers).status_code == 404, route
+    for route, method in admin_endpoints(test_app):
+        assert send(client, method, concrete(route), {"read": True}, headers).status_code == 404, (method, route)
 
 
 @pytest.mark.parametrize("token", ["pas-un-jeton", "eyJhbGciOiJub25lIn0.eyJzdWIiOiIxIn0."])
 def test_a_forged_token_gets_404_not_401(test_app, client, token):
-    for route in admin_routes(test_app):
-        assert client.get(route, headers={"Authorization": f"Bearer {token}"}).status_code == 404, route
+    headers = {"Authorization": f"Bearer {token}"}
+    for route, method in admin_endpoints(test_app):
+        assert send(client, method, concrete(route), {"read": True}, headers).status_code == 404, (method, route)
 
 
 def test_the_admin_sees_aggregates_and_nothing_personal(grid_app, client, admin_headers):
@@ -93,10 +112,14 @@ def test_the_admin_sees_aggregates_and_nothing_personal(grid_app, client, admin_
     assert "user_id" not in text
 
 
-def test_writing_is_not_possible(test_app, client, admin_headers):
+def test_writing_is_possible_only_in_the_inbox(test_app, client, admin_headers):
+    """Aucune route d'écriture hors de la boîte de réception : la liste est énumérée, pas supposée."""
+    writes = {(rule.rule, method) for rule in test_app.url_map.iter_rules() if rule.rule.startswith("/api/admin")
+              for method in rule.methods if method in ("POST", "PUT", "PATCH", "DELETE")}
+    assert writes == INBOX_WRITES
     for route in admin_routes(test_app):
-        for method in ("post", "patch", "delete"):
-            assert send(client, method, route, {}, admin_headers).status_code in (404, 405), (method, route)
+        for method in ("post", "put"):
+            assert send(client, method, concrete(route), {}, admin_headers).status_code in (404, 405), (method, route)
 
 
 def test_each_access_is_logged_whether_allowed_or_refused(test_app, client, admin_headers, caplog):

@@ -1,5 +1,6 @@
 import { type Metadata } from "next";
 import Link from "next/link";
+import { ContactForm } from "@/components/contact/contact-form";
 import { linkClass, Section } from "@/components/legal/section";
 import { site } from "@/config/site";
 import { publicPage } from "@/lib/seo";
@@ -24,6 +25,14 @@ export default function ContactPage() {
           </a>
           . Chaque message est lu par l&apos;auteur du site, qui répond en général sous quelques jours.
         </p>
+
+        <Section id="formulaire" title="Écrire depuis le site">
+          <p>
+            Le formulaire arrive dans la boîte de réception de l&apos;auteur, sans passer par ta messagerie. Tu peux
+            aussi écrire par e-mail, à l&apos;adresse ci-dessus.
+          </p>
+          <ContactForm />
+        </Section>
 
         <Section title="Ce que tu peux y envoyer">
           <ul className="list-disc space-y-1 pl-5">

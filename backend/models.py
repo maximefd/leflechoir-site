@@ -352,3 +352,26 @@ class AlertSent(db.Model):
     __table_args__ = (
         db.UniqueConstraint('site', 'kind', 'period', name='uix_alert_sent_site_kind_period'),
     )
+
+
+class ContactMessage(db.Model):
+    """Un message écrit par le formulaire de contact (roadmap Phase 8, #131).
+
+    Lu par l'auteur dans la boîte de réception du poste de pilotage ; l'e-mail de notification ne recopie jamais
+    le message. Jamais d'adresse IP ni d'empreinte. Le compte, s'il y en a un, est lié au message : il disparaît
+    avec lui. Gardé 12 mois (usage.py).
+    """
+    __tablename__ = 'contact_message'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow(), index=True)
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    # suggestion, problem, data
+    reason = db.Column(db.String(20), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    # L'adresse de réponse, facultative
+    reply_email = db.Column(db.String(254), nullable=True)
+    # L'identifiant de la requête qui a échoué (« Signaler ce problème »), retrouvable dans Sentry et les journaux
+    request_id = db.Column(db.String(64), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True, index=True)
+    read_at = db.Column(db.DateTime, nullable=True)

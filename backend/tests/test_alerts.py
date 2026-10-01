@@ -218,7 +218,8 @@ def test_without_a_recipient_nothing_leaves_and_nothing_is_logged(test_app, outb
 
 def test_subjects_are_fixed_and_carry_no_data(test_app):
     # Un saut de ligne dans un en-tête fait échouer l'envoi (#131) : aucune donnée n'entre dans l'objet
-    assert set(alerts.SUBJECTS) == {"ram", "busy", "p95", "server_errors", "backup", "api_down", "test", "weekly"}
+    assert set(alerts.SUBJECTS) == {"ram", "busy", "p95", "server_errors", "backup", "api_down", "test", "weekly", "contact",
+                                  "contact_more"}
     for subject in alerts.SUBJECTS.values():
         assert "\n" not in subject and "{" not in subject and "%" not in subject
 

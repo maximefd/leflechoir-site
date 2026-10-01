@@ -22,12 +22,13 @@ from flask import Flask, current_app, g, request
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db
-from models import UsageEvent, VisitorSalt, WordSuggestion
+from models import ContactMessage, UsageEvent, VisitorSalt, WordSuggestion
 from security import client_ip
 
 # Durées de conservation (ADR 0016, page de confidentialité, docs/RGPD.md)
 WORDS_RETENTION = timedelta(days=90)
 EVENTS_RETENTION = timedelta(days=396)  # 13 mois
+CONTACT_RETENTION = timedelta(days=365)  # les messages de contact : 12 mois
 
 # Routes mesurées à chaque appel, quelle qu'en soit l'issue
 ALWAYS_MEASURED = {"main.generate_grid": "generation", "main.search_words": "search"}
@@ -79,6 +80,8 @@ def _purge(today: date) -> None:
     UsageEvent.query.filter(UsageEvent.created_at < now - EVENTS_RETENTION).delete()
     # Les suggestions de mots (roadmap 1e) : même durée que les événements
     WordSuggestion.query.filter(WordSuggestion.created_at < now - EVENTS_RETENTION).delete()
+    # Les messages de contact (Phase 8, #131) : douze mois
+    ContactMessage.query.filter(ContactMessage.created_at < now - CONTACT_RETENTION).delete()
 
 
 def purge() -> None:

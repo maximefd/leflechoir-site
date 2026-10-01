@@ -194,10 +194,20 @@ export default function PrivacyPage() {
           <AudienceChoice />
         </Section>
 
-        <Section title="Si tu écris à l'adresse de contact">
+        <Section title="Si tu m'écris : l'adresse de contact et le formulaire">
           <p>
-            Ton message et ton adresse sont gardés le temps de te répondre et de suivre ta demande, puis
-            effacés au plus tard un an après le dernier échange.
+            Un message envoyé à l&apos;adresse de contact est gardé, avec ton adresse, le temps de te répondre et de
+            suivre ta demande, puis effacé au plus tard un an après le dernier échange.
+          </p>
+          <p>
+            Le formulaire de la page{" "}
+            <Link href="/contact" className={linkClass}>Contact</Link> garde : ton message, son motif, l&apos;adresse
+            de réponse si tu en donnes une, la date, et, si tu l&apos;as joint (« Signaler ce problème »),
+            l&apos;identifiant de la requête qui a échoué. Connecté, le message est lié à ton compte et disparaît avec
+            lui ; sans compte, rien d&apos;autre ne te désigne, ni adresse IP ni empreinte. Seul l&apos;auteur le lit,
+            dans son espace réservé. L&apos;e-mail qui le prévient ne recopie pas ton message : il passe donc par le
+            prestataire d&apos;envoi sans son contenu. Les messages sont effacés au bout de 12 mois (intérêt
+            légitime, RGPD art. 6.1.f), ou plus tôt à ta demande.
           </p>
         </Section>
 

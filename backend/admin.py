@@ -3,7 +3,8 @@
 - Le rôle se pose en ligne de commande (`flask admin grant ADRESSE`), sur une adresse confirmée, jamais par l'API.
 - Les routes `/api/admin/*` répondent à tout autre compte, et à tout visiteur, le même 404 qu'une adresse
   inconnue : un jeton absent, expiré ou forgé ne change rien à la réponse.
-- Elles ne donnent que des agrégats, en lecture seule.
+- Elles ne donnent que des agrégats, en lecture seule. **Seule exception** : la boîte de réception des messages de
+  contact (#131), qui montre des messages et peut les marquer comme lus ou les supprimer.
 - Chaque accès est journalisé, accepté ou refusé.
 
 Le contrôle est fait une fois pour tout le blueprint (`before_request`) : une route ajoutée plus tard est protégée
@@ -11,9 +12,10 @@ d'office, et les tests d'autorisation l'énumèrent d'eux-mêmes.
 """
 
 import logging
+from datetime import datetime, timezone
 
 import click
-from flask import Blueprint, abort, jsonify, request
+from flask import Blueprint, abort, current_app, jsonify, request
 from flask.cli import AppGroup
 from flask_jwt_extended import get_current_user, verify_jwt_in_request
 from flask_jwt_extended.exceptions import JWTExtendedException
@@ -25,7 +27,8 @@ import stats
 import suggestions
 import system_samples
 from extensions import db
-from models import User, WordSuggestion
+from models import ContactMessage, User, WordSuggestion
+from schemas import ContactReadRequest, parse_body
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
 logger = logging.getLogger(__name__)
@@ -68,6 +71,53 @@ def word_suggestions():
     counts = dict(db.session.query(WordSuggestion.status, db.func.count(WordSuggestion.id))
                   .group_by(WordSuggestion.status).all())
     return jsonify({"pending": suggestions.grouped()[:200], "counts": counts})
+
+
+# --- La boîte de réception : la seule exception à « agrégats, en lecture seule » (ADR 0016, point 6) ---
+#
+# Les messages du formulaire de contact (contact.py) sont des données personnelles que leur auteur a choisi
+# d'envoyer à l'éditeur. Les seules écritures sont « marquer comme lu » et « supprimer » ; chaque accès est
+# journalisé par le contrôle du blueprint, et les tests d'autorisation énumèrent ces routes comme les autres.
+
+@admin_bp.get("/contact")
+def contact_inbox():
+    """Les messages de contact, les plus récents d'abord, et le nombre de messages non lus."""
+    query = ContactMessage.query.filter_by(site=current_app.config["SITE"])
+    rows = query.order_by(ContactMessage.created_at.desc()).limit(200).all()
+    return jsonify({
+        "unread": query.filter(ContactMessage.read_at.is_(None)).count(),
+        "messages": [{
+            "id": row.id,
+            "at": row.created_at.isoformat(timespec="seconds") + "Z",
+            "reason": row.reason,
+            "message": row.message,
+            "reply_email": row.reply_email,
+            "request_id": row.request_id,
+            "from_account": row.user_id is not None,  # jamais lequel : seulement qu'il y en a un
+            "read": row.read_at is not None,
+        } for row in rows],
+    })
+
+
+@admin_bp.patch("/contact/<int:message_id>")
+def contact_mark_read(message_id: int):
+    """Marque un message comme lu, ou comme non lu."""
+    message = db.get_or_404(ContactMessage, message_id)
+    payload = parse_body(ContactReadRequest)
+    message.read_at = datetime.now(timezone.utc).replace(tzinfo=None) if payload.read else None
+    db.session.commit()
+    logger.info("Administration : message de contact %s marqué %s", message.id, "lu" if payload.read else "non lu")
+    return jsonify({"id": message.id, "read": payload.read})
+
+
+@admin_bp.delete("/contact/<int:message_id>")
+def contact_delete(message_id: int):
+    """Supprime un message, définitivement et tout de suite."""
+    message = db.get_or_404(ContactMessage, message_id)
+    db.session.delete(message)
+    db.session.commit()
+    logger.info("Administration : message de contact %s supprimé", message_id)
+    return "", 204
 
 
 # --- Le rôle, en ligne de commande seulement ---

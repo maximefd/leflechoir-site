@@ -22,6 +22,7 @@ from alerts import init_system_cli
 from suggestions import init_suggestions
 from layout_proposals import init_layout_proposals
 from audience import audience_bp
+from contact import contact_bp
 
 DEV_SECRET = 'default-secret-for-dev'
 # Nom public du site (ADR 0017) : Terminator est le nom du moteur, jamais montré aux visiteurs
@@ -67,6 +68,8 @@ DEFAULT_SETTINGS = dict(
     RATELIMIT_PROPOSE_LAYOUT='20 per hour',
     # La balise d'audience : une par page quittée, donc bien moins que le rythme d'un lecteur (#130)
     RATELIMIT_AUDIENCE='120 per minute',
+    # Le formulaire de contact : cinq messages par heure et par adresse (#131)
+    RATELIMIT_CONTACT='5 per hour',
     RATELIMIT_GENERATE='10 per minute',
     # Appelé à chaque frappe de l'auteur, et sans génération : plafond de la recherche, pas de la génération
     RATELIMIT_DIFFICULTY='120 per minute',
@@ -290,6 +293,8 @@ def create_app(test_config=None):
         resources={r"/api/*": {"origins": parse_cors_origins(app.config['CORS_ORIGINS'])}},
         methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization", "X-CSRF-TOKEN"],
+        # Le site, sur une autre origine, lit l'identifiant de requête pour « Signaler ce problème » (#131)
+        expose_headers=["X-Request-ID"],
         supports_credentials=True,
         max_age=600,
     )
@@ -306,6 +311,7 @@ def create_app(test_config=None):
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(audience_bp)
+    app.register_blueprint(contact_bp)
     init_suggestions(app)
     init_layout_proposals(app)
     init_rate_limiting(app)

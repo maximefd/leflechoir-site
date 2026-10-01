@@ -317,7 +317,7 @@ contrat de l'[ADR 0007](adr/0007-contrat-de-generation.md) restant à implément
   - ✅ un `security.txt` avec `securite@` ;
   - ✅ `SECURITY.md` et le modèle d'issue mis à jour.
 
-  Le formulaire vient en Phase 8.
+  Le formulaire est venu en Phase 8 (#131, 01/10/2026).
 - **Données personnelles :** ✅ registre des traitements et durées de conservation ([RGPD.md](RGPD.md)). Restent, avant l'ouverture : la rétention de journald à 14 jours sur le serveur ([PRODUCTION.md](PRODUCTION.md)), la rétention Sentry à 90 jours au plus, la suppression des comptes inactifs depuis 3 ans.
 
 ### 6e. Mesure côté serveur dès le premier jour (#116) ✅
@@ -407,7 +407,7 @@ contrat de l'[ADR 0007](adr/0007-contrat-de-generation.md) restant à implément
   - pays et langues des navigateurs (éclairent la Phase 10).
 - ✅ **Balise sans cookie** (#130, 01/10/2026) : pages vues, temps passé, exports PDF, dans les conditions de la CNIL ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md)). Sources, dont les moteurs de réponse IA, et langues des navigateurs sont dans la rubrique « Audience » de `/admin`.
 - **Échantillons système** : un par minute, gardés 30 jours. Agrégats quotidiens, et purge à 13 mois.
-- **Contact :**
+- ✅ **Contact** (#131, 01/10/2026) :
   - un formulaire ;
   - « Signaler ce problème » après une erreur, avec l'identifiant de requête ;
   - une boîte de réception ;
