@@ -5,8 +5,8 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * Le parcours suit les gestes d'un débutant, pas les boutons du tutoriel : refuser le préremplissage puis
  * changer d'avis, écrire des mots, passer aux définitions par le bouton du panneau. C'est sur ce chemin que
- * l'étape « Écris ta première définition » manquait. Crée un compte jetable (quota d'inscription : voir
- * `saved-grids.spec.ts`).
+ * l'étape « Écris ta première définition » manquait. Il finit par proposer la mise en page au catalogue.
+ * Crée un compte jetable (quota d'inscription : voir `saved-grids.spec.ts`).
  */
 const etape = (page: Page, numero: number) => page.getByRole("dialog", { name: new RegExp(`étape ${numero} sur 8`) });
 
@@ -79,4 +79,23 @@ test("une première grille à la main est guidée jusqu'aux définitions", async
   await expect(etape(page, 8)).toBeVisible();
   await page.getByRole("button", { name: "Voir la mise en page", exact: true }).click();
   await expect(page.getByRole("button", { name: /Mise en page et export/ })).toHaveAttribute("aria-current", "step");
+
+  // Roadmap 5C : une forme faite à la main n'est pas au catalogue. Avant d'imprimer, l'auteur peut la proposer.
+  // Une forme ne se propose qu'une fois : sur un nouvel essai du test (CI), elle attend déjà, et rien n'est redemandé
+  const offre = page.getByRole("dialog", { name: "Ta mise en page n'existe pas encore" });
+  const dejaProposee = page.getByText("Elle est déjà proposée au catalogue. Merci !");
+  await expect(page.getByRole("button", { name: "Proposer au catalogue" }).or(dejaProposee)).toBeVisible();
+  if (!(await dejaProposee.isVisible())) {
+    await page.getByRole("button", { name: "Grille et solution (PDF)" }).click();
+    const pdf = page.waitForEvent("download");
+    await offre.getByRole("button", { name: "Proposer et imprimer" }).click();
+    expect((await pdf).suggestedFilename()).toMatch(/\.pdf$/);
+    await expect(page.getByText("Merci, c'est envoyé.")).toBeVisible();
+  }
+
+  // Une fois proposée, l'impression ne repose plus la question
+  const encore = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Grille seule (PDF)" }).click();
+  await encore;
+  await expect(offre).toHaveCount(0);
 });

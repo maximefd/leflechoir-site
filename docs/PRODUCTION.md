@@ -236,6 +236,8 @@ La commande :
 
 La commande réexporte d'abord le lexique (`make lexicon-export`), pour que les dernières décisions et les mots ajoutés (`additions.csv`) partent, puis, le lexique en service, renvoie au serveur les réponses aux suggestions de mots ([ADR 0020](adr/0020-suggestions-et-ajouts-au-lexique.md)). Pour récupérer les suggestions du site avant de les trier : `make suggestions-pull`.
 
+**Mises en page proposées** (roadmap 5C) : `make layouts-pull` récupère les formes proposées depuis l'éditeur (`data/layouts/proposals.json`, non versionné). Elles apparaissent en haut de la page Layouts du curateur : → les ajoute au catalogue (`backend/layouts/<L>x<H>/<NNN>.txt`, à committer), ← les refuse ; les décisions restent sur le Mac (`data/layouts/proposal-decisions.csv`). Une forme ajoutée entre en service au `make deploy` suivant.
+
 À relancer après une séance de curation pour publier ses progrès, de préférence aux heures creuses. `make deploy-status` affiche la date du lexique en service.
 
 ## En cas de problème

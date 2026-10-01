@@ -8,6 +8,7 @@
 #         server.sh status           versions, lexique et dernière sauvegarde
 #         server.sh suggestions-export   les suggestions de mots en attente, en JSON (make suggestions-pull)
 #         server.sh suggestions-apply    les décisions de l'auteur, lues sur l'entrée standard (make deploy-lexicon)
+#         server.sh layouts-export       les mises en page proposées au catalogue, en JSON (make layouts-pull)
 #
 # Disposition sur le serveur (LEFLECHOIR_BASE, défaut /opt/leflechoir) :
 #   .env.production        la configuration (modèle : .env.production.example), jamais dans une version
@@ -174,12 +175,20 @@ suggestions() {
     compose "$current" exec -T -e LEXICON_LOAD=0 api flask suggestions "$1"
 }
 
+# Mises en page proposées au catalogue (roadmap 5C) : même chemin que les suggestions
+layouts_export() {
+    current="$(release_of current)"
+    [ -n "$current" ] || die "aucune version en service"
+    compose "$current" exec -T -e LEXICON_LOAD=0 api flask layouts export
+}
+
 case "${1:-}" in
     deploy) deploy "${2:-}" ;;
     suggestions-export) suggestions export ;;
     suggestions-apply) suggestions apply ;;
+    layouts-export) layouts_export ;;
     rollback) rollback ;;
     lexicon) lexicon "${2:-}" ;;
     status) status ;;
-    *) die "Usage : server.sh deploy VERSION | rollback | lexicon SHA256 | status | suggestions-export | suggestions-apply" ;;
+    *) die "Usage : server.sh deploy VERSION | rollback | lexicon SHA256 | status | suggestions-export | suggestions-apply | layouts-export" ;;
 esac

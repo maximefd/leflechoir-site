@@ -5,6 +5,7 @@
 #         tools/deploy/deploy.sh lexicon             (make deploy-lexicon : le lexique curé de ce Mac part en service)
 #         tools/deploy/deploy.sh rollback            (make rollback : l'API revient à la version précédente)
 #         tools/deploy/deploy.sh suggestions-pull    (make suggestions-pull : les suggestions de mots, pour le curateur)
+#         tools/deploy/deploy.sh layouts-pull        (make layouts-pull : les mises en page proposées, pour le curateur)
 #
 # - api   : le code du commit part par SSH sur le serveur, qui construit l'image, la démarre, la vérifie et
 #           revient à la version précédente si elle échoue (tools/deploy/server.sh) ;
@@ -153,6 +154,18 @@ pull_suggestions() {
     say "Suggestions : $count mot(s) en attente, dans l'onglet « Suggestions » du curateur."
 }
 
+# Les mises en page proposées au catalogue (roadmap 5C) : le curateur écarte lui-même celles déjà tranchées.
+PROPOSALS_FILE="data/layouts/proposals.json"
+
+pull_layout_proposals() {
+    mkdir -p "$(dirname "$PROPOSALS_FILE")"
+    ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh layouts-export" > "$PROPOSALS_FILE.tmp" \
+        || { rm -f "$PROPOSALS_FILE.tmp"; die "les mises en page proposées n'ont pas pu être récupérées"; }
+    mv "$PROPOSALS_FILE.tmp" "$PROPOSALS_FILE"
+    count="$(python3 -c 'import json, sys; print(len(json.load(open(sys.argv[1]))["proposals"]))' "$PROPOSALS_FILE")"
+    say "Mises en page proposées : $count, dans la page Layouts du curateur."
+}
+
 case "${1:-all}" in
     all) check_commit; deploy_api; deploy_front ;;
     api) check_commit; deploy_api ;;
@@ -160,6 +173,7 @@ case "${1:-all}" in
     lexicon) deploy_lexicon ;;
     rollback) ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh rollback" ;;
     suggestions-pull) pull_suggestions ;;
+    layouts-pull) pull_layout_proposals ;;
     status) ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh status" ;;
-    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|suggestions-pull]" ;;
+    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|suggestions-pull|layouts-pull]" ;;
 esac

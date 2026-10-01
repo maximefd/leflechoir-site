@@ -240,6 +240,34 @@ class WordSuggestion(db.Model):
         }
 
 
+class LayoutProposal(db.Model):
+    """Une mise en page faite à la main, proposée au catalogue (roadmap 5C).
+
+    Seule la forme est gardée (`x` case définition, `-` case lettre, ADR 0006), jamais les mots : l'auteur
+    l'ajoute ou la refuse dans le curateur. Une forme n'est gardée qu'une fois ; elle disparaît avec le compte
+    qui l'a proposée.
+    """
+    __tablename__ = 'layout_proposal'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow(), index=True)
+    width = db.Column(db.Integer, nullable=False)
+    height = db.Column(db.Integer, nullable=False)
+    # Les rangées, séparées par des retours à la ligne : la forme exacte du fichier du catalogue
+    rows = db.Column(db.Text, nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    __table_args__ = (db.UniqueConstraint('lang', 'rows', name='uq_layout_proposal_lang_rows'),)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "width": self.width,
+            "height": self.height,
+            "rows": self.rows.split("\n"),
+            "created_at": self.created_at.isoformat(timespec="seconds") + "Z",
+        }
+
+
 class SystemSample(db.Model):
     """Un échantillon du serveur, pris chaque minute (ADR 0016, point 3 ; system_samples.py).
 

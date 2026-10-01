@@ -51,6 +51,10 @@ type GridContent = GridData & {
   words: PlacedWord[];
   unknown_words?: string[];
   layout_warnings?: LayoutWarning[];
+  /** Le layout du catalogue qui a exactement cette forme ; `null` : une forme faite à la main (roadmap 5C). */
+  catalog_layout?: string | null;
+  /** Cette forme attend déjà dans les propositions, envoyée par ce compte ou par un autre. */
+  layout_proposed?: boolean;
 };
 
 type SavedGrid = {
@@ -118,6 +122,8 @@ export function GridEditor({ gridId }: { gridId: number }) {
   const [italic, setItalic] = useState(false);
   // L'export attend une confirmation quand la grille n'est pas finie : `true` = avec la solution
   const [pendingPdf, setPendingPdf] = useState<boolean | null>(null);
+  // Avant d'imprimer une forme hors catalogue, une fois : la proposer, ou non (roadmap 5C)
+  const [layoutOfferPdf, setLayoutOfferPdf] = useState<boolean | null>(null);
   // Annulation : on garde les **lettres d'avant**, pas des copies de grille. Une correction ne
   // touche que quelques cases, et l'inverse d'une pose de lettre est une autre pose de lettre.
   const [past, setPast] = useState<GridEdit[]>([]);
@@ -294,6 +300,21 @@ export function GridEditor({ gridId }: { gridId: number }) {
     content && !isEmptyGrid && content.cells.every((cell) => cell.is_black || cell.char),
   );
   const isHandMade = content?.layout === "manuel" || content?.seed === null;
+  // Une forme qui n'est pas au catalogue peut lui être proposée, une fois la grille finie (roadmap 5C).
+  // Une case définition vide reste permise : le catalogue en a.
+  const canProposeLayout = Boolean(
+    isFullGrid &&
+      content?.catalog_layout === null &&
+      !(content?.layout_warnings ?? []).some((warning) => warning.kind !== "case_vide"),
+  );
+  const [proposedFor, setProposedFor] = useState<string | null>(null);
+  const shapeKey = (content?.cells ?? []).filter((cell) => cell.is_black).map((cell) => `${cell.x},${cell.y}`).join(";");
+  const isLayoutProposed = proposedFor === shapeKey || Boolean(content?.layout_proposed);
+  const proposeLayout = useMutation({
+    mutationFn: () => apiFetch(`/api/grids/${gridId}/propose-layout`, { method: "POST" }),
+    onSuccess: () => setProposedFor(shapeKey),
+    onError: (proposeError: Error) => toast.error(proposeError.message),
+  });
   useEffect(() => {
     if (!content || tutorialFor.current === gridId) return;
     tutorialFor.current = gridId;
@@ -617,10 +638,41 @@ export function GridEditor({ gridId }: { gridId: number }) {
     }
   };
 
+  // La proposition de la mise en page n'est faite qu'une fois par forme : l'auteur qui a dit non imprime en paix
+  const offerKey = `layout-offer:${gridId}`;
+  const wasOffered = () => {
+    try {
+      return localStorage.getItem(offerKey) === shapeKey;
+    } catch {
+      return false;
+    }
+  };
+  const markOffered = () => {
+    try {
+      localStorage.setItem(offerKey, shapeKey);
+    } catch {
+      // Stockage indisponible : la question reviendra, sans gêne pour l'export
+    }
+  };
+
+  /** Une forme faite à la main, pas encore proposée : l'auteur choisit avant d'imprimer. */
+  const continuePdf = (withSolution: boolean) => {
+    if (canProposeLayout && !isLayoutProposed && !wasOffered()) setLayoutOfferPdf(withSolution);
+    else void downloadPdf(withSolution);
+  };
+
+  const answerLayoutOffer = async (propose: boolean) => {
+    const withSolution = layoutOfferPdf ?? false;
+    setLayoutOfferPdf(null);
+    markOffered();
+    if (propose) await proposeLayout.mutateAsync().catch(() => undefined);
+    void downloadPdf(withSolution);
+  };
+
   /** Une grille inachevée s'exporte quand même, mais pas sans que l'auteur l'ait su. */
   const requestPdf = (withSolution: boolean) => {
     if (missing > 0 || unfinished.length > 0) setPendingPdf(withSolution);
-    else void downloadPdf(withSolution);
+    else continuePdf(withSolution);
   };
 
   const goToMissing = () => {
@@ -1212,6 +1264,34 @@ export function GridEditor({ gridId }: { gridId: number }) {
                   reprendre ailleurs.
                 </p>
               </div>
+
+              {canProposeLayout && (
+                <div className="space-y-2 rounded-lg border p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Ta mise en page
+                  </p>
+                  {isLayoutProposed ? (
+                    <p className="text-sm">
+                      {proposedFor === shapeKey ? "Merci, c'est envoyé." : "Elle est déjà proposée au catalogue. Merci !"}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Elle n&apos;est pas encore au catalogue. Propose-la : si elle est retenue, le générateur
+                        pourra s&apos;en servir. Seule la place des cases définitions est envoyée, pas tes mots.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={proposeLayout.isPending}
+                        onClick={() => proposeLayout.mutate()}
+                      >
+                        Proposer au catalogue
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -1265,7 +1345,7 @@ export function GridEditor({ gridId }: { gridId: number }) {
               onClick={() => {
                 const withSolution = pendingPdf ?? false;
                 setPendingPdf(null);
-                void downloadPdf(withSolution);
+                continuePdf(withSolution);
               }}
             >
               Exporter quand même
@@ -1282,6 +1362,26 @@ export function GridEditor({ gridId }: { gridId: number }) {
                 Compléter les mots
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={layoutOfferPdf !== null} onOpenChange={(open) => !open && setLayoutOfferPdf(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ta mise en page n&apos;existe pas encore</DialogTitle>
+            <DialogDescription>
+              Elle n&apos;est pas au catalogue. Avant d&apos;imprimer, veux-tu la proposer ? Si elle est retenue, le
+              générateur pourra s&apos;en servir. Seule la place des cases définitions est envoyée, pas tes mots.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => void answerLayoutOffer(false)}>
+              Imprimer sans proposer
+            </Button>
+            <Button disabled={proposeLayout.isPending} onClick={() => void answerLayoutOffer(true)}>
+              Proposer et imprimer
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

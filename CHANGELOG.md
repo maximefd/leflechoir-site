@@ -5,6 +5,16 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Proposer sa mise en page au catalogue** (roadmap, point 5C) : une grille faite à la main, finie et sans
+  avertissement de mise en page, dont la forme n'est pas déjà au catalogue, peut être proposée depuis l'étape
+  « Mise en page et export » de l'éditeur, ou au moment d'imprimer : une fenêtre propose, une seule fois par forme,
+  « Proposer et imprimer » ou « Imprimer sans proposer » (`POST /api/grids/<id>/propose-layout`, raisons `grid_not_full`,
+  `layout_warnings`, `layout_invalid`, `layout_in_catalog`). Seule la forme est gardée, une fois par forme
+  (table `layout_proposal`, migration additive) ; elle part avec le compte. `make layouts-pull` la rapatrie dans
+  la page Layouts du curateur : → l'ajoute au catalogue, ← la refuse. La grille dit désormais si sa forme est
+  au catalogue (`catalog_layout`, formes du catalogue gardées en mémoire et relues dès qu'un fichier change) et si
+  elle est déjà proposée (`layout_proposed`).
+  Déclaré dans la page confidentialité.
 - **Créer une grille à la main** (roadmap, point 5B, `/grids/new`) : depuis une mise en page du catalogue,
   choisie dans une galerie, ou depuis une grille vide de 4 à 20 cases de côté où l'on place soi-même les cases
   définitions. La grille s'ouvre dans l'éditeur ; un emplacement que rien ne contraint encore invite à se lancer

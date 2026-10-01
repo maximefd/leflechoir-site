@@ -49,3 +49,5 @@ backups/
 # Suggestions de mots récupérées du site (make suggestions-pull) : l'état du serveur, pas une donnée du dépôt
 data/lexicon/suggestions.json
 data/lexicon/suggestions.json.tmp
+# Mises en page proposées au catalogue (make layouts-pull) et décisions du curateur : l'état du serveur et de l'auteur
+data/layouts/

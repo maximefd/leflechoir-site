@@ -95,6 +95,16 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
+        <Section title="Les mises en page que tu proposes">
+          <p>
+            Quand tu proposes au catalogue la mise en page d&apos;une grille faite à la main, seule sa forme est
+            conservée : la taille et la place des cases définitions, jamais tes mots ni tes définitions. Elle est
+            rattachée à ton compte et sert à enrichir le catalogue des mises en page, après relecture (intérêt
+            légitime, RGPD art. 6.1.f). Une forme retenue devient une mise en page du site, sans ton nom ; tant
+            qu&apos;elle ne l&apos;est pas, ta proposition disparaît avec ton compte.
+          </p>
+        </Section>
+
         <Section title="Ce qui passe sans être conservé longtemps">
           <ul className="list-disc space-y-1 pl-5">
             <li>

@@ -20,6 +20,7 @@ from stats import init_stats_cli
 from admin import admin_bp, init_admin_cli
 from alerts import init_system_cli
 from suggestions import init_suggestions
+from layout_proposals import init_layout_proposals
 from audience import audience_bp
 
 DEV_SECRET = 'default-secret-for-dev'
@@ -62,6 +63,8 @@ DEFAULT_SETTINGS = dict(
     RATELIMIT_SEARCH='120 per minute',
     # Suggestions de mots : aucune limite pour un humain, un plafond anti-robot (roadmap 1e)
     RATELIMIT_SUGGEST='60 per minute',
+    # Mises en page proposées : une grille finie à la fois, un plafond anti-robot (roadmap 5C)
+    RATELIMIT_PROPOSE_LAYOUT='20 per hour',
     # La balise d'audience : une par page quittée, donc bien moins que le rythme d'un lecteur (#130)
     RATELIMIT_AUDIENCE='120 per minute',
     RATELIMIT_GENERATE='10 per minute',
@@ -304,6 +307,7 @@ def create_app(test_config=None):
     app.register_blueprint(admin_bp)
     app.register_blueprint(audience_bp)
     init_suggestions(app)
+    init_layout_proposals(app)
     init_rate_limiting(app)
     init_usage(app)
     init_stats_cli(app)

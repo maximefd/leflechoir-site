@@ -37,8 +37,9 @@ from schemas import (
 )
 from security import client_ip
 import usage
-from models import UsageEvent, WordSuggestion
+from models import LayoutProposal, UsageEvent, WordSuggestion
 from suggestions import record_replaced_words
+from layout_proposals import catalog_layout, is_proposed
 
 # On crée un nouveau Blueprint pour les routes principales
 main_bp = Blueprint('main', __name__, url_prefix='/api')
@@ -524,6 +525,9 @@ def annotated_grid(user, grid: SavedGrid) -> dict:
     data["grid"]["unknown_words"] = sorted(termines - connus)
     # Cases définitions déplacées par l'auteur : ce qui sort des conventions est signalé, pas refusé
     data["grid"]["layout_warnings"] = layout_warnings(data["grid"].get("cells", []))
+    # Une forme qui n'est pas au catalogue peut lui être proposée, une fois la grille finie (roadmap 5C)
+    data["grid"]["catalog_layout"] = catalog_layout(data["grid"])
+    data["grid"]["layout_proposed"] = data["grid"]["catalog_layout"] is None and is_proposed(data["grid"])
     return data
 
 
@@ -726,6 +730,7 @@ def delete_self():
     # Les événements d'usage liés au compte partent avec lui (ADR 0016).
     UsageEvent.query.filter_by(user_id=user.id).delete()
     WordSuggestion.query.filter_by(user_id=user.id).delete()
+    LayoutProposal.query.filter_by(user_id=user.id).delete()
     db.session.delete(user)
     db.session.commit()
     usage.describe("account", "delete")
