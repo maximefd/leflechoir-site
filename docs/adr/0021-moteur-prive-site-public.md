@@ -28,5 +28,5 @@
 - Sur GitHub Free, le dépôt privé perd la protection de branche obligatoire et le signalement privé des failles, et la CI passe à **2 000 minutes par mois**. Compensations :
   - les fusions restent soumises à une CI verte et à l'accord de l'auteur ;
   - la CI est allégée : runs remplacés annulés, documentation seule sans CI, parcours de bout en bout sur les PR seulement ;
-  - `security.txt` sur le site, pour le signalement des failles (#122).
+  - le `security.txt` du site (déjà en place), pour le signalement des failles (#122).
 - Toute nouvelle partie liée au moteur ou au lexique doit être ajoutée à `tools/public/prive.txt` ; le script vérifie qu'aucun chemin listé ne subsiste dans l'export.
