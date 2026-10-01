@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# OS / éditeurs
+.DS_Store
+.idea/
+.vscode/
+
+# Variables d'environnement (seul le modèle est versionné)
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Rapports générés
+backend/report.html
+backend/benchmarks/*.html
+
+# Artefacts de tests frontend
+frontend/test-results/
+frontend/playwright-report/
+
+# Lexique : sources téléchargées et base reconstruite (seuls decisions.csv et sources.lock.json sont versionnés)
+data/lexicon/raw/
+data/lexicon/build/
+
+# Le frontend utilise pnpm : pas de lockfile npm
+frontend/package-lock.json
+
+# Sortie de `make bench` : regénérée à chaque mesure, propre à la machine
+backend/benchmarks/latest.json
+backend/benchmarks/load.json
+
+# Sauvegardes de la base (make db-backup) : données personnelles, jamais versionnées
+backups/
+
+# État local de wrangler (`pnpm serve:static`, commandes R2 et Pages)
+.wrangler/
+
+# Suggestions de mots récupérées du site (make suggestions-pull) : l'état du serveur, pas une donnée du dépôt
+data/lexicon/suggestions.json
+data/lexicon/suggestions.json.tmp

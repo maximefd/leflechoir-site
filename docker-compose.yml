@@ -1,0 +1,69 @@
+# Environnement de développement local.
+# Prérequis : cp .env.example .env  (les valeurs sont lues depuis .env, jamais versionné)
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: terminator_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Copiez .env.example vers .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copiez .env.example vers .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Copiez .env.example vers .env}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    container_name: terminator_api
+    build: ./backend
+    # Serveur de développement : un seul processus, qui recharge le lexique exporté par le curateur.
+    # L'image lance gunicorn par défaut (production, ADR 0013).
+    command: ["python", "run.py"]
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./backend:/app
+      # Lexique curé exporté par le curateur (lecture seule), rechargé à chaud par l'API
+      - ./data/lexicon/build:/lexicon:ro
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - FLASK_DEBUG=1
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY:?Copiez .env.example vers .env}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?Copiez .env.example vers .env}
+      # Origines autorisées, séparées par des virgules
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - GENERATION_TIME_BUDGET_S=${GENERATION_TIME_BUDGET_S:-20}
+      # Les parcours end-to-end créent un compte par exécution. Le quota de production
+      # (5 par heure) les fait échouer sur un message qui ne ressemble pas à sa cause.
+      - RATELIMIT_REGISTER=${RATELIMIT_REGISTER:-100 per hour}
+      # L'auteur enchaîne les tentatives quand une demande est difficile : pas de plafond ici
+      - RATELIMIT_GENERATE=${RATELIMIT_GENERATE:-120 per minute}
+      # Lexique curé s'il a été exporté, sinon repli automatique sur le DELA complet
+      - LEXICON_PATH=${LEXICON_PATH:-/lexicon/lexique_cure.csv}
+      - LEXICON_RELOAD_INTERVAL_S=${LEXICON_RELOAD_INTERVAL_S:-30}
+      # E-mails du compte (ADR 0014) : ils arrivent dans Mailpit, http://localhost:8025, et ne partent jamais
+      - MAIL_BACKEND=smtp
+      - SMTP_HOST=mail
+      - SMTP_PORT=1025
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+      mail:
+        condition: service_started
+
+  # Boîte de réception locale : capture tous les e-mails de l'API (interface sur http://localhost:8025)
+  mail:
+    image: axllent/mailpit:v1.31.2
+    container_name: terminator_mail
+    ports:
+      - "8025:8025"
+
+volumes:
+  pgdata:

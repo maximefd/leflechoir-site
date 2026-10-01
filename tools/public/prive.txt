@@ -1,0 +1,34 @@
+# Chemins qui ne partent JAMAIS dans le dépôt public (ADR 0021) : le moteur de génération et le lexique.
+# Un chemin par ligne, relatif à la racine ; un dossier exclut tout son contenu.
+backend/engine
+backend/grid_generator.py
+backend/trie_engine.py
+backend/test_harness.py
+backend/benchmarks
+backend/dela_clean.csv
+backend/tests/fixtures/words_2_5.txt
+backend/tests/test_arrows.py
+backend/tests/test_difficulty.py
+backend/tests/test_grid_edit.py
+backend/tests/test_grid_generator.py
+backend/tests/test_grid_solver.py
+backend/tests/test_grid_template.py
+backend/tests/test_harness_must_words.py
+backend/tests/test_layout_format.py
+backend/tests/test_layout_validator.py
+backend/tests/test_must_words.py
+backend/tests/test_pattern_index.py
+backend/tests/test_slot_finder.py
+backend/tests/test_trie_engine.py
+backend/tests/test_word_repository.py
+data/lexicon
+tools/lexicon
+tools/curator
+docs/ENGINE.md
+docs/LEXICON.md
+docs/archive/amelioration-generate.md
+docs/adr/0005-pipeline-du-lexique-et-decisions.md
+docs/adr/0008-regles-automatiques-et-revision.md
+docs/adr/0009-annoncer-la-difficulte.md
+# La CI, les modèles d'issues et dependabot restent sur le dépôt de travail, privé
+.github
