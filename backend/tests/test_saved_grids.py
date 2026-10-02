@@ -468,3 +468,33 @@ def test_shorter_words_never_isolate_the_last_letter(grid_app, client):
     body = send(client, "post", f"/api/grids/{grid_id}/suggestions",
                 {"x": 0, "y": 0, "direction": "across", "shorter": True}, headers).get_json()
     assert 4 not in {len(mot) for mot in body["words"]}
+
+
+def test_the_authors_dictionary_definitions_are_offered(grid_app, client):
+    """#91 : une définition déjà écrite dans un dictionnaire est proposée, pas recopiée d'office."""
+    headers = auth_headers(client)
+    dict_id = default_dictionary_id(client, headers)
+    client.post(f"/api/dictionaries/{dict_id}/words", json={"mot": "ile", "definition": "Terre entourée d'eau"},
+                headers=headers)
+    client.post(f"/api/dictionaries/{dict_id}/words", json={"mot": "AS", "definition": "  "}, headers=headers)
+    autre = send(client, "post", "/api/dictionaries", {"name": "Voyages"}, headers).get_json()["id"]
+    client.post(f"/api/dictionaries/{autre}/words", json={"mot": "ILE", "definition": "Escale du marin"}, headers=headers)
+    grid_id = save(client, headers).get_json()["id"]
+
+    relu = client.get(f"/api/grids/{grid_id}", headers=headers).get_json()
+
+    proposees = relu["grid"]["dictionary_definitions"]
+    assert sorted(d["definition"] for d in proposees["ILE"]) == ["Escale du marin", "Terre entourée d'eau"]
+    assert {d["dictionary"] for d in proposees["ILE"]} >= {"Voyages"}
+    assert "AS" not in proposees  # une définition vide n'est pas une définition
+    assert relu["definitions"] == {}
+
+
+def test_another_accounts_definitions_are_never_offered(grid_app, client):
+    autre = auth_headers(client)
+    dict_id = default_dictionary_id(client, autre)
+    client.post(f"/api/dictionaries/{dict_id}/words", json={"mot": "ILE", "definition": "Secret"}, headers=autre)
+
+    headers = auth_headers(client)
+    grid_id = save(client, headers).get_json()["id"]
+    assert client.get(f"/api/grids/{grid_id}", headers=headers).get_json()["grid"]["dictionary_definitions"] == {}

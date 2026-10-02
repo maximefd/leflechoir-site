@@ -55,6 +55,8 @@ type GridContent = GridData & {
   catalog_layout?: string | null;
   /** Cette forme attend déjà dans les propositions, envoyée par ce compte ou par un autre. */
   layout_proposed?: boolean;
+  /** Les définitions déjà écrites pour ces mots dans les dictionnaires de l'auteur (#91), par mot. */
+  dictionary_definitions?: Record<string, { definition: string; dictionary: string }[]>;
 };
 
 type SavedGrid = {
@@ -1143,6 +1145,35 @@ export function GridEditor({ gridId }: { gridId: number }) {
                       </span>
                       <span>{current.length}/120</span>
                     </div>
+                    {/* #91 : ce que l'auteur a déjà écrit pour ce mot dans ses dictionnaires, à reprendre d'un clic */}
+                    {(content.dictionary_definitions?.[selectedClue.text] ?? [])
+                      .filter(({ definition }) => definition.slice(0, 120) !== current)
+                      .map(({ definition, dictionary }) => (
+                        <div
+                          key={`${dictionary}-${definition}`}
+                          className="mt-2 flex items-start justify-between gap-2 rounded-md bg-secondary/40 p-2 text-xs"
+                        >
+                          <p>
+                            <span className="text-muted-foreground">Dans ton dictionnaire « {dictionary} » : </span>
+                            {definition}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 shrink-0"
+                            onClick={() => {
+                              // Un clic est un geste fini : enregistré tout de suite, sans l'attente de la frappe
+                              const next = { ...definitions, [clueKey(selectedClue)]: definition.slice(0, 120) };
+                              setDefinitions(next);
+                              saved.current = JSON.stringify({ definitions: next, notes });
+                              patchRef.current.mutate({ definitions: next, notes });
+                              inputRef.current?.focus();
+                            }}
+                          >
+                            Utiliser
+                          </Button>
+                        </div>
+                      ))}
                     {overflows(selectedClue, current) && (
                       <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500">
                         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />

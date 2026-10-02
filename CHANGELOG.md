@@ -5,6 +5,10 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Définitions des dictionnaires dans l'éditeur** (#91) : quand un mot de la grille a une définition dans un
+  dictionnaire de l'auteur, l'étape Définitions la propose sous le champ du mot (« Dans ton dictionnaire
+  « Cuisine » : … », bouton « Utiliser », enregistré aussitôt). Rien n'est recopié d'office ; une même définition
+  rangée dans deux dictionnaires n'est proposée qu'une fois (`dictionary_definitions` dans la grille).
 - **Formulaire de contact, « Signaler ce problème » et boîte de réception** ([#131](https://github.com/maximefd/terminator-app/issues/131),
   Phase 8, lot 3b) :
   - `POST /api/contact` (motif, message de 10 à 2 000 caractères, adresse de réponse facultative) : cinq messages

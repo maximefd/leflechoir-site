@@ -565,7 +565,8 @@ flowchart LR
      - **retour à l'auteur de la proposition** : un simple « Merci, c'est envoyé », pas de statut ni de crédit ;
      - **circuit**, calqué sur les suggestions de mots : `make layouts-pull` rapatrie les propositions ; le curateur les montre dans sa page Layouts, l'auteur ajoute (→, écrit `backend/layouts/<L>x<H>/<NNN>.txt` par le même enregistrement que l'éditeur) ou refuse (←) ; la décision se garde en local ; le layout entre en service au déploiement suivant.
 6. **Poste de pilotage, suite (Phase 8)** : système, audience sans cookie, formulaire de contact et « Signaler ce problème », alertes (#129 à #132).
-7. **Petits plus** : recherche avancée (#83), choix du layout et du seed (#89), définitions des dictionnaires dans l'éditeur (#91).
+7. **Petits plus**, revus avec l'auteur le 02/10/2026 : la recherche avancée (#83) et le choix du layout et du seed (#89) sont **abandonnés** (la recherche par motif couvre l'usage de composition ; les définitions du Wiktionnaire restent hors du site). Reste :
+   - **définitions des dictionnaires dans l'éditeur** (#91) : quand un mot de la grille a une définition dans un dictionnaire de l'auteur, l'étape Définitions la propose sous le champ du mot sélectionné (« Dans ton dictionnaire Cuisine : … », bouton « Utiliser ») ; rien n'est écrit sans ce clic, mot par mot (pas de reprise en bloc). Plusieurs dictionnaires, plusieurs définitions : toutes proposées. Le sens inverse (enregistrer dans un dictionnaire une définition écrite dans l'éditeur) n'est pas au programme.
 
 **En continu** : la curation quotidienne (1d) jusqu'à son critère de fin (#125, #126) ; la session d'utilisabilité (#90).
 

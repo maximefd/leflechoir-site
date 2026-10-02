@@ -510,6 +510,28 @@ def known_words(user, words: set[str]) -> set[str]:
     return known
 
 
+def dictionary_definitions(user, words: set[str]) -> dict[str, list[dict]]:
+    """Les définitions que l'auteur a déjà écrites pour ces mots dans ses dictionnaires (#91).
+
+    Proposées dans l'éditeur, jamais recopiées d'office. Une même définition rangée dans deux dictionnaires
+    n'est proposée qu'une fois.
+    """
+    if not user or not words:
+        return {}
+    rows = (db.session.query(PersonalWord.mot, PersonalWord.definition, Dictionary.name)
+            .join(Dictionary, PersonalWord.dictionary_id == Dictionary.id)
+            .filter(Dictionary.user_id == user.id, PersonalWord.mot.in_(words),
+                    PersonalWord.definition.isnot(None))
+            .order_by(Dictionary.name, PersonalWord.id)
+            .all())
+    found: dict[str, list[dict]] = {}
+    for mot, definition, dictionary in rows:
+        texte = (definition or "").strip()
+        if texte and texte not in {d["definition"] for d in found.get(mot, [])}:
+            found.setdefault(mot, []).append({"definition": texte, "dictionary": dictionary})
+    return found
+
+
 def annotated_grid(user, grid: SavedGrid) -> dict:
     """La grille, ses flèches, et ce que le lexique dit de chacun de ses mots.
 
@@ -523,6 +545,7 @@ def annotated_grid(user, grid: SavedGrid) -> dict:
     for word in mots:
         word["in_lexicon"] = word["text"] in connus if word["text"] in termines else None
     data["grid"]["unknown_words"] = sorted(termines - connus)
+    data["grid"]["dictionary_definitions"] = dictionary_definitions(user, termines)
     # Cases définitions déplacées par l'auteur : ce qui sort des conventions est signalé, pas refusé
     data["grid"]["layout_warnings"] = layout_warnings(data["grid"].get("cells", []))
     # Une forme qui n'est pas au catalogue peut lui être proposée, une fois la grille finie (roadmap 5C)
