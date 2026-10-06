@@ -75,7 +75,7 @@ export function ContactInbox() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {item.reply_email ? (
                     <Button asChild variant="outline" size="sm">
-                      <a href={`mailto:${item.reply_email}?subject=${encodeURIComponent(`Re : ton message à ${site.name}`)}`}>
+                      <a href={`mailto:${item.reply_email}?subject=${encodeURIComponent(`Re : ton message ${site.nameAfterA}`)}`}>
                         Répondre à {item.reply_email}
                       </a>
                     </Button>

@@ -26,6 +26,9 @@ Chaque décision structurante du projet est consignée dans un court document : 
 | [0020](0020-suggestions-et-ajouts-au-lexique.md) | Suggestions des utilisateurs et mots ajoutés au lexique | Acceptée |
 | [0021](0021-moteur-prive-site-public.md) | Le moteur en privé, le site et l'API en open source | Acceptée |
 | [0022](0022-echantillons-systeme-et-alertes.md) | Échantillons système et alertes : un minuteur du serveur, des envois plafonnés | Proposée |
+| [0023](0023-cap-sur-la-premiere-place.md) | Cap sur la première place (document privé) | Acceptée |
+| [0024](0024-source-des-definitions.md) | Source des définitions proposées automatiquement | Proposée |
+| [0025](0025-moteur-v2.md) | Moteur v2 : la meilleure de plusieurs grilles, et des grilles « Sur mesure » à côté du catalogue (document privé) | Proposée |
 
 ## Modèle
 

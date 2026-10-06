@@ -37,6 +37,8 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { GridSvg, clueKey, wrapDefinition, type Clue } from "@/components/grid/grid-svg";
 import { LetterPanel, WordReview, type PlacedWord } from "@/components/grid/letter-panel";
 import { HandTutorial, type TutorialStep } from "@/components/grid/hand-tutorial";
+import { MysteryPanel } from "@/components/grid/mystery-panel";
+import { brokenDescription, movedNumbers } from "@/lib/mystery";
 
 /** Les étapes qu'on peut passer (« Je les place moi-même », « Suivant ») et celle qui les suit. */
 const NEXT_STEP: Partial<Record<TutorialStep, TutorialStep>> = { 1: 2, 2: 3, 3: 4, 6: 7 };
@@ -51,10 +53,6 @@ type GridContent = GridData & {
   words: PlacedWord[];
   unknown_words?: string[];
   layout_warnings?: LayoutWarning[];
-  /** Le layout du catalogue qui a exactement cette forme ; `null` : une forme faite à la main (roadmap 5C). */
-  catalog_layout?: string | null;
-  /** Cette forme attend déjà dans les propositions, envoyée par ce compte ou par un autre. */
-  layout_proposed?: boolean;
   /** Les définitions déjà écrites pour ces mots dans les dictionnaires de l'auteur (#91), par mot. */
   dictionary_definitions?: Record<string, { definition: string; dictionary: string }[]>;
 };
@@ -124,8 +122,6 @@ export function GridEditor({ gridId }: { gridId: number }) {
   const [italic, setItalic] = useState(false);
   // L'export attend une confirmation quand la grille n'est pas finie : `true` = avec la solution
   const [pendingPdf, setPendingPdf] = useState<boolean | null>(null);
-  // Avant d'imprimer une forme hors catalogue, une fois : la proposer, ou non (roadmap 5C)
-  const [layoutOfferPdf, setLayoutOfferPdf] = useState<boolean | null>(null);
   // Annulation : on garde les **lettres d'avant**, pas des copies de grille. Une correction ne
   // touche que quelques cases, et l'inverse d'une pose de lettre est une autre pose de lettre.
   const [past, setPast] = useState<GridEdit[]>([]);
@@ -285,6 +281,34 @@ export function GridEditor({ gridId }: { gridId: number }) {
         .map((cell) => ({ x: cell.x, y: cell.y, is_black: true })),
     [content],
   );
+  /**
+   * Le troisième départ (#221) : une géométrie de style magazine tirée par le moteur (`POST /api/grids/geometry`),
+   * posée comme toute modification de la grille, donc annulable. Seulement sur une grille sans lettre.
+   */
+  const canDrawMagazine = Boolean(
+    content?.layout === "manuel" && content.width >= 5 && content.height >= 5 && !content.cells.some((cell) => cell.char),
+  );
+  const [isDrawing, setDrawing] = useState(false);
+  const drawMagazine = async () => {
+    if (!content) return false;
+    setDrawing(true);
+    try {
+      const { rows } = (await apiFetch("/api/grids/geometry", {
+        method: "POST",
+        body: { width: content.width, height: content.height },
+      })) as { rows: string[] };
+      const blocks = content.cells
+        .filter((cell) => (rows[cell.y]?.[cell.x] === "x") !== cell.is_black)
+        .map((cell) => ({ x: cell.x, y: cell.y, is_black: !cell.is_black }));
+      if (blocks.length) await writeEdit({ blocks });
+      return true;
+    } catch (drawError) {
+      toast.error(drawError instanceof Error ? drawError.message : "La géométrie n'a pas pu être tirée.");
+      return false;
+    } finally {
+      setDrawing(false);
+    }
+  };
   const canPrefill = Boolean(
     content?.layout === "manuel" &&
       classicBlocks.length > 0 &&
@@ -302,21 +326,6 @@ export function GridEditor({ gridId }: { gridId: number }) {
     content && !isEmptyGrid && content.cells.every((cell) => cell.is_black || cell.char),
   );
   const isHandMade = content?.layout === "manuel" || content?.seed === null;
-  // Une forme qui n'est pas au catalogue peut lui être proposée, une fois la grille finie (roadmap 5C).
-  // Une case définition vide reste permise : le catalogue en a.
-  const canProposeLayout = Boolean(
-    isFullGrid &&
-      content?.catalog_layout === null &&
-      !(content?.layout_warnings ?? []).some((warning) => warning.kind !== "case_vide"),
-  );
-  const [proposedFor, setProposedFor] = useState<string | null>(null);
-  const shapeKey = (content?.cells ?? []).filter((cell) => cell.is_black).map((cell) => `${cell.x},${cell.y}`).join(";");
-  const isLayoutProposed = proposedFor === shapeKey || Boolean(content?.layout_proposed);
-  const proposeLayout = useMutation({
-    mutationFn: () => apiFetch(`/api/grids/${gridId}/propose-layout`, { method: "POST" }),
-    onSuccess: () => setProposedFor(shapeKey),
-    onError: (proposeError: Error) => toast.error(proposeError.message),
-  });
   useEffect(() => {
     if (!content || tutorialFor.current === gridId) return;
     tutorialFor.current = gridId;
@@ -415,6 +424,15 @@ export function GridEditor({ gridId }: { gridId: number }) {
     const before = inverseOf(edit);
     try {
       const updated = await apiFetch(`/api/grids/${gridId}`, { method: "PATCH", body: edit });
+      // Une lettre numérotée corrigée : son numéro passe sur une autre case, et l'auteur doit le savoir (#218)
+      const moved = movedNumbers(content?.mystery, updated.grid.mystery);
+      if (moved.length > 0) {
+        toast.info(
+          moved.length > 1
+            ? `Mot mystère : les numéros ${moved.join(", ")} ont changé de case, leur lettre a changé.`
+            : `Mot mystère : le numéro ${moved[0]} a changé de case, sa lettre a changé.`,
+        );
+      }
       setContent(updated.grid);
       if (remember) {
         setPast((stack) => [...stack.slice(-49), before]);
@@ -640,41 +658,10 @@ export function GridEditor({ gridId }: { gridId: number }) {
     }
   };
 
-  // La proposition de la mise en page n'est faite qu'une fois par forme : l'auteur qui a dit non imprime en paix
-  const offerKey = `layout-offer:${gridId}`;
-  const wasOffered = () => {
-    try {
-      return localStorage.getItem(offerKey) === shapeKey;
-    } catch {
-      return false;
-    }
-  };
-  const markOffered = () => {
-    try {
-      localStorage.setItem(offerKey, shapeKey);
-    } catch {
-      // Stockage indisponible : la question reviendra, sans gêne pour l'export
-    }
-  };
-
-  /** Une forme faite à la main, pas encore proposée : l'auteur choisit avant d'imprimer. */
-  const continuePdf = (withSolution: boolean) => {
-    if (canProposeLayout && !isLayoutProposed && !wasOffered()) setLayoutOfferPdf(withSolution);
-    else void downloadPdf(withSolution);
-  };
-
-  const answerLayoutOffer = async (propose: boolean) => {
-    const withSolution = layoutOfferPdf ?? false;
-    setLayoutOfferPdf(null);
-    markOffered();
-    if (propose) await proposeLayout.mutateAsync().catch(() => undefined);
-    void downloadPdf(withSolution);
-  };
-
   /** Une grille inachevée s'exporte quand même, mais pas sans que l'auteur l'ait su. */
   const requestPdf = (withSolution: boolean) => {
     if (missing > 0 || unfinished.length > 0) setPendingPdf(withSolution);
-    else continuePdf(withSolution);
+    else void downloadPdf(withSolution);
   };
 
   const goToMissing = () => {
@@ -880,6 +867,14 @@ export function GridEditor({ gridId }: { gridId: number }) {
                 void writeEdit({ blocks: classicBlocks });
                 setTutorial(2);
               }}
+              onMagazine={
+                canDrawMagazine
+                  ? () => {
+                      void drawMagazine().then((done) => done && setTutorial(2));
+                    }
+                  : undefined
+              }
+              isDrawing={isDrawing}
               onNext={() => setTutorial((step) => (step === null ? null : NEXT_STEP[step] ?? step))}
               onDefinitions={() => {
                 setMode("definitions");
@@ -904,9 +899,16 @@ export function GridEditor({ gridId }: { gridId: number }) {
                 Placer les cases définitions habituelles : une sur deux sur la première ligne et la première
                 colonne ?
               </span>
-              <Button size="sm" onClick={() => void writeEdit({ blocks: classicBlocks })}>
-                Préremplir
-              </Button>
+              <span className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => void writeEdit({ blocks: classicBlocks })}>
+                  Préremplir
+                </Button>
+                {canDrawMagazine && (
+                  <Button size="sm" variant="outline" disabled={isDrawing} onClick={() => void drawMagazine()}>
+                    Grille de magazine au hasard
+                  </Button>
+                )}
+              </span>
             </div>
           )}
 
@@ -1030,6 +1032,17 @@ export function GridEditor({ gridId }: { gridId: number }) {
                   Annuler
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Un numéro du mot mystère sans case qui porte sa lettre : la grille imprimée serait fausse (#218) */}
+          {mode === "lettres" && content.mystery && (content.mystery.broken ?? []).length > 0 && (
+            <div role="status" className="mt-2 shrink-0 rounded-md border border-amber-500/50 p-2 text-xs">
+              <p className="font-medium">Mot mystère : {brokenDescription(content.mystery)}.</p>
+              <p className="text-muted-foreground">
+                Aucune case libre ne porte cette lettre : remets-la dans la grille, ou change de mot dans « Mise en
+                page et export ».
+              </p>
             </div>
           )}
 
@@ -1262,6 +1275,15 @@ export function GridEditor({ gridId }: { gridId: number }) {
                 </p>
               </div>
 
+              <MysteryPanel
+                gridId={gridId}
+                mystery={content.mystery}
+                onUpdated={(grid) => {
+                  setContent(grid as GridContent);
+                  queryClient.invalidateQueries({ queryKey: ["saved-grids"] });
+                }}
+              />
+
               <div className="space-y-2 rounded-lg border p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Exporter</p>
                 {(missing > 0 || unfinished.length > 0) && (
@@ -1295,34 +1317,6 @@ export function GridEditor({ gridId }: { gridId: number }) {
                   reprendre ailleurs.
                 </p>
               </div>
-
-              {canProposeLayout && (
-                <div className="space-y-2 rounded-lg border p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Ta mise en page
-                  </p>
-                  {isLayoutProposed ? (
-                    <p className="text-sm">
-                      {proposedFor === shapeKey ? "Merci, c'est envoyé." : "Elle est déjà proposée au catalogue. Merci !"}
-                    </p>
-                  ) : (
-                    <>
-                      <p className="text-sm text-muted-foreground">
-                        Elle n&apos;est pas encore au catalogue. Propose-la : si elle est retenue, le générateur
-                        pourra s&apos;en servir. Seule la place des cases définitions est envoyée, pas tes mots.
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={proposeLayout.isPending}
-                        onClick={() => proposeLayout.mutate()}
-                      >
-                        Proposer au catalogue
-                      </Button>
-                    </>
-                  )}
-                </div>
-              )}
             </>
           )}
 
@@ -1376,7 +1370,7 @@ export function GridEditor({ gridId }: { gridId: number }) {
               onClick={() => {
                 const withSolution = pendingPdf ?? false;
                 setPendingPdf(null);
-                continuePdf(withSolution);
+                void downloadPdf(withSolution);
               }}
             >
               Exporter quand même
@@ -1397,25 +1391,6 @@ export function GridEditor({ gridId }: { gridId: number }) {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={layoutOfferPdf !== null} onOpenChange={(open) => !open && setLayoutOfferPdf(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Ta mise en page n&apos;existe pas encore</DialogTitle>
-            <DialogDescription>
-              Elle n&apos;est pas au catalogue. Avant d&apos;imprimer, veux-tu la proposer ? Si elle est retenue, le
-              générateur pourra s&apos;en servir. Seule la place des cases définitions est envoyée, pas tes mots.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => void answerLayoutOffer(false)}>
-              Imprimer sans proposer
-            </Button>
-            <Button disabled={proposeLayout.isPending} onClick={() => void answerLayoutOffer(true)}>
-              Proposer et imprimer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }

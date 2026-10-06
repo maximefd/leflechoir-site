@@ -7,7 +7,7 @@ BACKEND_RUN := docker run --rm -v "$(CURDIR)/backend":/app -w /app -e PYTHONDONT
 TOOLS_RUN := docker run --rm -v "$(CURDIR)":/repo -w /repo -e PYTHONDONTWRITEBYTECODE=1 $(PY_IMAGE) sh -c
 
 .PHONY: help setup dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report \
-	deploy deploy-api deploy-front deploy-lexicon rollback deploy-status suggestions-pull layouts-pull \
+	deploy deploy-api deploy-front deploy-lexicon rollback deploy-status suggestions-pull \
 	lexicon-download lexicon-build lexicon-export lexicon-stats \
 	curator curator-bg curator-stop curator-logs curator-check curator-urls \
 	preview-remote
@@ -149,8 +149,8 @@ rollback: ## Remet en service la version précédente de l'API
 suggestions-pull: ## Récupère les suggestions de mots du site pour l'onglet « Suggestions » du curateur
 	tools/deploy/deploy.sh suggestions-pull
 
-layouts-pull: ## Récupère les mises en page proposées au catalogue, pour la page Layouts du curateur (roadmap 5C)
-	tools/deploy/deploy.sh layouts-pull
+indexnow: ## Signale à IndexNow (Bing, Copilot…) toutes les adresses du sitemap en ligne
+	tools/deploy/deploy.sh indexnow
 
 deploy-status: ## Versions de l'API en service et précédente
 	tools/deploy/deploy.sh status

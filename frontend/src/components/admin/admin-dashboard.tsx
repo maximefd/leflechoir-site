@@ -8,6 +8,7 @@ import {
   dateTime, dayMonth, Empty, Group, Indicator, LEVELS, number, percent, Scroll, seconds, Section, type Level,
 } from "@/components/admin/parts";
 import { ContactInbox } from "@/components/admin/contact-inbox";
+import { RaceGroup, type Race } from "@/components/admin/race-group";
 import { SystemGroup, type SystemState } from "@/components/admin/system-group";
 import { useAuth } from "@/contexts/auth-context";
 import { ApiError, apiFetch } from "@/lib/api-client";
@@ -83,6 +84,7 @@ const SOURCE_KIND_LABELS = { direct: "Accès direct", search: "Moteurs de recher
 type AdminStats = {
   now: string;
   periods: Period[];
+  race: Race;
   audience: Audience;
   thresholds: {
     p95_ms: number | null;
@@ -529,6 +531,8 @@ function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggesti
           dès {percent(thresholds.near_share, 0)} du seuil.
         </p>
       </section>
+
+      <RaceGroup race={stats.race} />
 
       <ContactInbox />
 

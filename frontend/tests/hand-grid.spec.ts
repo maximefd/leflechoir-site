@@ -5,8 +5,9 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * Le parcours suit les gestes d'un débutant, pas les boutons du tutoriel : refuser le préremplissage puis
  * changer d'avis, écrire des mots, passer aux définitions par le bouton du panneau. C'est sur ce chemin que
- * l'étape « Écris ta première définition » manquait. Il finit par proposer la mise en page au catalogue.
- * Crée un compte jetable (quota d'inscription : voir `saved-grids.spec.ts`).
+ * l'étape « Écris ta première définition » manquait. Il finit par l'export, sans proposition au catalogue (#221).
+ * Le second parcours part d'une grille de magazine tirée au hasard (#221).
+ * Crée des comptes jetables (quota d'inscription : voir `saved-grids.spec.ts`).
  */
 const etape = (page: Page, numero: number) => page.getByRole("dialog", { name: new RegExp(`étape ${numero} sur 8`) });
 
@@ -47,7 +48,10 @@ test("une première grille à la main est guidée jusqu'aux définitions", async
   await page.getByRole("button", { name: "En faire une case définition" }).click();
   await expect(page.getByRole("alertdialog")).toHaveCount(0);
   await page.getByRole("button", { name: "En faire une case lettre" }).click();
-  await page.getByRole("button", { name: "Je les place moi-même" }).click();
+  // Trois départs (#221) ; en 4 × 4, trop petit pour le moteur, pas de grille de magazine
+  await expect(page.getByRole("button", { name: "Première ligne et première colonne" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Grille de magazine au hasard" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Grille vierge" }).click();
   await expect(etape(page, 2)).toBeVisible();
   await page.getByRole("button", { name: "Préremplir" }).click();
   await expect(page.getByRole("button", { name: "Préremplir" })).toHaveCount(0);
@@ -80,22 +84,41 @@ test("une première grille à la main est guidée jusqu'aux définitions", async
   await page.getByRole("button", { name: "Voir la mise en page", exact: true }).click();
   await expect(page.getByRole("button", { name: /Mise en page et export/ })).toHaveAttribute("aria-current", "step");
 
-  // Roadmap 5C : une forme faite à la main n'est pas au catalogue. Avant d'imprimer, l'auteur peut la proposer.
-  // Une forme ne se propose qu'une fois : sur un nouvel essai du test (CI), elle attend déjà, et rien n'est redemandé
-  const offre = page.getByRole("dialog", { name: "Ta mise en page n'existe pas encore" });
-  const dejaProposee = page.getByText("Elle est déjà proposée au catalogue. Merci !");
-  await expect(page.getByRole("button", { name: "Proposer au catalogue" }).or(dejaProposee)).toBeVisible();
-  if (!(await dejaProposee.isVisible())) {
-    await page.getByRole("button", { name: "Grille et solution (PDF)" }).click();
-    const pdf = page.waitForEvent("download");
-    await offre.getByRole("button", { name: "Proposer et imprimer" }).click();
-    expect((await pdf).suggestedFilename()).toMatch(/\.pdf$/);
-    await expect(page.getByText("Merci, c'est envoyé.")).toBeVisible();
-  }
-
-  // Une fois proposée, l'impression ne repose plus la question
-  const encore = page.waitForEvent("download");
+  // La proposition au catalogue est retirée (#221) : l'export part directement
+  await expect(page.getByRole("button", { name: "Proposer au catalogue" })).toHaveCount(0);
+  const pdf = page.waitForEvent("download");
   await page.getByRole("button", { name: "Grille seule (PDF)" }).click();
-  await encore;
-  await expect(offre).toHaveCount(0);
+  expect((await pdf).suggestedFilename()).toMatch(/\.pdf$/);
+  await expect(page.getByRole("dialog", { name: "Ta mise en page n'existe pas encore" })).toHaveCount(0);
+});
+
+test("une grille à la main peut partir d'une grille de magazine tirée au hasard", async ({ page }) => {
+  test.setTimeout(90_000);
+
+  await page.goto("/register");
+  await page.getByLabel("Email").fill(`magazine_${Date.now()}@test.com`);
+  await page.getByLabel("Mot de passe").fill("TestPassword123");
+  await page.getByRole("button", { name: "Créer un compte" }).click();
+  await expect(page.getByTestId("logout-button")).toBeVisible();
+
+  await page.goto("/grids/new");
+  // Plus de galerie de mises en page toutes faites (#221)
+  await expect(page.getByText("Une mise en page du catalogue")).toHaveCount(0);
+  await page.getByLabel("Largeur").fill("7");
+  await page.getByLabel("Hauteur").fill("9");
+  await page.getByRole("button", { name: /Créer une grille vide de 7\s*×\s*9/ }).click();
+
+  await expect(etape(page, 1)).toBeVisible();
+  const drawn = page.waitForResponse((r) => r.url().endsWith("/api/grids/geometry") && r.request().method() === "POST");
+  const placed = page.waitForRequest(
+    (r) => r.method() === "PATCH" && r.url().includes("/api/grids/") && (r.postData() ?? "").includes("blocks"),
+  );
+  await page.getByRole("button", { name: "Grille de magazine au hasard" }).click();
+  const { rows } = await (await drawn).json();
+  expect(rows).toHaveLength(9);
+  const body = JSON.parse((await placed).postData() ?? "{}");
+  expect(body.blocks.filter((block: { is_black: boolean }) => block.is_black).length).toBe(
+    rows.join("").split("x").length - 1,
+  );
+  await expect(etape(page, 2)).toBeVisible();
 });

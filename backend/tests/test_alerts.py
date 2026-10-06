@@ -253,6 +253,43 @@ def test_the_weekly_report_leaves_on_monday_morning_once(test_app, outbox):
     assert AlertSent.query.filter_by(kind="weekly", period="2026-W41").count() == 1
 
 
+def test_the_weekly_report_opens_with_the_race_over_the_last_four_complete_weeks(test_app, outbox):
+    """#201 : les indicateurs de la course, par semaine ISO. Le lundi 5 octobre à 6 h, S40 (28/09 au 04/10) vient de
+    finir ; S41 commence à peine et ne figure pas dans le bilan."""
+    def add(kind, outcome, when, visitor):
+        db.session.add(UsageEvent(created_at=when, kind=kind, outcome=outcome, status=200, route="/api/test",
+                                  site="fr", lang="fr", visitor=visitor, data={}))
+
+    for index in range(2):  # S39 : deux générations réussies
+        add("generation", "grid", datetime(2026, 9, 22, 10), f"{index:032x}")
+    for index in range(3):  # S40 : trois, un export PDF de la balise, une inscription
+        add("generation", "grid", datetime(2026, 9, 29, 10), f"{index:032x}")
+    add("page", "pdf", datetime(2026, 10, 2, 18), "f" * 32)
+    add("account", "register", datetime(2026, 10, 4, 21), "a" * 32)
+    add("account", "register", datetime(2026, 10, 5, 0, 30), "b" * 32)  # S41, lundi après minuit
+    db.session.commit()
+
+    assert alerts.send_weekly(MONDAY) is True
+
+    [message] = outbox
+    body = message.get_content()
+    race, usage = body.index("La course : les 4 dernières semaines complètes"), body.index("Semaine du 28/09/2026")
+    assert race < usage  # la course d'abord
+    block = body[race:usage]
+    for expected in ("S37", "S38", "S39", "S40", "Visiteurs (somme par jour)", "Générations réussies",
+                     "Grilles terminées", "  dont exports PDF", "  dont grilles conservées", "Comptes créés",
+                     "en hausse (+1, +50 %)",  # 3 générations réussies contre 2
+                     "S40 : du 28/09 au 04/10/2026. Tendance : S40 contre S39."):
+        assert expected in block, expected
+    # Ce qui ne se mesure pas encore est annoncé, jamais chiffré
+    for label in ("Parties jouées", "Grilles publiées", "Avis reçus"):
+        assert any(line.startswith(label) and line.endswith("à venir") for line in block.splitlines()), label
+    assert "S41" not in block and "*" not in block  # la semaine en cours attend le bilan suivant
+    # Le reste du bilan est là, à sa place
+    for expected in ("Générations demandées", "Nouveaux comptes", "Messages de contact reçus", "Serveur :"):
+        assert expected in body, expected
+
+
 def test_the_report_can_be_forced_but_stays_under_the_cap(test_app, outbox, monkeypatch, runner):
     monkeypatch.setitem(test_app.config, "ALERT_DAILY_CAP", 2)
 

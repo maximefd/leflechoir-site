@@ -13,9 +13,12 @@ export type WordDifficulty = {
 };
 
 export type Difficulty = {
+  /** « catalogue » ou « sur_mesure » (#210) : sur mesure, rien n'est encore mesuré. */
+  geometry?: "catalogue" | "sur_mesure";
   words: WordDifficulty[];
-  success_rate: number;
-  level: string;
+  /** `null` sur mesure : les taux ont été mesurés sur le catalogue, aucun n'est inventé (#210). */
+  success_rate: number | null;
+  level: string | null;
   measured: boolean;
   hardest: string | null;
   advice: string | null;
@@ -29,10 +32,9 @@ export type Difficulty = {
   fitting_formats: string[];
   /** Format qui donne nettement plus de chances à ces mots (15 points ou plus), à proposer en un clic. */
   better_format: { format: string; width: number; height: number; success_rate: number } | null;
+  /** Sur mesure (#219, #220) : la plus petite grille qui a la meilleure probabilité de recevoir ces mots. */
+  best_size?: { width: number; height: number; success_rate: number } | null;
 };
-
-/** « 13x16 » → « 13 × 16 », comme dans le choix de la taille. */
-const formatLabel = (name: string) => name.replace("x", "\u00a0×\u00a0");
 
 const BAR_COLOURS: Record<string, string> = {
   facile: "bg-emerald-500",
@@ -45,29 +47,9 @@ type DifficultyPanelProps = {
   difficulty: Difficulty | null;
   isLoading: boolean;
   hasRequiredWords: boolean;
-  /** Passe la grille au format conseillé (« 12x15 »), sans toucher aux mots. */
-  onSelectFormat: (format: string) => void;
 };
 
-/** Le format qui donne le plus de chances, quand il fait nettement mieux que celui choisi. */
-function BetterFormat({ difficulty, onSelectFormat }: { difficulty: Difficulty; onSelectFormat: (format: string) => void }) {
-  const better = difficulty.better_format;
-  if (!better) return null;
-  const label = formatLabel(better.format);
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded bg-muted p-2 text-xs">
-      <p>
-        En {label}, ces mots aboutissent {Math.round(better.success_rate * 100)}&nbsp;% du temps, contre{" "}
-        {Math.round(difficulty.success_rate * 100)}&nbsp;% ici.
-      </p>
-      <Button type="button" size="sm" variant="outline" onClick={() => onSelectFormat(better.format)}>
-        Passer en {label}
-      </Button>
-    </div>
-  );
-}
-
-export function DifficultyPanel({ difficulty, isLoading, hasRequiredWords, onSelectFormat }: DifficultyPanelProps) {
+export function DifficultyPanel({ difficulty, isLoading, hasRequiredWords }: DifficultyPanelProps) {
   if (!hasRequiredWords) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -83,13 +65,29 @@ export function DifficultyPanel({ difficulty, isLoading, hasRequiredWords, onSel
   if (difficulty.impossible?.length > 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Pas d&apos;estimation : un mot obligatoire ne tient pas dans ce format.
+        Pas d&apos;estimation : un mot obligatoire ne tient pas dans cette taille.
       </p>
     );
   }
 
+  // Aucun taux mesuré pour cette taille : on le dit plutôt que d'en inventer un
+  if (difficulty.success_rate === null) {
+    return (
+      <div className={`space-y-1 rounded-md border p-4 ${isLoading ? "opacity-60" : ""}`}>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-sm font-medium">Chances par tentative</span>
+          <span className="text-sm font-semibold">pas encore mesuré</span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Les chances de tes mots obligatoires n&apos;ont pas été mesurées pour cette taille. Si la grille
+          n&apos;aboutit pas, décoche « Obligatoire » : le mot sera placé s&apos;il rentre.
+        </p>
+      </div>
+    );
+  }
+
   const percent = Math.round(difficulty.success_rate * 100);
-  const colour = BAR_COLOURS[difficulty.level] ?? "bg-muted-foreground";
+  const colour = BAR_COLOURS[difficulty.level ?? ""] ?? "bg-muted-foreground";
 
   return (
     <div className={`space-y-3 rounded-md border p-4 ${isLoading ? "opacity-60" : ""}`}>
@@ -138,12 +136,11 @@ export function DifficultyPanel({ difficulty, isLoading, hasRequiredWords, onSel
 
       {difficulty.advice && <p className="rounded bg-muted p-2 text-xs">{difficulty.advice}</p>}
       {difficulty.size_advice && <p className="rounded bg-muted p-2 text-xs">{difficulty.size_advice}</p>}
-      <BetterFormat difficulty={difficulty} onSelectFormat={onSelectFormat} />
 
       {/* D'où sort le chiffre : sans quoi 66 % se lit comme une promesse */}
       <p className="border-t pt-2 text-xs text-muted-foreground">
-        Chiffre mesuré sur 2 640 générations, avec des mots courants tirés du lexique. Chaque tentative
-        est indépendante : relancer change de tirage, mais deux échecs de suite sur une demande annoncée
+        Chiffre mesuré sur des générations de cette taille, avec des mots courants tirés du lexique. Chaque tentative
+        est indépendante : relancer donne une autre grille, mais deux échecs de suite sur une demande annoncée
         facile veulent dire que tes mots sont plus durs que ceux de la mesure.
       </p>
     </div>
@@ -151,16 +148,40 @@ export function DifficultyPanel({ difficulty, isLoading, hasRequiredWords, onSel
 }
 
 /**
- * Mots qui ne tiennent dans aucune mise en page du format choisi, signalés dès la saisie (#73).
- * Obligatoires ou souhaités : un mot souhaité impossible serait sinon accepté sans un mot, et jamais placé.
+ * La taille conseillée pour les mots imposés (#220) : la plus petite grille qui a la meilleure probabilité de
+ * les recevoir (`best_size`, #219), à prendre d'un clic.
  */
-export function FitNotice({ fit, onSelectFormat }: {
-  fit: Pick<Difficulty, "impossible" | "fitting_formats">;
-  onSelectFormat: (format: string) => void;
+export function SizeAdvice({ best, current, onApply, disabled }: {
+  best: { width: number; height: number };
+  current: { width: number; height: number } | null;
+  onApply: (size: { width: number; height: number }) => void;
+  disabled?: boolean;
 }) {
+  const applied = current?.width === best.width && current?.height === best.height;
+  return (
+    <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-muted p-2 text-sm">
+      <p>
+        Taille conseillée pour tes mots : <strong className="tabular-nums">{best.width}&nbsp;×&nbsp;{best.height}</strong>
+        {applied && <span className="text-muted-foreground"> (c&apos;est celle choisie)</span>}
+      </p>
+      {!applied && (
+        <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={() => onApply(best)}>
+          Prendre {best.width}&nbsp;×&nbsp;{best.height}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Mots qui ne tiennent pas dans la taille choisie, signalés dès la saisie (#73) : plus longs que tout mot
+ * d'une grille dessinée à cette taille. Obligatoires ou souhaités : un mot souhaité impossible serait sinon
+ * accepté sans un mot, et jamais placé.
+ */
+export function FitNotice({ fit }: { fit: Pick<Difficulty, "impossible"> }) {
   return (
     <div role="status" className="space-y-2 rounded-md border border-destructive/50 p-3">
-      <p className="text-sm font-medium">Ces mots ne tiennent pas dans ce format</p>
+      <p className="text-sm font-medium">Ces mots ne tiennent pas dans une grille de cette taille</p>
       <ul className="space-y-1 text-xs">
         {fit.impossible.map((item) => (
           <li key={item.word}>
@@ -168,20 +189,7 @@ export function FitNotice({ fit, onSelectFormat }: {
           </li>
         ))}
       </ul>
-      {fit.fitting_formats.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span>Formats qui les accueillent :</span>
-          {fit.fitting_formats.map((format) => (
-            <Button key={format} type="button" size="sm" variant="outline" onClick={() => onSelectFormat(format)}>
-              {formatLabel(format)}
-            </Button>
-          ))}
-        </div>
-      ) : (
-        <p className="text-xs text-muted-foreground">
-          Aucun format du catalogue ne les accueille tous : raccourcis ou retire un mot.
-        </p>
-      )}
+      <p className="text-xs text-muted-foreground">Agrandis la grille, ou raccourcis-les.</p>
     </div>
   );
 }

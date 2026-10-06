@@ -14,11 +14,14 @@ chiffre est la somme des visiteurs de chaque jour, et non un nombre de personnes
 
 Le poste de pilotage (`as_json`, #129) y ajoute, toujours sur les événements déjà collectés : l'évolution par
 jour, le parcours, les issues par format et selon les mots imposés, et les seuils en trois états.
+
+« La course » (`race`, #201, [ADR 0023](../docs/adr/0023-cap-sur-la-premiere-place.md)) les relit par semaine ISO :
+c'est ce que le bilan du lundi et `/admin` montrent pour suivre le cap. Aucun champ n'est mesuré pour elle.
 """
 
 import os
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import click
 from flask import current_app
@@ -268,6 +271,113 @@ def _period_figures(events: list[UsageEvent], days: int, cpu_count: int) -> dict
     }
 
 
+# --- « La course » (ADR 0023, lot C0, #201) : ce qu'on suit chaque semaine pour passer devant le concurrent ---
+
+RACE_WEEKS = 4  # semaines ISO complètes affichées ; la semaine en cours se montre à part, jamais dans la tendance
+# En deçà de cet écart d'une semaine à l'autre, la tendance est « stable » : quelques unités de plus ou de moins sur
+# des centaines ne disent rien, et une flèche rouge pour un visiteur de moins ferait crier au loup
+TREND_FLAT_SHARE = 0.05
+
+# Dans l'ordre de l'ADR 0023, ce qui se mesure déjà d'abord : (clé, libellé, ligne de détail de la précédente).
+# Ce que les lots à venir apporteront reste en bas : « à venir » tant qu'aucun compteur ne l'alimente, jamais un zéro.
+RACE_ROWS = (
+    ("visitors", "Visiteurs (somme par jour)", False),
+    ("grids", "Générations réussies", False),
+    ("finished", "Grilles terminées", False),
+    ("pdf", "exports PDF", True),
+    ("saved", "grilles conservées", True),
+    ("registers", "Comptes créés", False),
+    ("games", "Parties jouées", False),
+    ("published", "Grilles publiées", False),
+    ("feedback", "Avis reçus", False),
+)
+# Ce que chaque événement d'usage ajoute à un compteur : (kind, outcome) → clé de RACE_ROWS. Un lot qui livre sa
+# fonction (partie jouée, grille publiée, avis) y inscrit son événement : sa ligne passe de « à venir » aux chiffres,
+# dans /admin comme dans le bilan, sans autre changement. « page / pdf » est la balise du navigateur (audience.py).
+RACE_COUNTED = {
+    ("generation", "grid"): "grids",
+    ("account", "register"): "registers",
+    ("grid", "saved"): "saved",
+    ("page", "pdf"): "pdf",
+}
+
+
+def _week_start(day: date) -> date:
+    """Le lundi de la semaine ISO de ce jour."""
+    return day - timedelta(days=day.weekday())
+
+
+def _week(start: date) -> dict:
+    iso = start.isocalendar()
+    return {"week": f"{iso.year}-W{iso.week:02d}", "label": f"S{iso.week:02d}",
+            "start": start.isoformat(), "end": (start + timedelta(days=6)).isoformat()}
+
+
+def _trend(before: int, last: int) -> dict:
+    """La dernière semaine complète face à la précédente : l'écart, sa part (inconnue depuis zéro) et le sens.
+
+    Le sens est « stable » sous `TREND_FLAT_SHARE` ; depuis zéro, toute hausse compte."""
+    change = last - before
+    share = change / before if before else None
+    if change == 0 or (share is not None and abs(share) < TREND_FLAT_SHARE):
+        direction = "flat"
+    else:
+        direction = "up" if change > 0 else "down"
+    return {"change": change, "share": share, "direction": direction}
+
+
+def race(now: datetime | None = None, site: str | None = None) -> dict:
+    """Les indicateurs de la course, semaine ISO par semaine ISO (du lundi au dimanche, UTC) : les quatre dernières
+    semaines complètes et leur tendance, puis la semaine en cours à part, qui n'entre pas dans la tendance.
+
+    Rien de neuf n'est mesuré : ce sont les événements d'usage du site, relus.
+    - **Visiteurs** : la somme, jour après jour, des empreintes qui ont produit un événement de l'API (recherche,
+      génération, compte, grille, erreur), comme « Usage ». Qui ne fait que lire une page n'y figure pas : la balise
+      a sa rubrique « Audience », et ses événements ne se mêlent pas à ceux de l'API (ADR 0016) ;
+    - **grilles terminées** : les exports PDF vus par la balise (hors opposition) et les grilles conservées. Une grille
+      conservée puis exportée compte deux fois : c'est un passage à l'acte, pas un nombre de grilles distinctes ;
+    - **comptes créés** : les inscriptions, dont celles d'un compte supprimé disparaissent avec lui (ADR 0016).
+    Les lignes sans compteur (`RACE_COUNTED`) restent « à venir » : `available` faux, aucun chiffre.
+    """
+    now = now or datetime.now(timezone.utc).replace(tzinfo=None)
+    site = site or current_app.config["SITE"]
+    starts = [_week_start(now.date()) + timedelta(weeks=offset) for offset in range(-RACE_WEEKS, 1)]
+    rows = (UsageEvent.query.with_entities(UsageEvent.created_at, UsageEvent.kind, UsageEvent.outcome,
+                                           UsageEvent.visitor)
+            .filter(UsageEvent.site == site, UsageEvent.created_at <= now,
+                    UsageEvent.created_at >= datetime.combine(starts[0], datetime.min.time())).all())
+
+    visitors = {start: set() for start in starts}
+    counts = {start: Counter() for start in starts}
+    for created_at, kind, outcome, visitor in rows:
+        start = _week_start(created_at.date())
+        if kind != "page" and visitor:
+            visitors[start].add((created_at.date(), visitor))
+        if key := RACE_COUNTED.get((kind, outcome)):
+            counts[start][key] += 1
+
+    series = {"visitors": [len(visitors[start]) for start in starts]}
+    for key in set(RACE_COUNTED.values()):
+        series[key] = [counts[start][key] for start in starts]
+    series["finished"] = [pdf + saved for pdf, saved in zip(series["pdf"], series["saved"])]
+
+    indicators = []
+    for key, label, detail in RACE_ROWS:
+        values = series.get(key)  # cinq nombres : les semaines complètes, puis la semaine en cours
+        indicators.append({
+            "key": key, "label": label, "detail": detail, "available": values is not None,
+            "values": values[:-1] if values is not None else None,
+            "current": values[-1] if values is not None else None,
+            "trend": _trend(values[-3], values[-2]) if values is not None else None,
+        })
+    return {
+        "weeks": [_week(start) for start in starts[:-1]],
+        "current": {**_week(starts[-1]), "days": (now.date() - starts[-1]).days + 1},
+        "flat_share": TREND_FLAT_SHARE,
+        "indicators": indicators,
+    }
+
+
 def compute(now: datetime | None = None, cpu_count: int | None = None) -> dict:
     now = now or datetime.now(timezone.utc).replace(tzinfo=None)
     cpu_count = cpu_count or os.cpu_count() or 1
@@ -302,6 +412,7 @@ def compute(now: datetime | None = None, cpu_count: int | None = None) -> dict:
     return {
         "now": now,
         "periods": periods,
+        "race": race(now),
         "audience": _audience(pages, now),
         "outcomes": Counter(e.outcome for e in generations),
         "formats": formats,
@@ -362,6 +473,7 @@ def as_json(stats: dict) -> dict:
             },
         },
         "daily": stats["daily"],
+        "race": stats["race"],
         "audience": stats["audience"],
         "outcomes": [{"outcome": outcome or "?", "count": count}
                      for outcome, count in stats["outcomes"].most_common()],
@@ -396,6 +508,50 @@ def as_json(stats: dict) -> dict:
 
 def _seconds(ms: float | None) -> str:
     return "—" if ms is None else f"{ms / 1000:.2f} s"
+
+
+TREND_WORDS = {"up": "en hausse", "down": "en baisse", "flat": "stable"}
+
+
+def _trend_text(trend: dict) -> str:
+    """La tendance en mots, avec l'écart : « en hausse (+6, +24 %) », « stable (-1, -0,4 %) », « stable ». Une
+    décimale sous 10 %, pour ne pas lire « -0 % » d'un recul de quelques unités sur des centaines."""
+    if trend["change"] == 0:
+        return TREND_WORDS["flat"]
+    detail = f"{trend['change']:+d}"
+    if trend["share"] is not None:
+        percent = 100 * trend["share"]
+        detail += f", {percent:+.{1 if abs(percent) < 10 else 0}f} %".replace(".", ",")
+    return f"{TREND_WORDS[trend['direction']]} ({detail})"
+
+
+RACE_LABEL_WIDTH, RACE_CELL_WIDTH = 28, 6
+
+
+def render_race(block: dict, current: bool = False) -> list[str]:
+    """Le bloc « La course » en texte : une colonne par semaine complète, la tendance à droite.
+
+    Le bilan du lundi (alerts.py) et `flask stats` s'en servent. `current` ajoute la semaine en cours, marquée d'une
+    étoile : le bilan l'omet, puisqu'il part en début de semaine.
+    """
+    weeks, week_now = block["weeks"], block["current"]
+    last, before = weeks[-1], weeks[-2]
+    heads = [week["label"] for week in weeks] + ([f"{week_now['label']}*"] if current else [])
+    lines = [f"La course : les {len(weeks)} dernières semaines complètes, du lundi au dimanche (UTC)",
+             " " * RACE_LABEL_WIDTH + "".join(f"{head:>{RACE_CELL_WIDTH}}" for head in heads) + "   tendance"]
+    for row in block["indicators"]:
+        label = f"  dont {row['label']}" if row["detail"] else row["label"]
+        if not row["available"]:
+            lines.append(f"{label:<{RACE_LABEL_WIDTH}}à venir")
+            continue
+        values = row["values"] + ([row["current"]] if current else [])
+        lines.append(f"{label:<{RACE_LABEL_WIDTH}}" + "".join(f"{value:>{RACE_CELL_WIDTH}}" for value in values)
+                     + f"   {_trend_text(row['trend'])}")
+    lines.append(f"{last['label']} : du {date.fromisoformat(last['start']):%d/%m} au "
+                 f"{date.fromisoformat(last['end']):%d/%m/%Y}. Tendance : {last['label']} contre {before['label']}.")
+    if current:
+        lines.append(f"* {week_now['label']} : semaine en cours, {week_now['days']} jour(s) sur 7, hors tendance.")
+    return lines
 
 
 def render(stats: dict) -> str:
@@ -446,6 +602,7 @@ def render(stats: dict) -> str:
     busy_share = month["busy"] / month["generations"] if month["generations"] else 0
     lines.append(f"  refus « occupé » : {100 * busy_share:.1f} % des générations (seuil {100 * BUSY_THRESHOLD:.0f} %)"
                  + ("  ⚠️ DÉPASSÉ" if busy_share > BUSY_THRESHOLD else ""))
+    lines += ["", *render_race(stats["race"], current=True)]
 
     def section(title, counter, fmt=lambda key, value: f"{key} : {value}", limit=15):
         lines.extend(["", title])

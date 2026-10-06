@@ -17,8 +17,8 @@ const TOTAL = 8;
 
 const STEPS: Record<TutorialStep, { title: string; text: string }> = {
   1: {
-    title: "Où vont les définitions ?",
-    text: "On place d'abord le minimum habituel : une case définition sur deux, sur la première ligne et la première colonne.",
+    title: "Comment veux-tu commencer ?",
+    text: "Choisis où vont les cases définitions : tu pourras toujours les déplacer ensuite.",
   },
   2: { title: "Place ton premier mot", text: "Clique une case et tape. Tab change de sens." },
   3: {
@@ -38,6 +38,8 @@ const STEPS: Record<TutorialStep, { title: string; text: string }> = {
 export function HandTutorial({
   step,
   onPrefill,
+  onMagazine,
+  isDrawing = false,
   onNext,
   onDefinitions,
   onLayout,
@@ -45,7 +47,11 @@ export function HandTutorial({
   onSkip,
 }: {
   step: TutorialStep;
+  /** Première ligne et première colonne : une case définition sur deux. */
   onPrefill: () => void;
+  /** Une géométrie de style magazine tirée au hasard (#221) ; absent quand la grille est trop petite. */
+  onMagazine?: () => void;
+  isDrawing?: boolean;
   /** Passe à l'étape suivante (« Je les place moi-même », « Suivant »). */
   onNext: () => void;
   onDefinitions: () => void;
@@ -77,11 +83,17 @@ export function HandTutorial({
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {step === 1 && (
           <>
+            {/* Trois départs (#221) */}
             <Button size="sm" onClick={onPrefill}>
-              Oui, place-les
+              Première ligne et première colonne
             </Button>
+            {onMagazine && (
+              <Button size="sm" variant="outline" disabled={isDrawing} onClick={onMagazine}>
+                Grille de magazine au hasard
+              </Button>
+            )}
             <Button size="sm" variant="outline" onClick={onNext}>
-              Je les place moi-même
+              Grille vierge
             </Button>
           </>
         )}

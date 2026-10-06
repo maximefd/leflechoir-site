@@ -61,3 +61,7 @@
 - **Si le conteneur de l'API est arrêté**, le minuteur ne lance rien : ni échantillon ni alerte. C'est UptimeRobot (ADR 0013) qui prévient ; l'alerte « API injoignable » d'ici couvre l'API qui tourne mais ne répond plus (base injoignable, workers bloqués).
 - Trois tables nouvelles (`system_sample`, `system_daily`, `alert_sent`), par une migration additive.
 - Les données fictives du développement (`make seed-demo`) remplissent aussi ces tables.
+
+## Mise à jour du 02/10/2026 : « La course » dans le bilan (#201)
+
+Le bilan du lundi s'ouvre désormais sur les indicateurs de la course ([ADR 0023](0023-cap-sur-la-premiere-place.md), lot C0) : visiteurs, générations réussies, grilles terminées et comptes créés des quatre dernières semaines ISO complètes, la tendance de la dernière face à la précédente, et « à venir » pour ce qui n'est pas encore mesuré (parties jouées, grilles publiées, avis reçus). Ils viennent de `stats.race`, la même source que la rubrique « La course » de `/admin`. La semaine en cours n'y figure pas : le bilan part en début de semaine. Rien de neuf n'est mesuré ni envoyé : c'est le même message, plus long, sous les mêmes plafonds.

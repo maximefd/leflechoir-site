@@ -17,10 +17,16 @@ backend/tests/test_harness_must_words.py
 backend/tests/test_layout_format.py
 backend/tests/test_layout_validator.py
 backend/tests/test_must_words.py
+backend/tests/test_mystery.py
+backend/tests/test_orchestrator.py
 backend/tests/test_pattern_index.py
 backend/tests/test_slot_finder.py
 backend/tests/test_trie_engine.py
 backend/tests/test_word_repository.py
+# Moteur v2 (#206, #207, #210) : géométries générées, squelette, grilles sur mesure
+backend/tests/test_geometry.py
+backend/tests/test_skeleton.py
+backend/tests/test_generation_geometry.py
 data/lexicon
 tools/lexicon
 tools/curator
@@ -32,5 +38,14 @@ docs/adr/0008-regles-automatiques-et-revision.md
 docs/adr/0009-annoncer-la-difficulte.md
 # Mesures du solveur (mots souhaités, mots obligatoires) et stratégie de l'offre : privé par défaut
 docs/ETUDE-GRILLES-THEME-IA.md
+# La stratégie face à la concurrence (ADR 0023) : la roadmap, l'analyse concurrente, l'acquisition
+docs/ROADMAP.md
+docs/CONCURRENCE.md
+docs/ACQUISITION.md
+docs/adr/0023-cap-sur-la-premiere-place.md
+# Le moteur v2 (#210) : ce qui est livré, les mesures, ce qui ne l'est pas
+docs/adr/0025-moteur-v2.md
+# Les sources de définitions à contacter nomment des sites tiers (ADR 0024, publique, ne les nomme pas)
+docs/DEFINITIONS-SOURCES.md
 # La CI, les modèles d'issues et dependabot restent sur le dépôt de travail, privé
 .github

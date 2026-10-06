@@ -37,7 +37,7 @@ export default function PrivacyPage() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <h1 className="text-3xl font-bold">Confidentialité</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 1er octobre 2026</p>
+      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 6 octobre 2026</p>
 
       <div className="mt-8 space-y-8 text-muted-foreground">
         <p className="rounded-lg border bg-secondary/20 p-4 text-foreground">
@@ -64,8 +64,9 @@ export default function PrivacyPage() {
             </li>
             <li><strong className="text-foreground">Tes dictionnaires</strong>, leurs mots et leurs définitions.</li>
             <li>
-              <strong className="text-foreground">Tes grilles conservées</strong> : leurs cases, leurs définitions et
-              tes notes.
+              <strong className="text-foreground">Tes grilles conservées</strong> : leurs cases, leurs définitions,
+              leur mot mystère s&apos;il y en a un (souvent un prénom) et tes notes. Le mot mystère tapé à la
+              génération n&apos;est enregistré que si tu conserves la grille.
             </li>
             <li>
               <strong className="text-foreground">La date de ton inscription et celle de ta dernière
@@ -95,13 +96,12 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="Les mises en page que tu proposes">
+        <Section title="Les mises en page proposées avant octobre 2026">
           <p>
-            Quand tu proposes au catalogue la mise en page d&apos;une grille faite à la main, seule sa forme est
-            conservée : la taille et la place des cases définitions, jamais tes mots ni tes définitions. Elle est
-            rattachée à ton compte et sert à enrichir le catalogue des mises en page, après relecture (intérêt
-            légitime, RGPD art. 6.1.f). Une forme retenue devient une mise en page du site, sans ton nom ; tant
-            qu&apos;elle ne l&apos;est pas, ta proposition disparaît avec ton compte.
+            Jusqu&apos;au 6 octobre 2026, on pouvait proposer au catalogue la mise en page d&apos;une grille faite à
+            la main. Ce n&apos;est plus possible : plus rien n&apos;est recueilli. Les formes déjà reçues restent
+            conservées : la taille et la place des cases définitions, jamais tes mots ni tes définitions, rattachées
+            à ton compte (intérêt légitime, RGPD art. 6.1.f). Elles disparaissent avec ton compte.
           </p>
         </Section>
 
@@ -137,7 +137,9 @@ export default function PrivacyPage() {
               lettres inconnues, le nombre de résultats, la durée — pas le motif lui-même ;
             </li>
             <li>
-              chaque <strong className="text-foreground">génération</strong> : le format, le nombre et la longueur
+              chaque <strong className="text-foreground">génération</strong> : le format, le type de grille
+              (du catalogue ou sur mesure), le réglage de la recherche (la première grille trouvée ou la
+              meilleure de plusieurs), le nombre et la longueur
               des mots imposés, la réussite ou la raison de l&apos;échec, la durée. Le texte des mots imposés et
               souhaités est gardé 90 jours, pour repérer ceux qui manquent au dictionnaire, puis effacé ;
             </li>

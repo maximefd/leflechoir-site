@@ -190,6 +190,26 @@ def init_usage(app: Flask) -> None:
 
     @app.after_request
     def record_usage(response):
-        if app.config.get("USAGE_ENABLED", True):
+        # Un flux SSE (#209) n'a pas encore commencé quand la vue rend la main : il s'enregistre à sa fin
+        if app.config.get("USAGE_ENABLED", True) and response.mimetype != "text/event-stream":
             record(response)
         return response
+
+
+class _StreamEnd:
+    """La fin d'un flux SSE vue comme une réponse JSON : l'usage la décrit comme celle du mode JSON (#209)."""
+
+    is_json = True
+
+    def __init__(self, status: int, body: dict):
+        self.status_code = status
+        self._body = body
+
+    def get_json(self, silent: bool = False) -> dict:
+        return self._body
+
+
+def record_stream(status: int, body: dict) -> None:
+    """Enregistre l'événement d'une requête en flux, à la fin du flux : même événement qu'en JSON, durée réelle."""
+    if current_app.config.get("USAGE_ENABLED", True):
+        record(_StreamEnd(status, body))

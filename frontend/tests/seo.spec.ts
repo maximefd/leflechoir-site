@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://leflechoir.fr").replace(/\/+$/, "");
 
 const PUBLIC_PAGES = [
-  { path: "/", title: "Le Fléchoir — l'atelier des mots fléchés", canonical: SITE_URL },
+  { path: "/", title: "Le Fléchoir — créer des mots fléchés de pro, simplement", canonical: SITE_URL },
   { path: "/search", title: "Recherche de mots | Le Fléchoir", canonical: `${SITE_URL}/search` },
   { path: "/grid", title: "Générer une grille | Le Fléchoir", canonical: `${SITE_URL}/grid` },
   {

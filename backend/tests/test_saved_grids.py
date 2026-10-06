@@ -1,9 +1,18 @@
 """Grilles conservées (#24) : sauvegarde, relecture, suppression, et cloisonnement des comptes."""
 
-import pytest
+import importlib.util
+from pathlib import Path
 
+import pytest
+import sqlalchemy as sa
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+
+from models import SavedGrid
 from tests.paths import FIXTURE_LAYOUTS_DIR
 from tests.helpers import auth_headers, default_dictionary_id, send
+
+MYSTERY_MIGRATION = Path(__file__).resolve().parents[1] / "migrations" / "versions" / "0015_mot_mystere.py"
 
 
 @pytest.fixture
@@ -498,3 +507,165 @@ def test_another_accounts_definitions_are_never_offered(grid_app, client):
     headers = auth_headers(client)
     grid_id = save(client, headers).get_json()["id"]
     assert client.get(f"/api/grids/{grid_id}", headers=headers).get_json()["grid"]["dictionary_definitions"] == {}
+
+
+# --- Mot mystère (#218) ---
+
+# AS, ILE : S en (2, 0), E en (2, 1), L en (1, 1)
+SEL = {"word": "SEL", "seed": 42, "cells": [{"x": 2, "y": 0}, {"x": 2, "y": 1}, {"x": 1, "y": 1}]}
+
+
+def two_s_grid():
+    """Deux S : quand l'un perd sa lettre, son numéro a une case de rechange."""
+    return {"cells": [
+        {"x": 0, "y": 0, "char": "", "is_black": True},
+        {"x": 1, "y": 0, "char": "A", "is_black": False},
+        {"x": 2, "y": 0, "char": "S", "is_black": False},
+        {"x": 0, "y": 1, "char": "S", "is_black": False},
+        {"x": 1, "y": 1, "char": "E", "is_black": False},
+        {"x": 2, "y": 1, "char": "L", "is_black": False},
+    ], "words": [
+        {"text": "AS", "x": 1, "y": 0, "direction": "across", "source": "common"},
+        {"text": "SEL", "x": 0, "y": 1, "direction": "across", "source": "common"},
+    ], "must_words": []}
+
+
+def letters_under(grid: dict) -> str:
+    letters = {(cell["x"], cell["y"]): cell["char"] for cell in grid["cells"]}
+    return "".join(letters[(cell["x"], cell["y"])] for cell in grid["mystery"]["cells"])
+
+
+def test_a_mystery_word_is_kept_with_the_grid(client):
+    headers = auth_headers(client)
+    created = save(client, headers, mystery=SEL)
+    assert created.status_code == 201, created.get_json()
+
+    grid = client.get(f"/api/grids/{created.get_json()['id']}", headers=headers).get_json()["grid"]
+
+    assert grid["mystery"] == {**SEL, "broken": []}
+    # À part des cases : le contenu de la grille reste celui qu'on a toujours gardé
+    assert "mystery" not in grid_payload()
+
+
+def test_a_mystery_word_that_does_not_match_the_grid_is_refused(client):
+    headers = auth_headers(client)
+    faux = {**SEL, "cells": [{"x": 1, "y": 0}, {"x": 2, "y": 1}, {"x": 1, "y": 1}]}  # A n'est pas S
+
+    response = save(client, headers, mystery=faux)
+
+    assert response.status_code == 400
+    assert response.get_json()["reason"] == "mystery_mismatch"
+
+
+def test_the_editor_sets_changes_and_removes_the_mystery_word(grid_app, client):
+    headers = auth_headers(client)
+    grid_id = save(client, headers).get_json()["id"]
+
+    posed = send(client, "patch", f"/api/grids/{grid_id}", {"mystery_word": "sel"}, headers)
+    assert posed.status_code == 200, posed.get_json()
+    grid = posed.get_json()["grid"]
+    assert grid["mystery"]["word"] == "SEL" and letters_under(grid) == "SEL"
+    assert grid["mystery"]["broken"] == []
+
+    changed = send(client, "patch", f"/api/grids/{grid_id}", {"mystery_word": "Lie"}, headers).get_json()["grid"]
+    assert letters_under(changed) == "LIE"
+
+    removed = send(client, "patch", f"/api/grids/{grid_id}", {"mystery_word": ""}, headers)
+    assert removed.status_code == 200
+    assert client.get(f"/api/grids/{grid_id}", headers=headers).get_json()["grid"]["mystery"] is None
+
+
+def test_the_editor_says_which_letters_are_missing(grid_app, client):
+    headers = auth_headers(client)
+    grid_id = save(client, headers, mystery=SEL).get_json()["id"]
+
+    response = send(client, "patch", f"/api/grids/{grid_id}", {"mystery_word": "Zoé"}, headers)
+
+    assert response.status_code == 422
+    body = response.get_json()
+    assert (body["reason"], body["missing"]) == ("mystery_letters_missing", ["Z", "O"])
+    assert body["error"].startswith("Il manque un Z et un O")
+    # Rien n'a bougé : l'ancien mot mystère est toujours là
+    assert client.get(f"/api/grids/{grid_id}", headers=headers).get_json()["grid"]["mystery"]["word"] == "SEL"
+
+
+def test_another_seed_gives_the_same_word_other_cells_when_there_are_some(grid_app, client):
+    """Une grille 6 × 6 de A : des dizaines de répartitions aussi bonnes l'une que l'autre, la seed choisit."""
+    headers = auth_headers(client)
+    cells = [{"x": x, "y": y, "char": "A", "is_black": False} for y in range(6) for x in range(6)]
+    grid_id = save(client, headers, width=6, height=6, cells=cells, words=[], must_words=[]).get_json()["id"]
+
+    def cells_for(seed):
+        mystery = send(client, "patch", f"/api/grids/{grid_id}", {"mystery_word": "AAA", "mystery_seed": seed},
+                       headers).get_json()["grid"]["mystery"]
+        assert mystery["seed"] == seed
+        return tuple((cell["x"], cell["y"]) for cell in mystery["cells"])
+
+    assert cells_for(5) == cells_for(5)
+    assert len({cells_for(seed) for seed in range(12)}) > 1
+
+
+def test_a_letter_edit_moves_only_the_number_that_lost_its_letter(grid_app, client):
+    headers = auth_headers(client)
+    grid_id = save(client, headers, **two_s_grid()).get_json()["id"]
+    before = send(client, "patch", f"/api/grids/{grid_id}", {"mystery_word": "SEL"}, headers).get_json()["grid"]
+    s = before["mystery"]["cells"][0]
+
+    after = send(client, "patch", f"/api/grids/{grid_id}", {"cells": [{**s, "char": "T"}]}, headers).get_json()["grid"]
+
+    # Le numéro 1 passe sur l'autre S ; E et L n'ont pas bougé
+    assert after["mystery"]["cells"][0] != s and letters_under(after) == "SEL"
+    assert after["mystery"]["cells"][1:] == before["mystery"]["cells"][1:]
+    assert after["mystery"]["broken"] == []
+
+    # Plus aucun S : le numéro garde sa case, et la grille le signale
+    other = after["mystery"]["cells"][0]
+    broken = send(client, "patch", f"/api/grids/{grid_id}", {"cells": [{**other, "char": "T"}]}, headers).get_json()
+    assert broken["grid"]["mystery"]["cells"][0] == other
+    assert broken["grid"]["mystery"]["broken"] == [1]
+
+
+def test_another_account_cannot_touch_the_mystery_word(grid_app, client):
+    owner = auth_headers(client)
+    intruder = auth_headers(client)
+    grid_id = save(client, owner, mystery=SEL).get_json()["id"]
+
+    for body in ({"mystery_word": "Lie"}, {"mystery_word": ""}):
+        assert send(client, "patch", f"/api/grids/{grid_id}", body, intruder).status_code == 404
+    assert send(client, "patch", f"/api/grids/{grid_id}", {"mystery_word": "Lie"}).status_code == 401
+    assert client.get(f"/api/grids/{grid_id}", headers=owner).get_json()["grid"]["mystery"]["word"] == "SEL"
+
+
+def test_the_migration_adds_an_empty_mystery_column_to_existing_grids():
+    """Additive (ADR 0010) : les grilles déjà conservées n'ont pas de mot mystère, et l'ancien code insère encore."""
+    spec = importlib.util.spec_from_file_location("migration_0015", MYSTERY_MIGRATION)
+    migration = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(migration)
+    assert len(migration.revision) <= 32  # alembic_version.version_num est un VARCHAR(32)
+
+    engine = sa.create_engine("sqlite:///:memory:")
+    with engine.begin() as connection:
+        connection.execute(sa.text("CREATE TABLE saved_grid (id INTEGER PRIMARY KEY, name VARCHAR(100))"))
+        connection.execute(sa.text("INSERT INTO saved_grid (id, name) VALUES (1, 'Ancienne')"))
+        migration.op = Operations(MigrationContext.configure(connection))
+        migration.upgrade()
+        columns = {column["name"]: column for column in sa.inspect(connection).get_columns("saved_grid")}
+        assert columns["mystery"]["nullable"] is True
+        assert connection.execute(sa.text("SELECT mystery FROM saved_grid")).scalar() is None
+        connection.execute(sa.text("INSERT INTO saved_grid (id, name) VALUES (2, 'Sans le connaître')"))
+    assert SavedGrid.__table__.c.mystery.nullable
+
+
+@pytest.mark.parametrize("body, reason", [
+    ({"mystery_word": "Lo"}, "mystery_word_length"),
+    ({"mystery_word": "L3S"}, None),
+    ({"mystery_word": "SEL", "mystery_seed": -1}, None),
+])
+def test_the_mystery_word_of_the_editor_is_validated(grid_app, client, body, reason):
+    headers = auth_headers(client)
+    grid_id = save(client, headers).get_json()["id"]
+
+    response = send(client, "patch", f"/api/grids/{grid_id}", body, headers)
+
+    assert response.status_code == 400
+    assert response.get_json().get("reason") == reason

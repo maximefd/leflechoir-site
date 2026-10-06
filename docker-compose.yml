@@ -39,6 +39,9 @@ services:
       # Origines autorisées, séparées par des virgules
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
       - GENERATION_TIME_BUDGET_S=${GENERATION_TIME_BUDGET_S:-20}
+      - GENERATION_QUALITY=${GENERATION_QUALITY:-best}
+      - GENERATION_QUALITY_BUDGET_S=${GENERATION_QUALITY_BUDGET_S:-5}
+      - GENERATION_GEOMETRY=${GENERATION_GEOMETRY:-sur_mesure}
       # Les parcours end-to-end créent un compte par exécution. Le quota de production
       # (5 par heure) les fait échouer sur un message qui ne ressemble pas à sa cause.
       - RATELIMIT_REGISTER=${RATELIMIT_REGISTER:-100 per hour}

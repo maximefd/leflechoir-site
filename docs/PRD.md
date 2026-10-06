@@ -1,7 +1,7 @@
 # 🧩 Product Requirements Document (PRD) — Terminator
 
-> Vision produit. Pour le « comment » et le « quand », voir [ROADMAP.md](ROADMAP.md) et [ARCHITECTURE.md](ARCHITECTURE.md).
-> Dernière mise à jour : septembre 2026.
+> Vision produit. Pour le « comment » et le « quand », voir [ROADMAP.md](ROADMAP.md) (privée depuis le 02/10/2026) et [ARCHITECTURE.md](ARCHITECTURE.md).
+> Dernière mise à jour : 2 octobre 2026.
 
 ## 1. Problème et proposition de valeur
 
@@ -16,16 +16,19 @@ Un atelier pour l'auteur de mots fléchés :
 
 Ce n'est **pas un jeu**, c'est un **outil de création**.
 
+**Positionnement (octobre 2026)** : **des grilles de qualité pro, dans un outil facile à prendre en main**. Le site sert aussi bien le créateur passionné que la personne qui veut offrir une grille faite avec ses mots ; le cœur reste la création.
+
 ## 2. Personas
 
 | Persona | Besoin | Aujourd'hui |
 |---------|--------|-------------|
-| **L'auteur** (créateur du projet, seul utilisateur actuel) | Gagner du temps sur ses grilles, avec un résultat de qualité professionnelle | Cible principale |
-| **Créateur expérimenté / professionnel** | Grilles denses, esthétiques, vocabulaire maîtrisé, export | Cible future (après la mise en production) |
-| **Visiteur** | Découvrir l'outil via la recherche par motif, sans compte | Supporté |
-| **L'auteur, pilote du site** | Savoir qui utilise le site, ce qui marche, ce qui casse et ce que coûte le serveur | Après l'ouverture (Phases 6 et 8) |
-| **Particulier qui veut une grille personnalisée** | Une grille sur un thème (anniversaire, mariage, départ), prête à imprimer, sans effort | Cible future, offre payante (Phase 11) |
-| **Auteurs et joueurs d'autres pays** | Le même atelier dans leur langue, avec leurs conventions | Cible future (Phase 10) |
+| **L'auteur** (créateur du projet) | Gagner du temps sur ses grilles, avec un résultat de qualité professionnelle | Cible principale |
+| **Créateur passionné, expérimenté ou professionnel** | Grilles denses, esthétiques, vocabulaire maîtrisé, export ; outils de création (motif, dictionnaires, layouts) | Cible principale depuis l'ouverture ; options payantes pour les pros |
+| **Particulier qui offre une grille** | Une grille faite avec ses mots (anniversaire, mariage, départ), avec ses définitions, prête à offrir, sans effort | Cible principale depuis octobre 2026 |
+| **Joueur** | Résoudre la grille qu'on lui a offerte | Prévu |
+| **Visiteur** | Découvrir l'outil via la recherche par motif ou une grille, sans compte | Supporté ; un compte pour garder son travail |
+| **L'auteur, pilote du site** | Savoir qui utilise le site, ce qui marche, ce qui casse et ce que coûte le serveur | ✅ Poste de pilotage (Phase 8) |
+| **Auteurs et joueurs d'autres pays** | Le même outil dans leur langue, avec leurs conventions | En pause (Phase 10) |
 
 ## 3. Fonctionnalités
 
@@ -62,12 +65,12 @@ Ce n'est **pas un jeu**, c'est un **outil de création**.
 ## 5. Hors périmètre (pour l'instant)
 
 - Collaboration multi-utilisateurs.
-- Mots croisés « à l'américaine ».
+- Mots croisés : à réfléchir comme différenciation, avec l'international. Rien n'est prévu avant.
 
-Planifiés depuis le 24/09/2026 (voir la [roadmap](ROADMAP.md)) :
-- la mise en ligne (Phase 6), jusque-là suspendue ([ADR 0004](adr/0004-pas-de-deploiement-en-ligne.md)) ;
-- les autres langues (Phase 10) ;
-- l'offre payante (Phase 11).
+Planifiés (voir la [roadmap](ROADMAP.md)) :
+- la mise en ligne (Phase 6), faite le 25/09/2026 ;
+- les autres langues (Phase 10), en pause depuis le 02/10/2026 ;
+- une offre payante réservée aux besoins des pros et aux demandes spéciales ; l'usage courant reste gratuit.
 
 ## 6. Critères de succès
 

@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy import text
 
 from extensions import db
-from normalization import normalize_pattern, normalize_word
+from normalization import normalize_pattern, normalize_phrase, normalize_word
 from trie_engine import DictionnaireTrie
 
 from tests.helpers import auth_headers, send
@@ -35,6 +35,18 @@ def test_one_form_for_every_way_of_typing_a_word(typed, expected):
 def test_a_pattern_keeps_its_unknown_letters():
     assert normalize_pattern("porte-?onnaie") == "PORTE?ONNAIE"
     assert normalize_pattern("c?ur") == "C?UR"
+
+
+@pytest.mark.parametrize("typed, expected", [
+    ("  Joyeux   Noël ", "JOYEUX NOEL"),
+    ("Jean-Paul", "JEANPAUL"),
+    ("l'Œuvre d'Ève", "LOEUVRE DEVE"),
+    ("", ""),
+    (None, ""),
+])
+def test_a_phrase_is_normalized_word_by_word(typed, expected):
+    """Le mot mystère (#218) peut être un message : chaque mot comme partout, et une espace entre eux."""
+    assert normalize_phrase(typed) == expected
 
 
 def test_a_personal_word_is_stored_in_the_common_form_and_found_by_a_pattern(test_app, client, small_trie, monkeypatch):

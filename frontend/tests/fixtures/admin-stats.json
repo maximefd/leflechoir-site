@@ -508,6 +508,179 @@
    "p95": 5522
   }
  ],
+ "race": {
+  "weeks": [
+   {
+    "week": "2026-W36",
+    "label": "S36",
+    "start": "2026-08-31",
+    "end": "2026-09-06"
+   },
+   {
+    "week": "2026-W37",
+    "label": "S37",
+    "start": "2026-09-07",
+    "end": "2026-09-13"
+   },
+   {
+    "week": "2026-W38",
+    "label": "S38",
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   {
+    "week": "2026-W39",
+    "label": "S39",
+    "start": "2026-09-21",
+    "end": "2026-09-27"
+   }
+  ],
+  "current": {
+   "week": "2026-W40",
+   "label": "S40",
+   "start": "2026-09-28",
+   "end": "2026-10-04",
+   "days": 4
+  },
+  "flat_share": 0.05,
+  "indicators": [
+   {
+    "key": "visitors",
+    "label": "Visiteurs (somme par jour)",
+    "detail": false,
+    "available": true,
+    "values": [
+     169,
+     170,
+     246,
+     245
+    ],
+    "current": 120,
+    "trend": {
+     "change": -1,
+     "share": -0.0040650406504065045,
+     "direction": "flat"
+    }
+   },
+   {
+    "key": "grids",
+    "label": "Générations réussies",
+    "detail": false,
+    "available": true,
+    "values": [
+     222,
+     240,
+     333,
+     309
+    ],
+    "current": 155,
+    "trend": {
+     "change": -24,
+     "share": -0.07207207207207207,
+     "direction": "down"
+    }
+   },
+   {
+    "key": "finished",
+    "label": "Grilles terminées",
+    "detail": false,
+    "available": true,
+    "values": [
+     52,
+     56,
+     63,
+     70
+    ],
+    "current": 38,
+    "trend": {
+     "change": 7,
+     "share": 0.1111111111111111,
+     "direction": "up"
+    }
+   },
+   {
+    "key": "pdf",
+    "label": "exports PDF",
+    "detail": true,
+    "available": true,
+    "values": [
+     37,
+     38,
+     46,
+     48
+    ],
+    "current": 30,
+    "trend": {
+     "change": 2,
+     "share": 0.043478260869565216,
+     "direction": "flat"
+    }
+   },
+   {
+    "key": "saved",
+    "label": "grilles conservées",
+    "detail": true,
+    "available": true,
+    "values": [
+     15,
+     18,
+     17,
+     22
+    ],
+    "current": 8,
+    "trend": {
+     "change": 5,
+     "share": 0.29411764705882354,
+     "direction": "up"
+    }
+   },
+   {
+    "key": "registers",
+    "label": "Comptes créés",
+    "detail": false,
+    "available": true,
+    "values": [
+     10,
+     13,
+     13,
+     14
+    ],
+    "current": 6,
+    "trend": {
+     "change": 1,
+     "share": 0.07692307692307693,
+     "direction": "up"
+    }
+   },
+   {
+    "key": "games",
+    "label": "Parties jouées",
+    "detail": false,
+    "available": false,
+    "values": null,
+    "current": null,
+    "trend": null
+   },
+   {
+    "key": "published",
+    "label": "Grilles publiées",
+    "detail": false,
+    "available": false,
+    "values": null,
+    "current": null,
+    "trend": null
+   },
+   {
+    "key": "feedback",
+    "label": "Avis reçus",
+    "detail": false,
+    "available": false,
+    "values": null,
+    "current": null,
+    "trend": null
+   }
+  ]
+ },
  "audience": {
   "periods": [
    {

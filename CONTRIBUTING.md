@@ -62,7 +62,7 @@ make seed-demo    # API démarrée (make dev-api) ; puis make stats, ou http://l
 - **Le serveur aussi** : deux jours d'échantillons système à la minute, un résumé par jour avant eux, et quelques alertes au journal. Ces tables ne disent pas d'où vient une ligne : la commande **remplace** les échantillons et résumés de la base locale.
 - Options, dans le conteneur de l'API : `docker compose exec -e LEXICON_LOAD=0 api flask usage seed-demo --days 90 --seed 3`, et `--clear` pour tout retirer.
 
-Les alertes et le bilan hebdomadaire ([ADR 0022](docs/adr/0022-echantillons-systeme-et-alertes.md)) s'essaient de même : `make system-tick` prend un vrai échantillon de la machine, `make test-alert` et `make weekly-report` envoient leurs messages dans Mailpit (http://localhost:8025).
+Les alertes et le bilan hebdomadaire ([ADR 0022](docs/adr/0022-echantillons-systeme-et-alertes.md)) s'essaient de même : `make system-tick` prend un vrai échantillon de la machine, `make test-alert` et `make weekly-report` envoient leurs messages dans Mailpit (http://localhost:8025). Le bilan s'ouvre sur « La course » (les mêmes indicateurs que la rubrique de `/admin` et que `make stats`) : `make seed-demo` en remplit les quatre semaines.
 
 Pour ouvrir `/admin` en local : s'inscrire sur le site, suivre le lien de confirmation reçu dans Mailpit (http://localhost:8025), puis `docker compose exec -e LEXICON_LOAD=0 api flask admin grant ADRESSE`.
 

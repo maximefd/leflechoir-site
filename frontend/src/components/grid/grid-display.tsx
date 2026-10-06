@@ -22,6 +22,18 @@ export type PlacedWord = {
   in_lexicon?: boolean | null;
 };
 
+/**
+ * Le mot mystère (#218) : la case n° i + 1 porte la i-ième lettre du mot. Une espace sépare les mots d'un
+ * message (« JOYEUX NOEL ») : la rangée de cases au-dessus de la grille y laisse un blanc.
+ */
+export type Mystery = {
+  word: string;
+  seed: number | null;
+  cells: { x: number; y: number }[];
+  /** Numéros dont la case a perdu sa lettre, faute d'autre case pour eux (éditeur seulement). */
+  broken?: number[];
+};
+
 export type GridData = {
   width: number;
   height: number;
@@ -34,6 +46,9 @@ export type GridData = {
   must_words: string[];
   /** Où va la définition de chaque mot et par où part sa flèche (#26) */
   clues?: Clue[];
+  /** D'où vient la forme de la grille (#210) : une mise en page du catalogue, ou dessinée sur mesure. */
+  geometry?: "catalogue" | "sur_mesure";
+  mystery?: Mystery | null;
 };
 
 const SOURCES: Record<string, { label: string; cell: string; badge: string }> = {
@@ -70,11 +85,14 @@ export function GridDisplay({ gridData, unplaced = [] }: { gridData: GridData; u
       <div className="flex flex-col items-center">
         {/* Mise en page et seed n'intéressent que celui qui règle le moteur : au survol, pas en titre */}
         <p
-          className="mb-2 text-sm text-muted-foreground"
+          className="mb-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted-foreground"
           title={`Mise en page ${gridData.layout} · seed ${gridData.seed ?? "—"}`}
         >
-          {gridData.width} × {gridData.height} · {gridData.words.length} mots
-          {mine.length > 0 && ` · dont ${mine.length} des vôtres`}
+          <span>
+            {gridData.width} × {gridData.height} · {gridData.words.length} mots
+            {mine.length > 0 && ` · dont ${mine.length} des vôtres`}
+            {gridData.mystery && ` · mot mystère : ${gridData.mystery.word}`}
+          </span>
         </p>
 
         {/* La grille vierge est celle qu'on imprime ; la solution, celle qu'on relit */}

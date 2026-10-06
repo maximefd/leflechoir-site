@@ -39,6 +39,9 @@ frontend/package-lock.json
 backend/benchmarks/latest.json
 backend/benchmarks/load.json
 backend/benchmarks/theme_*.json
+backend/benchmarks/geometry*.json
+backend/benchmarks/catalog_profile.json
+backend/benchmarks/v2_*.json
 
 # Sauvegardes de la base (make db-backup) : données personnelles, jamais versionnées
 backups/

@@ -340,3 +340,69 @@ def test_generate_without_dictionary_returns_503(test_app, client, monkeypatch):
     response = post_generate(client, {"size": {"width": 5, "height": 5}})
 
     assert response.status_code == 503
+
+
+# --- Mot mystère (#218) ---
+
+def grid_letters(grid: dict) -> dict:
+    return {(cell["x"], cell["y"]): cell["char"] for cell in grid["cells"] if not cell["is_black"]}
+
+
+def test_a_mystery_word_numbers_letters_of_the_grid(grid_app, client):
+    """Le mot est fait des lettres de la grille elle-même : il s'y écrit par construction, sans compter sur le lexique."""
+    sans = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42}).get_json()["grid"]
+    word = "".join(list(grid_letters(sans).values())[:4])
+
+    response = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42, "mystery_word": word.lower()})
+
+    assert response.status_code == 200, response.get_json()
+    body = response.get_json()
+    assert "mystery_error" not in body
+    grid, mystery = body["grid"], body["grid"]["mystery"]
+    # La génération n'a pas changé pour autant : la même seed donne la même grille
+    assert grid["cells"] == sans["cells"]
+    assert (mystery["word"], mystery["seed"]) == (word, 42)
+    assert [grid_letters(grid)[(cell["x"], cell["y"])] for cell in mystery["cells"]] == list(word)
+    assert len({(cell["x"], cell["y"]) for cell in mystery["cells"]}) == 4
+    # Même grille, même mot, même seed : mêmes cases
+    again = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42, "mystery_word": word})
+    assert again.get_json()["grid"]["mystery"] == mystery
+
+
+def test_a_missing_letter_comes_back_with_the_grid_and_the_advice_to_start_again(grid_app, client):
+    sans = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42}).get_json()["grid"]
+    present = list(grid_letters(sans).values())
+    absent = next(letter for letter in "ZXWKJQYHVBFGPMCDUOLTSNRIAE" if letter not in present)
+
+    response = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42,
+                                      "mystery_word": present[0] + present[1] + absent})
+
+    # La grille est bien là : seule la demande du mot mystère échoue, et la réponse dit pourquoi
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["grid"]["cells"] == sans["cells"] and "mystery" not in body["grid"]
+    assert body["mystery_error"]["reason"] == "mystery_letters_missing"
+    assert body["mystery_error"]["missing"] == [absent]
+    assert f"un {absent}" in body["mystery_error"]["error"] and "Relance" in body["mystery_error"]["error"]
+
+
+@pytest.mark.parametrize("word, reason", [
+    ("Lo", "mystery_word_length"),
+    ("Abcdefghijklmnopqrstu", "mystery_word_length"),
+    ("M4rie", None),
+    ("Marie!", None),
+])
+def test_the_mystery_word_is_validated_before_generating(grid_app, client, spy_on_generator, word, reason):
+    response = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42, "mystery_word": word})
+
+    assert response.status_code == 400
+    assert response.get_json().get("reason") == reason
+    # Refusé avant toute résolution : aucune grille n'a été cherchée pour rien
+    assert spy_on_generator == []
+
+
+def test_an_empty_mystery_word_is_no_mystery_word(grid_app, client):
+    response = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42, "mystery_word": "  "})
+
+    assert response.status_code == 200
+    assert "mystery" not in response.get_json()["grid"] and "mystery_error" not in response.get_json()

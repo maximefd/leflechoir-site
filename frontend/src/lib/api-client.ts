@@ -156,3 +156,94 @@ export async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, 
 
   return response.json();
 }
+
+export type StreamEvent = (event: string, data: Record<string, unknown>) => void;
+
+/**
+ * Comme `apiFetch`, mais en flux SSE (#209) : la requête demande `text/event-stream`, `onEvent` reçoit les
+ * événements intermédiaires (`progress`, `best`), et la promesse rend les données de `done` — le corps qu'aurait
+ * rendu le mode JSON. Un événement `error` la rejette avec une `ApiError` aux mêmes `reason`. Une réponse JSON
+ * (refus d'avant la génération) se lit comme avec `apiFetch`. `signal` arrête le flux : la promesse rejette
+ * alors l'erreur d'abandon de `fetch`.
+ */
+export async function apiStream(
+  endpoint: string,
+  options: ApiFetchOptions & { signal?: AbortSignal },
+  onEvent: StreamEvent,
+  allowRefresh = true,
+): Promise<Record<string, unknown>> {
+  const { csrf = "access", body: payload, ...init } = options;
+  const method = (init.method || "POST").toUpperCase();
+  const headers = new Headers(init.headers || {});
+  headers.set("Accept", "text/event-stream");
+  if (payload && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  const csrfToken = readCookie(CSRF_COOKIES[csrf]);
+  if (csrfToken && method !== "GET" && method !== "HEAD") {
+    headers.set(CSRF_HEADER, csrfToken);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+      ...init,
+      method,
+      headers,
+      body: payload ? JSON.stringify(payload) : undefined,
+      credentials: "include",
+    });
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
+    throw new Error("Impossible de joindre le serveur. Vérifie ta connexion, puis réessaie dans un instant.");
+  }
+
+  if (response.status === 401 && hasSession() && allowRefresh && !endpoint.startsWith("/api/auth/")) {
+    if (await refreshAccessToken()) {
+      return apiStream(endpoint, options, onEvent, false);
+    }
+    await endSession();
+  }
+  if (!response.ok) {
+    throw await readError(response);
+  }
+  if (!response.headers.get("Content-Type")?.includes("text/event-stream") || !response.body) {
+    return response.json();
+  }
+
+  const requestId = response.headers.get("X-Request-ID");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    // Un événement se termine par une ligne vide ; le dernier morceau peut être incomplet
+    let end = buffer.indexOf("\n\n");
+    while (end !== -1) {
+      const block = buffer.slice(0, end);
+      buffer = buffer.slice(end + 2);
+      end = buffer.indexOf("\n\n");
+      let name = "message";
+      let data = "";
+      for (const line of block.split("\n")) {
+        if (line.startsWith("event: ")) name = line.slice(7);
+        else if (line.startsWith("data: ")) data += line.slice(6);
+      }
+      const parsed = (data ? JSON.parse(data) : {}) as Record<string, unknown>;
+      if (name === "done") {
+        await reader.cancel().catch(() => {});
+        return parsed;
+      }
+      if (name === "error") {
+        await reader.cancel().catch(() => {});
+        const message = typeof parsed.error === "string" ? parsed.error : "La génération a échoué.";
+        const status = typeof parsed.status === "number" ? parsed.status : 422;
+        throw new ApiError(message, status, parsed, requestId);
+      }
+      onEvent(name, parsed);
+    }
+  }
+  throw new Error("La génération s'est interrompue avant la fin. Réessaie dans un instant.");
+}

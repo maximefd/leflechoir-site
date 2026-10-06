@@ -5,7 +5,6 @@
 #         tools/deploy/deploy.sh lexicon             (make deploy-lexicon : le lexique curé de ce Mac part en service)
 #         tools/deploy/deploy.sh rollback            (make rollback : l'API revient à la version précédente)
 #         tools/deploy/deploy.sh suggestions-pull    (make suggestions-pull : les suggestions de mots, pour le curateur)
-#         tools/deploy/deploy.sh layouts-pull        (make layouts-pull : les mises en page proposées, pour le curateur)
 #
 # - api   : le code du commit part par SSH sur le serveur, qui construit l'image, la démarre, la vérifie et
 #           revient à la version précédente si elle échoue (tools/deploy/server.sh) ;
@@ -154,26 +153,37 @@ pull_suggestions() {
     say "Suggestions : $count mot(s) en attente, dans l'onglet « Suggestions » du curateur."
 }
 
-# Les mises en page proposées au catalogue (roadmap 5C) : le curateur écarte lui-même celles déjà tranchées.
-PROPOSALS_FILE="data/layouts/proposals.json"
-
-pull_layout_proposals() {
-    mkdir -p "$(dirname "$PROPOSALS_FILE")"
-    ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh layouts-export" > "$PROPOSALS_FILE.tmp" \
-        || { rm -f "$PROPOSALS_FILE.tmp"; die "les mises en page proposées n'ont pas pu être récupérées"; }
-    mv "$PROPOSALS_FILE.tmp" "$PROPOSALS_FILE"
-    count="$(python3 -c 'import json, sys; print(len(json.load(open(sys.argv[1]))["proposals"]))' "$PROPOSALS_FILE")"
-    say "Mises en page proposées : $count, dans la page Layouts du curateur."
+# IndexNow : après chaque mise en ligne du site, toutes les adresses du sitemap sont signalées aux moteurs qui
+# partagent IndexNow (Bing, donc Copilot, Yandex, Seznam…). La clé est publique par nature : elle est servie à la
+# racine du site (frontend/public/6be994b4f3e1887c18c53b2a6c0a4ddb.txt). Un échec n'arrête pas le déploiement ; `make indexnow` le relance.
+INDEXNOW_KEY="6be994b4f3e1887c18c53b2a6c0a4ddb"
+ping_indexnow() {
+    site="${DEPLOY_SITE_URL:-https://leflechoir.fr}"
+    sitemap="$(curl -fsS "$site/sitemap.xml")" || { say "IndexNow : sitemap illisible, rien n'est envoyé."; return 0; }
+    payload="$(printf '%s' "$sitemap" | python3 -c '
+import json, re, sys
+from urllib.parse import urlparse
+site, key = sys.argv[1], sys.argv[2]
+urls = re.findall(r"<loc>([^<]+)</loc>", sys.stdin.read())
+print(json.dumps({"host": urlparse(site).netloc, "key": key, "keyLocation": f"{site}/{key}.txt", "urlList": urls}))
+' "$site" "$INDEXNOW_KEY")"
+    count="$(printf '%s' "$payload" | python3 -c 'import json, sys; print(len(json.load(sys.stdin)["urlList"]))')"
+    code="$(curl -sS -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json; charset=utf-8' \
+        --data "$payload" https://api.indexnow.org/indexnow)" || code="000"
+    case "$code" in
+        200|202) say "IndexNow : $count adresses signalées." ;;
+        *) say "IndexNow : réponse $code, rien n'est perdu ; relancer par make indexnow." ;;
+    esac
 }
 
 case "${1:-all}" in
-    all) check_commit; deploy_api; deploy_front ;;
+    all) check_commit; deploy_api; deploy_front; ping_indexnow ;;
     api) check_commit; deploy_api ;;
-    front) check_commit; deploy_front ;;
+    front) check_commit; deploy_front; ping_indexnow ;;
+    indexnow) ping_indexnow ;;
     lexicon) deploy_lexicon ;;
     rollback) ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh rollback" ;;
     suggestions-pull) pull_suggestions ;;
-    layouts-pull) pull_layout_proposals ;;
     status) ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh status" ;;
-    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|suggestions-pull|layouts-pull]" ;;
+    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|indexnow|suggestions-pull]" ;;
 esac

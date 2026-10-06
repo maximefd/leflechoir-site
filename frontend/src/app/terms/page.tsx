@@ -7,7 +7,7 @@ import { publicPage } from "@/lib/seo";
 export const metadata: Metadata = publicPage({
   path: "/terms",
   title: "Conditions d'utilisation",
-  description: `Les règles d'utilisation de ${site.name} : ce qui t'appartient, ce que le site te doit, et ce qu'il ne garantit pas.`,
+  description: `Les règles d'utilisation ${site.nameAfterDe} : ce qui t'appartient, ce que le site te doit, et ce qu'il ne garantit pas.`,
 });
 
 export default function TermsPage() {

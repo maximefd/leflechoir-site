@@ -8,7 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from models import db
 from auth import bcrypt, auth_bp
-from routes import main_bp
+from routes import MAX_QUALITY_BUDGET_S, main_bp
 from extensions import jwt, migrate
 from security import init_rate_limiting, register_error_handlers, register_jwt_callbacks, register_security_headers
 from lexicon_loader import LexiconManager
@@ -20,7 +20,6 @@ from stats import init_stats_cli
 from admin import admin_bp, init_admin_cli
 from alerts import init_system_cli
 from suggestions import init_suggestions
-from layout_proposals import init_layout_proposals
 from audience import audience_bp
 from contact import contact_bp
 
@@ -46,6 +45,14 @@ DEFAULT_SETTINGS = dict(
     # Générations calculées en même temps, tous workers confondus : une par cœur (ADR 0013).
     # Au-delà, et pour un visiteur qui en a déjà une en cours, l'API répond 429.
     GENERATION_MAX_CONCURRENT=2,
+    # Moteur v2 (#209, #219) : « best » (la meilleure de plusieurs essais, défaut) ou « first » (la première grille).
+    # Avec « best », la grille est rendue dès que tous les mots sont placés ou qu'elle n'a pas changé depuis 1,5 s,
+    # au plus tard au bout du budget
+    GENERATION_QUALITY='best',
+    GENERATION_QUALITY_BUDGET_S=5.0,
+    # Moteur v2 (#210, #219) : géométrie d'une génération qui ne la précise pas. « sur_mesure » (défaut : le seul mode
+    # du site) ou « catalogue » (les layouts relevés dans des magazines, gardés dans le code)
+    GENERATION_GEOMETRY='sur_mesure',
     # Dossier des verrous de ces places ; il doit être commun à tous les workers d'une même machine
     GENERATION_LOCK_DIR=os.path.join(tempfile.gettempdir(), 'terminator-generations'),
     CORS_ORIGINS=DEFAULT_CORS_ORIGINS,
@@ -64,8 +71,6 @@ DEFAULT_SETTINGS = dict(
     RATELIMIT_SEARCH='120 per minute',
     # Suggestions de mots : aucune limite pour un humain, un plafond anti-robot (roadmap 1e)
     RATELIMIT_SUGGEST='60 per minute',
-    # Mises en page proposées : une grille finie à la fois, un plafond anti-robot (roadmap 5C)
-    RATELIMIT_PROPOSE_LAYOUT='20 per hour',
     # La balise d'audience : une par page quittée, donc bien moins que le rythme d'un lecteur (#130)
     RATELIMIT_AUDIENCE='120 per minute',
     # Le formulaire de contact : cinq messages par heure et par adresse (#131)
@@ -182,6 +187,17 @@ def _load_config_from_env() -> dict:
         JWT_COOKIE_DOMAIN=os.environ.get('COOKIE_DOMAIN') or None,
         JSON_AS_ASCII=False,
         GENERATION_TIME_BUDGET_S=float(os.environ.get('GENERATION_TIME_BUDGET_S', 20)),
+        # Moteur v2 (#209) : « best » garde la meilleure de plusieurs grilles (orchestrateur), « first » rend la
+        # première (comportement d'origine). « best » par défaut depuis #219 ; une requête peut demander
+        # l'autre (`quality`). Budget de l'orchestrateur plafonné à 45 s : gunicorn coupe un worker à
+        # 60 s, Cloudflare une requête à 100 s.
+        GENERATION_QUALITY=('first' if os.environ.get('GENERATION_QUALITY', '').strip() == 'first' else 'best'),
+        GENERATION_QUALITY_BUDGET_S=min(MAX_QUALITY_BUDGET_S, max(1.0, float(
+            os.environ.get('GENERATION_QUALITY_BUDGET_S') or 5))),
+        # Moteur v2 (#210, #219) : « sur_mesure » (défaut) dessine la géométrie de toute génération qui ne choisit
+        # pas ; GENERATION_GEOMETRY=catalogue rend les layouts du catalogue
+        GENERATION_GEOMETRY=('catalogue' if os.environ.get('GENERATION_GEOMETRY', '').strip() == 'catalogue'
+                             else 'sur_mesure'),
         GENERATION_MAX_CONCURRENT=max(1, int(
             os.environ.get('GENERATION_MAX_CONCURRENT') or DEFAULT_SETTINGS['GENERATION_MAX_CONCURRENT'])),
         GENERATION_LOCK_DIR=os.environ.get('GENERATION_LOCK_DIR') or DEFAULT_SETTINGS['GENERATION_LOCK_DIR'],
@@ -313,7 +329,6 @@ def create_app(test_config=None):
     app.register_blueprint(audience_bp)
     app.register_blueprint(contact_bp)
     init_suggestions(app)
-    init_layout_proposals(app)
     init_rate_limiting(app)
     init_usage(app)
     init_stats_cli(app)

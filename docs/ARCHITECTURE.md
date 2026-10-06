@@ -43,7 +43,7 @@ Il n'y a **pas de déploiement en ligne** pour l'instant : tout tourne en local 
 | `security.py` | Gestionnaires d'erreurs JSON, en-têtes HTTP, callbacks JWT, rate limiting, adresse du visiteur (`client_ip`) |
 | `generation_slots.py` | Places de génération : au plus 2 générations à la fois, une par visiteur (verrous de fichiers partagés entre workers) |
 | `models.py` / `extensions.py` | Modèles SQLAlchemy et instances des extensions |
-| `usage.py` / `stats.py` | Mesure d'usage côté serveur ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md)) : un événement par génération, recherche, étape de compte, grille conservée ou erreur, écrit en fin de requête ; empreinte du jour, purge quotidienne ; lecture par `flask stats` |
+| `usage.py` / `stats.py` | Mesure d'usage côté serveur ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md)) : un événement par génération, recherche, étape de compte, grille conservée ou erreur, écrit en fin de requête ; empreinte du jour, purge quotidienne ; lecture par `flask stats`. `stats.race` relit ces événements par semaine ISO pour « La course » ([ADR 0023](adr/0023-cap-sur-la-premiere-place.md), #201) : visiteurs, générations réussies, grilles terminées, comptes créés et leur tendance, dans `/admin` et le bilan du lundi |
 | `usage_demo.py` | Événements d'usage fictifs pour développer le poste de pilotage (`flask usage seed-demo`, `make seed-demo`) : refusé en production, relançable sans doublon |
 | `system_samples.py` | Échantillons système ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) : RAM, CPU, places de génération, taille de la base, dernière sauvegarde, lus dans `/proc` ; 30 jours, puis un résumé par jour gardé 13 mois |
 | `alerts.py` | Alertes par e-mail et bilan hebdomadaire, sous plafonds ; `flask system tick`, lancé chaque minute par un minuteur du serveur (`tools/monitor/tick.sh`) |
@@ -78,11 +78,12 @@ Il n'y a **pas de déploiement en ligne** pour l'instant : tout tourne en local 
 | POST | `/api/search` | optionnelle | Recherche par motif (DELA + dictionnaire personnel actif) |
 | GET | `/api/grids/formats` | — | Formats de grille disponibles |
 | GET | `/api/layouts` | — | Catalogue des layouts : grilles et statistiques par format |
-| POST | `/api/grids/difficulty` | — | Ce que coûtent des mots imposés, **sans générer** ([ADR 0009](adr/0009-annoncer-la-difficulte.md)) |
-| POST | `/api/grids/generate` | optionnelle | Génère une grille remplie, flèches comprises (`clues`) : `must_words`, `wish_words`, et les seuls dictionnaires demandés ([ADR 0011](adr/0011-dictionnaires-choisis.md)) |
+| POST | `/api/grids/difficulty` | — | Ce que coûtent des mots imposés, **sans générer** ([ADR 0009](adr/0009-annoncer-la-difficulte.md)). `geometry: "sur_mesure"` : pas de taux (`success_rate` et `level` à `null`, « pas encore mesuré »), seuls les mots trop longs sont signalés (#210) |
+| POST | `/api/grids/generate` | optionnelle | Génère une grille remplie, flèches comprises (`clues`) : `must_words`, `wish_words`, et les seuls dictionnaires demandés ([ADR 0011](adr/0011-dictionnaires-choisis.md)). `quality` : `first` (la première grille) ou `best` (la meilleure de plusieurs essais, 10 s, réglage `GENERATION_QUALITY`). `geometry` : `catalogue` (une mise en page du catalogue, défaut, réglage `GENERATION_GEOMETRY`) ou `sur_mesure` (une géométrie dessinée par le moteur, toute taille de 5 à 20 cases de côté ; refus `size_out_of_range`, `geometry_unavailable`) ; la grille rendue dit sa `geometry` (#210). Avec `Accept: text/event-stream`, la réponse est un flux SSE : `progress` toutes les 0,5 s (avec `expected_s`, la fin attendue de la recherche, qui fait avancer la barre de progression de l'écran, #220), `best` (la meilleure grille du moment), puis `done` (le corps JSON) ou `error` (mêmes `reason`, plus `status`) (#209) ; `mystery_word` numérote les cases du mot mystère (#218), ou renvoie la grille avec `mystery_error` si une lettre manque, dans le JSON comme dans l'événement `done` |
 | GET / POST | `/api/grids` | ✅ | Lister ses grilles conservées (résumés ; `?archived=true|false`) / en conserver une |
 | GET / DELETE | `/api/grids/<id>` | ✅ | Relire une grille conservée (cases, flèches, définitions) / la supprimer |
-| PATCH | `/api/grids/<id>` | ✅ | Définitions, notes, archivage, renommage — et **lettres corrigées à la main** (`cells`), qui font recalculer les mots ([ADR 0012](adr/0012-grille-modifiable.md)) |
+| PATCH | `/api/grids/<id>` | ✅ | Définitions, notes, archivage, renommage — et **lettres corrigées à la main** (`cells`), qui font recalculer les mots ([ADR 0012](adr/0012-grille-modifiable.md)) ; mot mystère (`mystery_word`, vide pour le retirer ; `mystery_seed` pour d'autres cases ; 422 `mystery_letters_missing`) |
+| POST | `/api/grids/geometry` | ✅ | Une géométrie de style magazine tirée au hasard (`{width, height}` de 5 à 20, `seed` facultatif) → `{rows}` au format du catalogue ; `reason` `geometry_unavailable` (422) si le moteur n'en dessine pas à cette taille. Le tutoriel de la grille à la main la pose comme une modification annulable (#221) |
 | POST | `/api/grids/<id>/suggestions` | ✅ | Les mots qui entrent à un emplacement **sans casser ses croisements** |
 | POST | `/api/contact` | — | Un message pour l'auteur : `{reason: suggestion\|problem\|data, message, email?, request_id?}` ; 201 ; 5 par heure |
 | POST | `/api/audience` | — | La balise d'audience : `{kind: view\|pdf, path, referrer, lang, visible_ms}` ; 204, sans cookie ; la session n'est jamais lue |
@@ -131,6 +132,7 @@ erDiagram
         json definitions "une définition par emplacement (clé x-y-sens)"
         text notes "bloc-notes de l'auteur"
         bool archived "rangée hors de la liste de travail"
+        json mystery "mot mystère et ses cases numérotées, ou NULL"
         datetime date_creation
         int user_id
     }

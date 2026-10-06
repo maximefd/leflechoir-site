@@ -8,6 +8,9 @@
 export type SiteConfig = {
   /** Nom public, dans les titres, l'en-tête, le pied de page et les pages légales */
   name: string;
+  /** Le nom après « de » et après « à », contraction comprise : jamais « de Le Fléchoir » */
+  nameAfterDe: string;
+  nameAfterA: string;
   /** Accroche du titre de l'accueil et des partages */
   tagline: string;
   description: string;
@@ -23,7 +26,9 @@ export type SiteConfig = {
 export const SITES = {
   fr: {
     name: "Le Fléchoir",
-    tagline: "l'atelier des mots fléchés",
+    nameAfterDe: "du Fléchoir",
+    nameAfterA: "au Fléchoir",
+    tagline: "créer des mots fléchés de pro, simplement",
     description:
       "Crée tes mots fléchés : trouve le mot qui manque par motif (P??LE), ou laisse le moteur remplir une grille entière, puis écris les définitions et exporte en PDF.",
     url: "https://leflechoir.fr",

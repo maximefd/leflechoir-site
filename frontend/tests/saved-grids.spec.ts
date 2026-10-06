@@ -16,8 +16,8 @@ test("une grille générée se conserve et se retrouve", async ({ page }) => {
   // Les mots imposés sont une option, et l'écran le dit
   await expect(page.getByRole("heading", { name: /Imposer des mots\s*\(facultatif\)/ })).toBeVisible();
   // Le bouton radio est masqué sous sa vignette : c'est elle qu'on clique, comme un visiteur
-  await page.locator("label").filter({ hasText: /^6\s*×\s*7$/ }).click();
-  await expect(page.getByRole("radio", { name: /6\s*×\s*7/ })).toBeChecked();
+  await page.locator("label").filter({ hasText: /^Petite\s*7\s*×\s*9$/ }).click();
+  await expect(page.getByRole("radio", { name: /7\s*×\s*9/ })).toBeChecked();
 
   // Un mot facile arrive obligatoire ; un mot qui ferait tomber les chances sous 70 %, souhaité
   const mot = page.getByLabel("Mot à placer dans la grille");
@@ -56,7 +56,7 @@ test("une grille générée se conserve et se retrouve", async ({ page }) => {
   await expect(page).toHaveURL(/\/grid$/);
   await expect(page.getByTestId("logout-button")).toBeVisible();
   await expect(page.locator("details ul li").first()).toHaveText(firstWord ?? "");
-  await expect(page.getByRole("radio", { name: /6\s*×\s*7/ })).toBeChecked();
+  await expect(page.getByRole("radio", { name: /7\s*×\s*9/ })).toBeChecked();
 
   await page.getByLabel("Nom (facultatif)").fill("Essai du parcours");
   await page.getByRole("button", { name: "Conserver cette grille" }).click();
@@ -73,7 +73,7 @@ test("une grille générée se conserve et se retrouve", async ({ page }) => {
   // La liste ne transporte que des résumés : l'avancement des définitions est ce qu'on y cherche
   await expect(saved.getByText(/définition|Définitions complètes/)).toBeVisible();
   // Et sa silhouette, dessinée depuis la forme envoyée avec le résumé — c'est ce qu'on reconnaît
-  await expect(saved.getByRole("img", { name: /Silhouette d'une grille 6 sur 7/ })).toBeVisible();
+  await expect(saved.getByRole("img", { name: /Silhouette d'une grille 7 sur 9/ })).toBeVisible();
 
   // Archiver range la grille sans rien perdre : elle sort de la liste de travail, pas de la base
   await saved.getByRole("button", { name: "Archiver" }).click();

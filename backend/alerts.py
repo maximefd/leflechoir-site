@@ -222,7 +222,8 @@ def send_test(now: datetime | None = None) -> bool:
 # --- Bilan hebdomadaire ---
 
 def weekly_body(now: datetime) -> str:
-    """Les sept derniers jours, à côté des sept précédents : visiteurs, générations, erreurs, nouveaux comptes."""
+    """La course d'abord (#201) : les quatre dernières semaines ISO complètes et leur tendance, puis les sept derniers
+    jours à côté des sept précédents : visiteurs, générations, erreurs, nouveaux comptes."""
     config = current_app.config
     cpu_count = os.cpu_count() or 1
     # Les pages vues (la balise du navigateur) ont leur rubrique : les chiffres de l'API restent ceux de `flask stats`
@@ -235,6 +236,9 @@ def weekly_body(now: datetime) -> str:
         return f"{label:<28} {fmt(week[key]):>10}   (semaine précédente : {fmt(before[key])})"
 
     lines = [
+        # La semaine en cours n'y figure pas : le bilan part le lundi, elle commence à peine
+        *stats.render_race(stats.race(now, config["SITE"])),
+        "",
         f"Semaine du {now - timedelta(days=7):%d/%m/%Y} au {now:%d/%m/%Y} (UTC).",
         "",
         line("Visiteurs (somme par jour)", "visitors"),

@@ -215,6 +215,7 @@ make deploy            # l'API, puis le site ; make deploy-api ou make deploy-fr
 
    Au moindre échec, il **revient seul à la version précédente** et le montre dans le journal. Le Mac vérifie enfin l'API par le tunnel, avec `https://api.leflechoir.fr/api/status`.
 2. **Le site.** Il est construit à partir du même commit, dans un dossier temporaire, puis envoyé à Pages.
+3. **IndexNow.** Les adresses du sitemap en ligne sont signalées aux moteurs qui partagent IndexNow (Bing, donc Copilot). La clé est servie à la racine du site (`frontend/public/<clé>.txt`, publique par nature). Un échec ne fait qu'un message ; `make indexnow` relance l'envoi.
 
 Compter quelques minutes. L'API est coupée environ une minute, le temps de charger le lexique : déployer aux heures creuses.
 
@@ -236,7 +237,7 @@ La commande :
 
 La commande réexporte d'abord le lexique (`make lexicon-export`), pour que les dernières décisions et les mots ajoutés (`additions.csv`) partent, puis, le lexique en service, renvoie au serveur les réponses aux suggestions de mots ([ADR 0020](adr/0020-suggestions-et-ajouts-au-lexique.md)). Pour récupérer les suggestions du site avant de les trier : `make suggestions-pull`.
 
-**Mises en page proposées** (roadmap 5C) : `make layouts-pull` récupère les formes proposées depuis l'éditeur (`data/layouts/proposals.json`, non versionné). Elles apparaissent en haut de la page Layouts du curateur : → les ajoute au catalogue (`backend/layouts/<L>x<H>/<NNN>.txt`, à committer), ← les refuse ; les décisions restent sur le Mac (`data/layouts/proposal-decisions.csv`). Une forme ajoutée entre en service au `make deploy` suivant.
+**Mises en page proposées** (roadmap 5C) : retirées le 06/10/2026 (#221). Plus de `make layouts-pull` ni de page des propositions dans le curateur ; la table `layout_proposal` garde les formes déjà reçues, qui partent avec le compte.
 
 À relancer après une séance de curation pour publier ses progrès, de préférence aux heures creuses. `make deploy-status` affiche la date du lexique en service.
 

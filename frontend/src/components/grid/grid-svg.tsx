@@ -111,6 +111,75 @@ function arrowShape(arrow: string, halfOffset: number) {
 export const clueKey = (clue: Pick<Clue, "x" | "y" | "direction">) =>
   `${clue.x}-${clue.y}-${clue.direction}`;
 
+/**
+ * Le mot mystère (#218) : un petit numéro dans les cases choisies, et une rangée de cases numérotées sous
+ * la grille, que le joueur remplit. Dans le même dessin que la grille : l'écran et le PDF sont identiques.
+ *
+ * Le numéro va dans le coin **bas droit** : les flèches entrent dans une case par sa gauche ou par son haut,
+ * jamais par là, et la lettre, centrée, n'y descend pas.
+ */
+const NUMBER_SIZE = CELL * 0.24;
+const MYSTERY_GAP = 36;
+const MYSTERY_TITLE = 28;
+const MYSTERY_BOX = { max: 78, min: 46 };
+/** Blanc entre deux mots d'un message, en largeur de case ; entre deux lignes de la rangée, en hauteur. */
+const MYSTERY_WORD_GAP = 0.5;
+const MYSTERY_LINE_GAP = 0.3;
+
+type MysteryBox = { number: number; letter: string; x: number; y: number };
+
+/**
+ * La rangée du mot mystère : une case par lettre, numérotées dans l'ordre, centrée au-dessus de la grille (#220).
+ * Les cases rétrécissent pour tenir sur une ligne ; en deçà d'une taille lisible, la rangée passe à la ligne,
+ * de préférence entre deux mots. Coordonnées relatives au haut de la rangée.
+ */
+export function mysteryLayout(word: string, width: number) {
+  const groups = word.split(" ").filter(Boolean);
+  const total = groups.join("").length;
+  const units = total + MYSTERY_WORD_GAP * Math.max(0, groups.length - 1);
+  const size = Math.max(MYSTERY_BOX.min, Math.min(MYSTERY_BOX.max, width / Math.max(1, units)));
+  const perLine = Math.max(1, Math.floor(width / size));
+
+  // Des lignes de lettres, chaque lettre suivie ou non d'un blanc de mot
+  const lines: { letter: string; number: number; gapAfter: boolean }[][] = [[]];
+  let used = 0;
+  let number = 0;
+  for (const group of groups) {
+    const needed = (used > 0 ? MYSTERY_WORD_GAP : 0) + group.length;
+    if (used > 0 && used + needed > perLine + 1e-9) {
+      lines.push([]);
+      used = 0;
+    }
+    [...group].forEach((letter, index) => {
+      let line = lines[lines.length - 1];
+      if (used > 0 && used + 1 > perLine + 1e-9) {
+        line = [];
+        lines.push(line);
+        used = 0;
+      }
+      if (index === 0 && line.length > 0) {
+        line[line.length - 1].gapAfter = true;
+        used += MYSTERY_WORD_GAP;
+      }
+      number += 1;
+      line.push({ letter, number, gapAfter: false });
+      used += 1;
+    });
+  }
+
+  const boxes: MysteryBox[] = [];
+  lines.forEach((line, row) => {
+    const lineUnits = line.reduce((sum, box) => sum + 1 + (box.gapAfter ? MYSTERY_WORD_GAP : 0), 0);
+    let x = (width - lineUnits * size) / 2;
+    for (const box of line) {
+      boxes.push({ number: box.number, letter: box.letter, x, y: row * size * (1 + MYSTERY_LINE_GAP) });
+      x += size * (1 + (box.gapAfter ? MYSTERY_WORD_GAP : 0));
+    }
+  });
+  const rows = lines.filter((line) => line.length > 0).length;
+  return { boxes, size, height: rows * size + Math.max(0, rows - 1) * size * MYSTERY_LINE_GAP };
+}
+
 /** Les cases qu'occupe un mot : de quoi éclairer, pendant l'édition, celui que l'on définit. */
 function cellsOf(clue: Clue) {
   const length = clue.length ?? clue.text.length;
@@ -186,6 +255,19 @@ export function GridSvg({
   );
   const unknown = new Set(unknownCells ?? []);
 
+  // Le mot mystère : les numéros des cases, et la rangée qui attend leurs lettres au-dessus de la grille (#220)
+  const mystery = grid.mystery?.cells.length ? grid.mystery : null;
+  const letterCells = new Set(grid.cells.filter((cell) => !cell.is_black).map((cell) => `${cell.x}-${cell.y}`));
+  const broken = new Set(variant === "edition" || letterMode ? (mystery?.broken ?? []) : []);
+  const numbered = (mystery?.cells ?? [])
+    .map((cell, index) => ({ ...cell, number: index + 1 }))
+    .filter((cell) => letterCells.has(`${cell.x}-${cell.y}`));
+  const numberedKeys = new Set(numbered.map((cell) => `${cell.x}-${cell.y}`));
+  const row = mystery ? mysteryLayout(mystery.word, grid.width * CELL) : null;
+  const rowTop = MYSTERY_TITLE * 1.4;
+  // La hauteur de la rangée : la grille est dessinée d'autant plus bas
+  const extra = row ? MYSTERY_GAP + MYSTERY_TITLE * 1.4 + row.height : 0;
+
   const fillOf = (cell: { x: number; y: number; is_black: boolean }) => {
     // En correction des lettres, une case définition se sélectionne aussi : elle peut redevenir lettre
     if (selectedCell && selectedCell.x === cell.x && selectedCell.y === cell.y) return PAPER.selected;
@@ -197,11 +279,70 @@ export function GridSvg({
 
   return (
     <svg
-      viewBox={`${-BORDER / 2} ${-BORDER / 2} ${grid.width * CELL + BORDER} ${grid.height * CELL + BORDER}`}
+      viewBox={`${-BORDER / 2} ${-BORDER / 2} ${grid.width * CELL + BORDER} ${grid.height * CELL + extra + BORDER}`}
       className={className}
       role="img"
-      aria-label={`Grille ${grid.width} sur ${grid.height}, ${grid.words.length} mots`}
+      aria-label={
+        `Grille ${grid.width} sur ${grid.height}, ${grid.words.length} mots` +
+        (mystery ? `, mot mystère en ${mystery.cells.length} lettres` : "")
+      }
     >
+      {/* La rangée du mot mystère, au-dessus de la grille (#220) : vide à remplir, ou écrite sur la page solution */}
+      {mystery && row && (
+        <g data-mystery-row="">
+          <text
+            x={(grid.width * CELL) / 2}
+            y={MYSTERY_TITLE}
+            textAnchor="middle"
+            fontSize={MYSTERY_TITLE}
+            fontWeight="700"
+            fontFamily={GRID_FONT}
+            fill={PAPER.letter}
+          >
+            MOT MYSTÈRE
+          </text>
+          {row.boxes.map((box) => (
+            <g key={`rangee-${box.number}`} data-mystery-box={box.number}>
+              <rect
+                x={box.x}
+                y={rowTop + box.y}
+                width={row.size}
+                height={row.size}
+                fill={PAPER.cell}
+                stroke={PAPER.line}
+                strokeWidth={LINE * 1.3}
+              />
+              <text
+                x={box.x + row.size - 5}
+                y={rowTop + box.y + row.size - 6}
+                textAnchor="end"
+                fontSize={row.size * 0.26}
+                fontWeight="700"
+                fontFamily={GRID_FONT}
+                fill={PAPER.letter}
+              >
+                {box.number}
+              </text>
+              {showLetters && (
+                <text
+                  data-mystery-letter=""
+                  x={box.x + row.size / 2}
+                  y={rowTop + box.y + row.size / 2}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={row.size * 0.56}
+                  fontWeight="700"
+                  fontFamily={GRID_FONT}
+                  fill={PAPER.letter}
+                >
+                  {box.letter}
+                </text>
+              )}
+            </g>
+          ))}
+        </g>
+      )}
+      <g transform={extra ? `translate(0 ${extra})` : undefined}>
       {/* Trois passes : en SVG, l'ordre de dessin décide de ce qui est au-dessus, et les flèches
           débordent sur la case voisine — dessinées trop tôt, la case suivante les effacerait. */}
       {grid.cells.map((cell) => (
@@ -226,7 +367,8 @@ export function GridSvg({
               key={`inconnu-${cell.x}-${cell.y}`}
               x1={cell.x * CELL + 8}
               y1={cell.y * CELL + CELL - 7}
-              x2={cell.x * CELL + CELL - 8}
+              // Le trait s'arrête avant le numéro du mot mystère, qui occupe le coin bas droit
+              x2={cell.x * CELL + CELL - (numberedKeys.has(`${cell.x}-${cell.y}`) ? 34 : 8)}
               y2={cell.y * CELL + CELL - 7}
               stroke={PAPER.unknown}
               strokeWidth={LINE * 1.6}
@@ -251,6 +393,23 @@ export function GridSvg({
               {letters.get(`${cell.x}-${cell.y}`)}
             </text>
           ))}
+
+      {/* Les numéros du mot mystère, dans toutes les vues : sur la grille vierge, c'est ce que le joueur suit */}
+      {numbered.map((cell) => (
+        <text
+          key={`mystere-${cell.number}`}
+          data-mystery-number={cell.number}
+          x={cell.x * CELL + CELL - 7}
+          y={cell.y * CELL + CELL - 8}
+          textAnchor="end"
+          fontSize={NUMBER_SIZE}
+          fontWeight="700"
+          fontFamily={GRID_FONT}
+          fill={broken.has(cell.number) ? PAPER.unknown : PAPER.letter}
+        >
+          {cell.number}
+        </text>
+      ))}
 
       {showClues &&
         grid.cells
@@ -360,6 +519,8 @@ export function GridSvg({
           strokeWidth={BORDER}
         />
       )}
+
+      </g>
     </svg>
   );
 }

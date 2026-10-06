@@ -95,6 +95,31 @@ test("l'administrateur lit l'usage, les générations et les erreurs", async ({ 
   await expect(page.getByRole("rowheader", { name: /serveur occupé/ })).toBeVisible();
 });
 
+test("l'administrateur suit la course, semaine par semaine, avec sa tendance", async ({ page, baseURL }) => {
+  await asAdmin(page, baseURL);
+
+  await expect(page.getByRole("heading", { name: "La course", exact: true })).toBeVisible();
+  const table = page.getByRole("table", { name: /Indicateurs de la course/ });
+  // Les quatre dernières semaines complètes (la dernière, S39, dit ses dates), la semaine en cours à part, la tendance
+  for (const name of [/^S36/, /^S37/, /^S38/, /^S39\s*21 sept\. – 27 sept\./, /^S40 en cours\s*4 jours sur 7/, "Tendance"]) {
+    await expect(table.getByRole("columnheader", { name })).toBeVisible();
+  }
+  // Ce qui se mesure déjà : les chiffres de chaque semaine, et le sens de la tendance en toutes lettres
+  const visitors = table.getByRole("row", { name: /^Visiteurs \(somme par jour\)/ });
+  await expect(visitors.getByRole("cell").nth(0)).toHaveText("169");
+  await expect(visitors.getByRole("cell").nth(3)).toHaveText("245");
+  await expect(visitors).toContainText("stable (-1, -0,4 %)"); // sous 5 % d'écart : pas de flèche rouge pour un visiteur de moins
+  await expect(table.getByRole("row", { name: /^Générations réussies/ })).toContainText("en baisse (-24, -7,2 %)");
+  await expect(table.getByRole("row", { name: /^Grilles terminées/ })).toContainText("en hausse (+7, +11 %)");
+  await expect(table.getByRole("rowheader", { name: "dont exports PDF" })).toBeVisible();
+  await expect(table.getByRole("rowheader", { name: "dont grilles conservées" })).toBeVisible();
+  await expect(table.getByRole("row", { name: /^Comptes créés/ })).toContainText("en hausse (+1, +7,7 %)");
+  // Ce qui ne se mesure pas encore : « à venir », jamais un zéro
+  for (const name of ["Parties jouées", "Grilles publiées", "Avis reçus"]) {
+    await expect(table.getByRole("row", { name: `${name} à venir` })).toBeVisible();
+  }
+});
+
 test("l'administrateur lit l'état du serveur et le journal des alertes", async ({ page, baseURL }) => {
   await asAdmin(page, baseURL);
 

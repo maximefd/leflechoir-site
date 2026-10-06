@@ -60,6 +60,13 @@ def test_one_command_fills_the_dashboard(test_app, runner):
         for key in ("visitors", "searches", "generations", "grids", "register", "saved", "errors"):
             assert period[key] > 0, (period["label"], key)
     assert figures["periods"][2]["server_errors"] > 0  # le jour d'incident
+    # « La course » : six semaines de données remplissent les quatre dernières semaines complètes
+    race = {row["key"]: row for row in figures["race"]["indicators"]}
+    for key in ("visitors", "grids", "finished"):
+        assert all(count > 0 for count in race[key]["values"]), key
+    for key in ("pdf", "saved", "registers"):  # plus rares : le total des quatre semaines, pas chaque semaine
+        assert sum(race[key]["values"]) > 0, key
+    assert [key for key, row in race.items() if not row["available"]] == ["games", "published", "feedback"]
     assert runner.invoke(args=["stats"]).exit_code == 0
 
 

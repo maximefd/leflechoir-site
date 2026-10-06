@@ -15,6 +15,10 @@ def test_app():
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
         'JWT_SECRET_KEY': 'test-secret-key-long-enough-for-hs256-signing', # Clé de test (>= 32 octets)
         'RATELIMIT_ENABLED': False,  # Activé uniquement dans les tests dédiés (test_security.py)
+        # Les tests de l'API parlent du catalogue et de la première grille (layouts de test, lexique de 2 à 5
+        # lettres) ; le défaut du serveur (sur mesure, « best », #219) a ses propres tests
+        'GENERATION_GEOMETRY': 'catalogue',
+        'GENERATION_QUALITY': 'first',
     })
 
     with app.app_context():

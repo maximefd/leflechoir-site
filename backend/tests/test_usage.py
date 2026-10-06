@@ -71,6 +71,15 @@ def test_imposed_words_are_kept_as_text_and_as_shape(grid_app, client, small_wor
     assert event.words == {"must": [known], "wish": ["ZZQXW"]}
 
 
+def test_the_mystery_word_is_never_measured(grid_app, client):
+    """#218 : c'est souvent le prénom de quelqu'un. La génération est comptée, le mot n'est écrit nulle part."""
+    generate(client, {"size": {"width": 5, "height": 5}, "seed": 42, "mystery_word": "Zorglub"})
+
+    [event] = events("generation")
+    assert (event.outcome, event.status) == ("grid", 200)
+    assert "ZORGLUB" not in json.dumps([event.data, event.words]).upper()
+
+
 def test_a_failed_generation_keeps_its_reason(grid_app, client, monkeypatch):
     monkeypatch.setitem(grid_app.config, "GENERATION_TIME_BUDGET_S", -1)
 

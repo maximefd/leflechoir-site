@@ -5,6 +5,128 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Indicateurs de la course** ([#201](https://github.com/maximefd/terminator-app/issues/201), lot C0,
+  [ADR 0023](docs/adr/0023-cap-sur-la-premiere-place.md)) : un bloc « La course » dans `/admin` (sous les seuils),
+  en tête du bilan du lundi et dans `make stats`, par semaine ISO (du lundi au dimanche, UTC) :
+  - les **quatre dernières semaines complètes**, et la semaine en cours à part, hors de la tendance (le bilan
+    l'omet : il part en début de semaine) ;
+  - **visiteurs** (la somme, jour après jour, des empreintes qui ont appelé l'API, comme « Usage »), **générations
+    réussies**, **grilles terminées** (les exports PDF vus par la balise et les grilles conservées, avec leurs deux
+    parts) et **comptes créés** ;
+  - la **tendance** de la dernière semaine complète face à la précédente : en hausse, en baisse, ou stable sous
+    5 % d'écart ;
+  - **parties jouées, grilles publiées et avis reçus** : « à venir », jamais un zéro. Un lot qui livre sa fonction
+    déclare son événement dans `RACE_COUNTED` (`backend/stats.py`) : sa ligne se remplit alors partout ;
+  - rien de neuf n'est mesuré : ce sont les événements d'usage déjà collectés, relus. La page confidentialité et le
+    registre RGPD ne changent pas.
+- **Écran de génération v2** ([#220](https://github.com/maximefd/terminator-app/issues/220), décisions de l'auteur) :
+  une **barre de progression** remplace les grilles qui défilent (plus de « Garder celle-ci » ni d'« Essai n° ») ;
+  l'événement `progress` porte `expected_s`, la fin attendue (le budget, ou la dernière amélioration plus la
+  patience). **Plus de choix « Du catalogue » / « Sur mesure »** : toutes les grilles sont dessinées par le moteur,
+  cinq tailles d'un clic (7×9, 10×10, 10×13, 13×16, 15×15) et une taille libre de 5 à 20. **Taille conseillée** pour
+  les mots imposés (`best_size`), à prendre d'un clic. La rangée du **mot mystère passe au-dessus de la grille**, à
+  l'écran et dans le PDF.
+- **Grille à la main : trois départs** ([#221](https://github.com/maximefd/terminator-app/issues/221)) : le tutoriel
+  propose la première ligne et la première colonne, une **grille de magazine tirée au hasard** (`POST
+  /api/grids/geometry`, `engine/geometry.py`, posée comme une modification annulable), ou une grille vierge.
+  `/grids/new` ne montre plus la galerie des mises en page du catalogue (les 39 fichiers restent, profils du moteur).
+- **« Sur mesure » devient le mode par défaut, la grille arrive au plus vite** ([#219](https://github.com/maximefd/terminator-app/issues/219),
+  décisions de l'auteur, [ADR 0025](docs/adr/0025-moteur-v2.md)) : `GENERATION_GEOMETRY=sur_mesure`,
+  `GENERATION_QUALITY=best`, `GENERATION_QUALITY_BUDGET_S=5` par défaut ; sur mesure, les réglages de #219 sont pris
+  (`SUR_MESURE_SETTINGS`) et la grille est rendue dès que tous les mots sont placés ou qu'elle n'a pas changé depuis
+  1,5 s (pour 100 cases, proportionnel au-delà) ; une grille réparée a au plus 23 % de cases définitions jusqu'à 130
+  cases, 21 % au-delà. Le site choisit « Sur mesure » par défaut. `POST /api/grids/difficulty` sur mesure rend un taux
+  mesuré et `best_size`, la plus petite grille qui a la meilleure probabilité de recevoir les mots imposés (table
+  `SUR_MESURE_SUCCESS`, `benchmarks/difficulty_sur_mesure.py`). Le catalogue reste dans le code, inchangé.
+  Mesuré à 5 s : 10×10 8 à 9 mots de la liste en médiane (grille rendue en 2,1 s), 15×15 12, 10×13 10.
+- **Moteur v2, sur mesure : réparer la géométrie pendant le remplissage** ([#219](https://github.com/maximefd/terminator-app/issues/219),
+  lot C1, étape 8, [ADR 0025](docs/adr/0025-moteur-v2.md) toujours proposée) — réglages du moteur, **tous coupés par
+  défaut** (rien ne change pour le site) : réparation de la géométrie (`repair`, `repair_move`, `repair_merge`,
+  `repair_max_density`), mots souhaités en réserve (`soft_pool`), montée depuis la meilleure grille (`climb_share`,
+  `climb_swap`, `climb_elite`), essai arrêté s'il ne peut plus battre la meilleure grille (`fail_fast`), géométrie
+  assortie aux mots (`match_geometry`, `match_lengths`, `geometry_profile`). `v2_bench.py --generator-option`.
+  Mesuré (32 mots, `best`, 80 générations par format) : 10×10 de 6 à 8 mots en médiane, 15×15 de 9 à 13, dans la
+  bande de densité ; porte tenue (9 et 13 à 10 s, 9 et 12 à 4 s) si une grille réparée peut monter à 23 % de cases
+  définitions. Réglages coupés : les 780 trajectoires de `baseline.json` identiques.
+- **Mot mystère** ([#218](https://github.com/maximefd/terminator-app/issues/218), lot C3b) : des cases lettres
+  portent un petit numéro, et leurs lettres, remises dans l'ordre, forment un mot à deviner (un prénom, « MERCI »,
+  « JOYEUX NOEL »). Champ replié « Mot mystère (facultatif) » à la génération, panneau dans l'étape « Mise en page
+  et export » de l'éditeur (placer, changer, autres cases, retirer). Numéro dans le coin bas droit des cases, là
+  où n'entre aucune flèche, et rangée de cases numérotées sous la grille, dans le même dessin à l'écran et dans
+  le PDF, remplie sur la page solution. Cases choisies par un module pur du moteur (`engine/mystery.py`, seedé) :
+  une par lettre, loin des mots imposés et souhaités, un numéro par mot autant que possible, réparties sur la
+  grille. Une lettre absente : la grille revient quand même, avec `mystery_error` (`reason`
+  `mystery_letters_missing`, lettres manquantes) et « Relancer la génération ». Gardé avec la grille conservée
+  (colonne `mystery`, migration additive 0015) ; une lettre numérotée corrigée déplace seulement son numéro, ou
+  le signale s'il n'a plus de case. La génération elle-même ne change pas, et le mot n'est jamais mesuré. Avec le moteur v2 : dans le JSON comme
+  dans le flux (`done`, et chaque `best`, donc aussi une grille gardée en cours de route par « Garder celle-ci »),
+  en `first` comme en `best`, du catalogue comme sur mesure.
+- **Moteur v2 intégré : « Du catalogue » ou « Sur mesure »** ([#210](https://github.com/maximefd/terminator-app/issues/210),
+  lot C1, étape 9, [ADR 0025](docs/adr/0025-moteur-v2.md) proposée) — branche `feat/moteur-v2`, qui réunit #205, #206,
+  #207, #209 et #211 :
+  - API : champ `geometry` de `POST /api/grids/generate`, `catalogue` (défaut, réglage `GENERATION_GEOMETRY`) ou
+    `sur_mesure` : l'orchestrateur tire une géométrie générée à chaque essai (`quality=best` : la meilleure ;
+    `first` : la première remplie). Sur mesure, toute taille de 5 à 20 cases de côté (`size_out_of_range` sinon) ;
+    5×11 et 11×5 refusés (`geometry_unavailable`) ; mots de 9 lettres au plus (`must_words` avant de chercher). La
+    grille dit sa `geometry` ; mise en page « sur-mesure ». `POST /api/grids/difficulty` : sur mesure, aucun taux
+    (`success_rate` et `level` à `null`). Nouveau champ mesuré `geometry`, déclaré dans la page confidentialité.
+  - Site : sous le choix du format, « Du catalogue » (« Une mise en page relevée dans un magazine, à
+    l'identique. ») ou « Sur mesure » (« Le moteur dessine lui-même la grille : il y place davantage de tes
+    mots. ») ; sur mesure, une vignette « Taille libre » (largeur et hauteur de 5 à 20). Badge du mode sous la
+    grille ; estimation « pas encore mesuré » sur mesure.
+  - Moteur : la variante `fill_determined` est **prise par défaut**, au catalogue aussi. Mesuré sur les 39 layouts
+    × 20 seeds : même réussite (lexique curé : 779 → 780/780), p95 de 2,96 à 0,63 s (lexique curé) et de 1,88 à
+    0,74 s (DELA) ; avec 3 mots obligatoires, 119 → 160 grilles sur 220 (lexique curé, 10 s). Les taux de
+    `difficulty.py`, mesurés avant, deviennent pessimistes (à remesurer). Nouvelle référence `baseline.json` (39 layouts) ; l'ancienne devient `baseline-v1.json`, que
+    `--no-fill-determined` reproduit trajectoire pour trajectoire (420/420).
+  - Bancs : `test_harness.py --fill-determined / --no-fill-determined` ; bras `sur_mesure` et
+    `sur_mesure_premiere` de `v2_bench.py` (le chemin de l'API).
+- **Vraie progression de la génération** ([#209](https://github.com/maximefd/terminator-app/issues/209), lot C1) :
+  - API : réglage `quality` (`first`, la première grille ; `best`, la meilleure de plusieurs essais de
+    l'orchestrateur dans `GENERATION_QUALITY_BUDGET_S`, 10 s par défaut, plafonné à 45 s). Sans valeur, le
+    réglage du serveur `GENERATION_QUALITY`, **`first` par défaut** tant que l'auteur n'a pas tranché.
+  - Flux SSE sur la même route (`Accept: text/event-stream`) : `progress` toutes les 0,5 s, `best` à chaque
+    amélioration (au plus une fois par seconde), puis `done` (le corps du mode JSON) ou `error` (mêmes `reason`).
+    La place de génération est tenue jusqu'à la fin du flux ; l'usage est enregistré en fin de flux. Mode JSON
+    inchangé. Nouveau champ mesuré `quality`, déclaré dans la page confidentialité.
+  - Site : `apiStream` (`api-client.ts`) ; pendant la recherche, la meilleure grille du moment remplace la grille
+    fantôme, avec « Essai n° 14 · record : 7 de tes 12 mots » et un bouton « Garder celle-ci » (nom provisoire)
+    qui l'arrête et la garde.
+- **Moteur v2 : géométrie autour des mots** ([#207](https://github.com/maximefd/terminator-app/issues/207), lot C1,
+  étape 4) : `engine/skeleton.py` pose les mots de l'auteur avant de dessiner le reste ; seule retouche du solveur,
+  `pinned={mot: emplacement}`, plus une variante désactivée par défaut, `fill_determined` (un croisement à un seul
+  candidat n'est plus refusé). Bras `genere` et `squelette` dans `v2_bench.py`.
+  - **Porte A non tenue** : 32 mots souhaités, 5 placés (médiane) en 10×10 à 1,6 s (porte : 9), 7 en 15×15 à 4 s
+    (porte : 12) ; tenue pour 5 mots obligatoires faciles (98 à 100 %, contre 62 % au catalogue en 13×16) ;
+  - à budget égal, la géométrie générée porte 2 à 3 fois plus de mots de la liste que le catalogue avec
+    l'orchestrateur (10×13 : 6 contre 2 ; 13×16 : 7 contre 3). Pas encore branché sur l'API.
+- **Moteur v2 : géométrie générée puis remplie** ([#206](https://github.com/maximefd/terminator-app/issues/206), lot C1,
+  étape 3) : `engine/geometry.py` dessine une géométrie de 5 à 25 cases de côté aux codes des 39 layouts du
+  catalogue (bords en `x-x-…`, 17 à 21 % de cases définitions, au plus 16 % de mots de 2 lettres, aucune case
+  définition collée à une autre, aucune lettre isolée ni case vide, mots de 9 lettres au plus), garde la plus
+  facile à remplir de quatre (`fill_risk`), et le solveur actuel la remplit via `GridTemplate.from_rows`.
+  - **Porte A, partie 1 tenue** : 20/20 grilles remplies à 20 s en 10×13, 13×16, 10×10 et 15×15 ; p50 de 0,05 s
+    en 10×13 (catalogue 0,36 s) et de 0,50 s en 13×16 (catalogue 0,49 s), lexique curé ;
+  - `benchmarks/catalog_profile.py` (profil du catalogue par format) et `benchmarks/geometry_bench.py` (banc de
+    remplissage, sans passer par `grid_generator.py`) ;
+  - `grid_edit.geometry_issues(rows)` : les règles de mise en page de l'éditeur, lisibles sur une forme seule et
+    partagées par l'éditeur, les tests et le générateur ; `layout_warnings` garde exactement son comportement ;
+  - tests : 1 000 géométries par taille, du 5×5 au 25×25 et dix formats non carrés, sans une violation ; même seed,
+    même géométrie. Pas encore branché sur l'API.
+- **Moteur v2 : l'orchestrateur « plusieurs grilles, garder la meilleure »** ([#205](https://github.com/maximefd/terminator-app/issues/205),
+  lot C1, **désactivé par défaut**) : `backend/engine/orchestrator.py` (pur) enchaîne des essais courts, chacun avec
+  une seed dérivée de (seed, k), sur tous les layouts du format, et garde la meilleure grille : mots obligatoires,
+  souhaités, `unknown_share`, part de lettres, mots de 2 lettres. Arrêt au budget, à N essais ou quand tous les mots
+  souhaités sont placés ; rappel `on_progress` ; géométries en liste ou par une fabrique (étape 3 à venir).
+  - Branché dans `GridGenerator` derrière `orchestrate=False` : réglage coupé, les 420 trajectoires de
+    `baseline.json` sont identiques. Pas encore exposé par l'API.
+  - Mesuré par `backend/benchmarks/v2_bench.py` (quatre listes de 32 mots à nous, 20 seeds, cinq formats, budgets
+    égaux) : 1,73 → 3,32 mots souhaités par grille à 10 s, 1,99 → 3,87 à 20 s (médiane 2 → 4) ; grilles 365 → 390
+    et 392 → 400 sur 400 ; `unknown_share` 25 → 20-21 % ; 3 mots imposés : 72 → 87 % de réussite. Profil, pistes
+    réfutées et chiffres : [benchmarks](backend/benchmarks/README.md).
+- **IndexNow** : après chaque mise en ligne du site (`make deploy`, `make deploy-front`), toutes les adresses du
+  sitemap sont signalées aux moteurs qui partagent IndexNow (Bing, donc Copilot). La clé, publique par nature, est
+  servie à la racine du site ; `make indexnow` relance l'envoi à la demande. Un échec n'arrête pas le déploiement.
 - **Définitions des dictionnaires dans l'éditeur** (#91) : quand un mot de la grille a une définition dans un
   dictionnaire de l'auteur, l'étape Définitions la propose sous le champ du mot (« Dans ton dictionnaire
   « Cuisine » : … », bouton « Utiliser », enregistré aussitôt). Rien n'est recopié d'office ; une même définition
@@ -469,6 +591,19 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   - les mots visés par une règle automatique disparaissent de la file de tri et du reste à trier.
 
 ### Modifié
+- **Moteur 1,5 à 1,8 fois plus rapide, aux mêmes grilles** ([#211](https://github.com/maximefd/terminator-app/issues/211),
+  lot C1) : MRV incrémental (motifs et nombres de candidats des slots gardés d'un appel à l'autre, corrigés quand un
+  mot est pris ou rendu), validation croisée par le motif du slot croisé, slots croisés précalculés. Appels par
+  seconde (lexique curé) : 13×18 ×1,75 à ×1,81, 13×16 ×1,67 à ×1,73, 10×13 ×1,51 à ×1,56, l'orchestrateur autant ;
+  trajectoires identiques (420/420 de `baseline.json`, et l'orchestrateur à l'identique). Nouvelle mesure
+  `v2_bench.py speed` ([benchmarks](backend/benchmarks/README.md)).
+- **Roadmap réorganisée et rendue privée** ([ADR 0023](docs/adr/0023-cap-sur-la-premiere-place.md)) :
+  - un nouvel ordre de marche en lots ;
+  - l'international mis en pause ;
+  - le moteur gardé côté serveur pour le passage à l'échelle ;
+  - le PRD recentré : des grilles pro, dans un outil facile à prendre en main.
+
+  La roadmap, l'ADR 0023, l'analyse de la concurrence et l'acquisition rejoignent `tools/public/prive.txt`, et l'avertissement du dépôt public le signale.
 - **Le moteur et le lexique passent en privé** ([ADR 0021](docs/adr/0021-moteur-prive-site-public.md), #122) : ce
   dépôt devient privé ; le site et l'API sont publiés en open source dans `maximefd/leflechoir-site`, sans historique
   et sans moteur ni lexique, à chaque `make deploy` (`make publish-public` à la demande). CI allégée pour tenir dans
@@ -568,7 +703,34 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 - Dépendances Python figées (`backend/requirements.txt`, `tools/curator/requirements.txt`), suivies par Dependabot et auditées par `pip-audit` en CI (#6).
 - Lint Python avec ruff (`make lint-backend`, `ruff.toml`, règles tolérantes pour commencer) et couverture des tests en CI : 80 % minimum sur le moteur, 70 % sur les outils (#5).
 
+### Retiré
+- **Proposer sa mise en page au catalogue** (5C, [#221](https://github.com/maximefd/terminator-app/issues/221)) :
+  plus de bouton ni de question avant l'impression dans l'éditeur, plus de `POST /api/grids/<id>/propose-layout`,
+  de `flask layouts export`, de `make layouts-pull` ni de page des propositions dans le curateur. La table
+  `layout_proposal` et les formes reçues restent (aucune migration), et partent avec le compte ; page
+  confidentialité et `docs/RGPD.md` à jour.
+
 ### Corrigé
+- **Accroche et vocabulaire** :
+  - nouvelle accroche du site : « Le Fléchoir — créer des mots fléchés de pro, simplement » (titre de l'accueil,
+    partages, manifeste) ;
+  - le nom du site se contracte après « de » et « à » : « Écrire au Fléchoir », « Les règles d'utilisation du
+    Fléchoir », et non plus « à Le Fléchoir » (`nameAfterDe`, `nameAfterA` dans la configuration du site) ;
+  - l'écran de difficulté dit « relancer donne une autre grille ».
+- **Un mot obligatoire de plus de 9 lettres n'est plus refusé sur mesure** (retour de l'auteur du 06/10/2026) :
+  ORNITHORYNQUE (13 lettres) était refusé même en 20 × 20, les géométries générées plafonnant les mots à 9 lettres
+  (#206). Chaque essai réserve désormais un emplacement à la longueur exacte de chaque mot long, à une place tirée au
+  hasard (`engine/skeleton.py`, `long_words_factory`), puis complète la géométrie sans autre mot de plus de 9 lettres ;
+  le solveur y pose le mot. Seul un mot plus long que le grand côté de la grille est refusé (« une grille de 12 × 12 a
+  des mots de 12 lettres au plus. Agrandis-la. »). La taille conseillée en tient compte (bande « 10+ », 13 × 13 et
+  20 × 20 proposables). Mesuré (20 seeds, budget 5 s) : 13 et 11 lettres en 13, 15 et 20 cases, 20 sur 20 partout
+  (grille en 0,05 à 0,3 s en médiane) ; avec trois mots courts, 20 sur 20 en 10×13, 13×13, 13×16, 15×15 et 20×20 ;
+  deux mots longs 20 sur 20 ; trois mots de 11 à 13 lettres, 15, 19 et 18 sur 20. Sans mot long, géométries et
+  squelettes identiques à l'octet près (380 tirages comparés).
+- **Écran de génération** (retour de l'auteur du 06/10/2026) : trois tailles d'un clic, « Petite » 7 × 9, « Moyenne »
+  10 × 13 (par défaut) et « Grande » 13 × 16, plus la taille libre (10 × 10 et 15 × 15 retirées) ; la taille
+  conseillée apparaît et se met à jour dès qu'un mot imposé est saisi ou changé ; le panneau suit l'ordre : imposer
+  des mots, leurs chances par tentative, la taille (conseillée ou libre), le mot mystère, puis les dictionnaires.
 - **Icône du site** : l'onglet montrait encore le logo de Vercel, venu du modèle de départ de Next.js. Il montre maintenant une flèche coudée de mots fléchés, noire sur fond blanc (`favicon.ico`, `icon.svg`, et `apple-icon.png` pour l'écran d'accueil des téléphones).
 - **Mots obligatoires et mots souhaités ensemble** (suite de [#182](https://github.com/maximefd/terminator-app/pull/182)) :
   quand les mots obligatoires ne tiennent pas dans la mise en page tirée, le moteur en change tout de suite, au

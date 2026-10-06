@@ -157,7 +157,8 @@ def _generation(visit: _Visit, logged_in: bool, incident: bool) -> bool:
     wishes = sorted(rng.sample(WISH_WORDS, rng.randint(1, 3))) if rng.random() < 0.12 else []
     data = {"format": name, "must": [{"length": len(text), "known": flag} for text, flag in zip(must, known)],
             "wish_count": len(wishes), "dictionaries": rng.randint(1, 2) if logged_in and rng.random() < 0.2 else 0,
-            "use_global": True, "frequency_mode": None, "logged_in": logged_in}
+            "use_global": True, "frequency_mode": None, "quality": "first", "geometry": "catalogue",
+            "logged_in": logged_in}
     words = {"must": must, "wish": wishes} if must or wishes else None
 
     def add(outcome, status, duration_ms, computed=False, attempted=False):

@@ -11,3 +11,10 @@ regexes = [
   '''^test-''',
   '''^remplacez-moi''',
 ]
+
+[[allowlists]]
+description = "Clé IndexNow : publique par conception, servie à la racine du site (frontend/public/<clé>.txt)"
+regexTarget = "secret"
+regexes = [
+  '''^6be994b4f3e1887c18c53b2a6c0a4ddb$''',
+]

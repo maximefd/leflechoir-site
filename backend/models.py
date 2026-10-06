@@ -101,6 +101,9 @@ class SavedGrid(db.Model):
     notes = db.Column(db.Text, nullable=False, default="", server_default="")
     # Archivée : rangée hors de la liste courante, jamais supprimée
     archived = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    # Mot mystère (#218) : {"word": "MARIE", "seed": 42, "cells": [{"x": 1, "y": 0}, …]}, une case par lettre dans
+    # l'ordre ; NULL sans mot mystère. À part du `payload`, comme les définitions : il se pose et se retire seul
+    mystery = db.Column(db.JSON(none_as_null=True), nullable=True)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -150,6 +153,8 @@ class SavedGrid(db.Model):
         # si bien qu'une grille conservée avant leur arrivée en reçoit aussi (#26).
         grid = dict(self.payload) if isinstance(self.payload, dict) else {}
         grid['clues'] = clues_from_grid_data(grid.get('cells', []), grid.get('words', []))
+        # Avec la grille, comme à la génération : le dessin (écran et PDF) le lit au même endroit
+        grid['mystery'] = self.mystery or None
         return {**self.summary(), 'grid': grid, 'definitions': self.definitions or {},
                 'notes': self.notes or ""}
 
@@ -241,7 +246,9 @@ class WordSuggestion(db.Model):
 
 
 class LayoutProposal(db.Model):
-    """Une mise en page faite à la main, proposée au catalogue (roadmap 5C).
+    """Une mise en page faite à la main, proposée au catalogue (roadmap 5C) ; recueil arrêté le 06/10/2026 (#221).
+
+    Plus rien n'y entre : la table et les formes déjà reçues restent, et partent avec le compte.
 
     Seule la forme est gardée (`x` case définition, `-` case lettre, ADR 0006), jamais les mots : l'auteur
     l'ajoute ou la refuse dans le curateur. Une forme n'est gardée qu'une fois ; elle disparaît avec le compte

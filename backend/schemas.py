@@ -22,6 +22,11 @@ WORD_PATTERN = rf"^[{LETTERS}][{LETTERS}'’ -]*[{LETTERS}]$"
 MASK_PATTERN = rf"^[{LETTERS}?'’ -]+$"
 # Un nom de dictionnaire : lettres, chiffres, espaces et ponctuation courante
 DICTIONARY_NAME_PATTERN = r"^[\w '’().,:&!-]+$"
+# Le mot mystère tel que tapé (#218) : un prénom ou un message, lettres seulement ; vide = pas de mot mystère.
+# Sa longueur en lettres (3 à 20) se vérifie après normalisation, dans la route, avec un `reason`.
+MYSTERY_INPUT_PATTERN = rf"^([{LETTERS}][{LETTERS}'’ -]*)?$"
+# Le mot mystère tel que l'API le renvoie : normalisé, une espace entre deux mots (« JOYEUX NOEL »)
+MYSTERY_WORD_PATTERN = r"^[A-Z]+( [A-Z]+)*$"
 
 MAX_SEED = 2_147_483_647
 
@@ -170,6 +175,8 @@ GridWord = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=2, max_length=30, pattern=WORD_PATTERN)
 ]
 
+MysteryInput = Annotated[str, StringConstraints(strip_whitespace=True, max_length=40, pattern=MYSTERY_INPUT_PATTERN)]
+
 
 class GenerateRequest(ApiModel):
     size: GridSize = Field(default_factory=GridSize)
@@ -183,10 +190,20 @@ class GenerateRequest(ApiModel):
     # backend/benchmarks/README.md). `None` : réglage du solveur.
     # Les valeurs doivent rester celles de engine.grid_solver.FREQUENCY_MODES (vérifié par un test).
     frequency_mode: Literal["none", "exact", "band", "known", "tiebreak"] | None = None
+    # Moteur v2 (#209) : « best » garde la meilleure de plusieurs grilles dans le budget, « first » rend la
+    # première trouvée. Absent : le réglage du serveur (GENERATION_QUALITY, « first » par défaut).
+    quality: Literal["first", "best"] | None = None
+    # Moteur v2 (#210) : « catalogue », une mise en page relevée dans un magazine, à l'identique (formats du
+    # catalogue) ; « sur_mesure », une géométrie que le moteur dessine, dans tout format de 5 à 20 cases de côté
+    # (bornes vérifiées dans la route, avec leur `reason`). Absent : le réglage du serveur (GENERATION_GEOMETRY,
+    # « catalogue » par défaut).
+    geometry: Literal["catalogue", "sur_mesure"] | None = None
     # Dictionnaires thématiques de l'auteur, versés au pool « souhaité » (ADR 0007). Plafond de
     # garde ; l'appartenance est vérifiée dans la route, qui répond 404 pour tout autre dictionnaire.
     wish_dictionary_ids: Annotated[list[Annotated[int, Field(ge=1)]], Field(max_length=10)] = Field(
         default_factory=list)
+    # Mot mystère (#218) : ses lettres sont numérotées dans la grille produite. Il ne change rien à la génération.
+    mystery_word: MysteryInput | None = None
 
 
 class GridCell(ApiModel):
@@ -205,6 +222,21 @@ class GridPlacedWord(ApiModel):
     source: Literal["must", "wish", "common"]
 
 
+class MysteryCell(ApiModel):
+    x: Annotated[int, Field(ge=0, le=19)]
+    y: Annotated[int, Field(ge=0, le=19)]
+
+
+class MysteryPayload(ApiModel):
+    """Le mot mystère d'une grille produite (#218) : le mot, la seed de ses cases, une case par lettre dans l'ordre.
+
+    Gardé tel que l'auteur l'a vu ; la route vérifie que chaque case porte bien sa lettre.
+    """
+    word: Annotated[str, StringConstraints(min_length=3, max_length=40, pattern=MYSTERY_WORD_PATTERN)]
+    seed: Annotated[int, Field(ge=0, le=MAX_SEED)] | None = None
+    cells: Annotated[list[MysteryCell], Field(min_length=3, max_length=20)]
+
+
 class GridPayload(ApiModel):
     """La grille telle que `/api/grids/generate` l'a renvoyée, que l'on stocke sans la rejouer."""
     width: Annotated[int, Field(ge=2, le=20)]
@@ -217,6 +249,8 @@ class GridPayload(ApiModel):
     fill_ratio: Annotated[float, Field(ge=0, le=1)] = 0.0
     wish_ratio: Annotated[float, Field(ge=0, le=1)] = 0.0
     must_words: Annotated[list[GridWord], Field(max_length=50)] = Field(default_factory=list)
+    # Rangé à part dans la grille conservée (colonne `mystery`), pas dans ses cases
+    mystery: MysteryPayload | None = None
 
 
 class BlankGridRequest(ApiModel):
@@ -234,6 +268,14 @@ class BlankGridRequest(ApiModel):
         if (self.layout is None) == (self.width is None or self.height is None):
             raise ValueError("donne soit un layout, soit une largeur et une hauteur")
         return self
+
+
+class GeometryRequest(ApiModel):
+    """Une géométrie de style magazine tirée au hasard, pour commencer une grille à la main (#221)."""
+    width: Annotated[int, Field(ge=5, le=20)]
+    height: Annotated[int, Field(ge=5, le=20)]
+    # Sans seed, un tirage neuf ; avec, le même tirage (tests)
+    seed: Annotated[int, Field(ge=0, le=2**31 - 1)] | None = None
 
 
 class SaveGridRequest(ApiModel):
@@ -286,6 +328,10 @@ class GridUpdateRequest(ApiModel):
     # Aperçu : la grille n'est pas enregistrée, on renvoie seulement ce que le changement ferait sortir
     # des conventions, pour que l'auteur confirme en connaissance de cause
     preview: StrictBool = False
+    # Mot mystère (#218) : un mot le pose ou le change, la chaîne vide le retire. `mystery_seed` donne d'autres
+    # cases au même mot ; sans elle, c'est la seed de la grille
+    mystery_word: MysteryInput | None = None
+    mystery_seed: Annotated[int, Field(ge=0, le=MAX_SEED)] | None = None
 
 
 class SlotRef(ApiModel):
@@ -304,6 +350,8 @@ class DifficultyRequest(ApiModel):
     must_words: Annotated[list[GridWord], Field(max_length=50)] = Field(default_factory=list)
     # Facultatif : sans taille choisie, l'estimation agrège tous les formats
     size: GridSize | None = None
+    # Sur mesure (#210), les taux du catalogue ne valent pas : l'estimation répond « pas encore mesuré »
+    geometry: Literal["catalogue", "sur_mesure"] | None = None
 
 
 # --- Conversion des erreurs ---
@@ -334,7 +382,11 @@ FIELD_LABELS = {
     "must_words": "mots obligatoires",
     "wish_words": "mots souhaités",
     "frequency_mode": "tri par fréquence",
+    "geometry": "type de grille",
     "wish_dictionary_ids": "dictionnaires thématiques",
+    "mystery": "mot mystère",
+    "mystery_word": "mot mystère",
+    "mystery_seed": "cases du mot mystère",
 }
 
 

@@ -8,7 +8,7 @@ import { publicPage } from "@/lib/seo";
 export const metadata: Metadata = publicPage({
   path: "/contact",
   title: "Contact",
-  description: `Écrire à ${site.name} : une suggestion, un problème, une question sur tes données, ou une faille de sécurité.`,
+  description: `Écrire ${site.nameAfterA} : une suggestion, un problème, une question sur tes données, ou une faille de sécurité.`,
 });
 
 
