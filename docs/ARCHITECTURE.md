@@ -48,6 +48,7 @@ Il n'y a **pas de déploiement en ligne** pour l'instant : tout tourne en local 
 | `system_samples.py` | Échantillons système ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) : RAM, CPU, places de génération, taille de la base, dernière sauvegarde, lus dans `/proc` ; 30 jours, puis un résumé par jour gardé 13 mois |
 | `alerts.py` | Alertes par e-mail et bilan hebdomadaire, sous plafonds ; `flask system tick`, lancé chaque minute par un minuteur du serveur (`tools/monitor/tick.sh`) |
 | `audience.py` | La balise d'audience `POST /api/audience` ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md), #130) : pages vues et temps passé, sans cookie ; oubliée si `Sec-GPC: 1` ou si c'est un robot |
+| `articles.py` | La force des grilles d'articles, notée de 1 à 6 : une note par personne, par article et par jour (empreinte du jour, effacée le lendemain), `ARTICLE_SLUGS` recopie les adresses des articles du site |
 | `contact.py` | Le formulaire de contact `POST /api/contact` (#131) : cinq messages par heure, pot de miel, lié au compte s'il y en a un ; la notification à l'auteur ne recopie pas le message |
 | `admin.py` | Espace d'administration `/api/admin/*` : un seul contrôle d'accès, 404 pour tout autre compte ; chiffres d'usage, système, suggestions, boîte de réception (seule exception à la lecture seule) |
 | `trie_engine.py` | `DictionnaireTrie` : normalisation des mots et recherche par motif (`P??LE`) |
@@ -85,6 +86,7 @@ Il n'y a **pas de déploiement en ligne** pour l'instant : tout tourne en local 
 | PATCH | `/api/grids/<id>` | ✅ | Définitions, notes, archivage, renommage — et **lettres corrigées à la main** (`cells`), qui font recalculer les mots ([ADR 0012](adr/0012-grille-modifiable.md)) ; mot mystère (`mystery_word`, vide pour le retirer ; `mystery_seed` pour d'autres cases ; 422 `mystery_letters_missing`) |
 | POST | `/api/grids/geometry` | ✅ | Une géométrie de style magazine tirée au hasard (`{width, height}` de 5 à 20, `seed` facultatif) → `{rows}` au format du catalogue ; `reason` `geometry_unavailable` (422) si le moteur n'en dessine pas à cette taille. Le tutoriel de la grille à la main la pose comme une modification annulable (#221) |
 | POST | `/api/grids/<id>/suggestions` | ✅ | Les mots qui entrent à un emplacement **sans casser ses croisements** |
+| GET / POST | `/api/articles/<slug>/force` | — | Force moyenne et nombre d'avis de la grille d'un article / noter sa force `{force: 1..6}` (201 ; `invalid_force`, `unknown_article` ; RATELIMIT_FORCE) |
 | POST | `/api/contact` | — | Un message pour l'auteur : `{reason: suggestion\|problem\|data, message, email?, request_id?}` ; 201 ; 5 par heure |
 | POST | `/api/audience` | — | La balise d'audience : `{kind: view\|pdf, path, referrer, lang, visible_ms}` ; 204, sans cookie ; la session n'est jamais lue |
 | GET | `/api/users/me` | ✅ | L'adresse e-mail du compte et ce qu'il contient (dictionnaires, mots, grilles) |
@@ -193,6 +195,8 @@ sequenceDiagram
 | `src/app/login`, `register` | Authentification |
 | `src/app/account/` | Mon compte : l'adresse, ce que le compte contient, sa suppression |
 | `src/app/legal`, `privacy` | Mentions légales (crédits compris), confidentialité : ce qui est conservé, et rien d'autre |
+| `src/app/articles/`, `src/content/articles/` | Les articles : la liste `/articles` et une page statique par article (sans route dynamique), le texte en TSX dans `content/articles/<slug>.tsx`, `draft: true` tant que l'auteur n'a pas relu (noindex, hors sitemap et hors liste ; « en préparation » en production). Chaque article a sa grille, produite par `POST /api/grids/generate` (requête et réponse dans `content/articles/grilles/`), définitions écrites à la main |
+| `src/components/articles/` | Gabarit d'article (signature, temps de lecture, sommaire, données structurées `Article` et `BreadcrumbList`), petite grille jouable (`mini-grid-game.tsx`, sur `GridSvg`), note de force |
 | `src/config/site.ts` | Le site du build (`NEXT_PUBLIC_SITE`, défaut `fr`) : nom public, adresse, langue, contacts ([ADR 0017](adr/0017-un-site-par-langue.md)). Les pages ne donnent que leur titre ; la mise en page racine ajoute « \| Le Fléchoir » |
 | `src/lib/seo.ts`, `src/app/robots.ts`, `sitemap.ts`, `manifest.ts`, `og.png/` | Référencement technique (#113) : pages publiques (canonique, aperçu de partage, sitemap) et privées (`noindex`, jamais de `Disallow`) ; tout est écrit au build |
 | `src/components/` | Composants (recherche, dictionnaires, grille, layout, `providers.tsx` = tout ce qui vit dans le navigateur, `ui/` = shadcn) |

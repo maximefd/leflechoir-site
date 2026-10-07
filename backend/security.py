@@ -60,6 +60,7 @@ RATE_LIMITED_ENDPOINTS = {
     "suggestions.suggest": "RATELIMIT_SUGGEST",
     "audience.beacon": "RATELIMIT_AUDIENCE",
     "contact.send_message": "RATELIMIT_CONTACT",
+    "articles.rate_force": "RATELIMIT_FORCE",
     "main.grid_difficulty": "RATELIMIT_DIFFICULTY",
     "main.generate_grid": "RATELIMIT_GENERATE",
 }

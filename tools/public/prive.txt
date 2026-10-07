@@ -49,3 +49,5 @@ docs/adr/0025-moteur-v2.md
 docs/DEFINITIONS-SOURCES.md
 # La CI, les modèles d'issues et dependabot restent sur le dépôt de travail, privé
 .github
+# Exemples de définitions de l'auteur, pour les grilles des articles
+docs/STYLE-DEFINITIONS.md

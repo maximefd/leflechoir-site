@@ -17,6 +17,7 @@ const PUBLIC_PAGES = [
     title: "Comment créer des mots fléchés : de l’idée à la grille | Le Fléchoir",
     canonical: `${SITE_URL}/creer-des-mots-fleches`,
   },
+  { path: "/articles", title: "Articles sur les mots fléchés | Le Fléchoir", canonical: `${SITE_URL}/articles` },
   { path: "/contact", title: "Contact | Le Fléchoir", canonical: `${SITE_URL}/contact` },
   { path: "/legal", title: "Mentions légales | Le Fléchoir", canonical: `${SITE_URL}/legal` },
   { path: "/privacy", title: "Confidentialité | Le Fléchoir", canonical: `${SITE_URL}/privacy` },
@@ -69,7 +70,8 @@ test("le sitemap liste les pages publiques, et elles seules", async ({ request }
   const body = await (await request.get("/sitemap.xml")).text();
   const urls = [...body.matchAll(/<loc>(.*?)<\/loc>/g)].map(([, url]) => url);
 
-  expect(urls).toEqual(PUBLIC_PAGES.map(({ canonical }) => canonical));
+  // Les pages, puis les articles publiés (les brouillons restent dehors)
+  expect(urls).toEqual([...PUBLIC_PAGES.map(({ canonical }) => canonical), `${SITE_URL}/articles/mots-fleches-dans-le-monde`]);
 });
 
 test("l'image de partage est un PNG", async ({ request }) => {

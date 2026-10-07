@@ -22,6 +22,7 @@ from alerts import init_system_cli
 from suggestions import init_suggestions
 from audience import audience_bp
 from contact import contact_bp
+from articles import articles_bp
 
 DEV_SECRET = 'default-secret-for-dev'
 # Nom public du site (ADR 0017) : Terminator est le nom du moteur, jamais montré aux visiteurs
@@ -75,6 +76,8 @@ DEFAULT_SETTINGS = dict(
     RATELIMIT_AUDIENCE='120 per minute',
     # Le formulaire de contact : cinq messages par heure et par adresse (#131)
     RATELIMIT_CONTACT='5 per hour',
+    # La force d'une grille d'article : un lecteur note une fois ; plafond anti-robot seulement
+    RATELIMIT_FORCE='30 per minute',
     RATELIMIT_GENERATE='10 per minute',
     # Appelé à chaque frappe de l'auteur, et sans génération : plafond de la recherche, pas de la génération
     RATELIMIT_DIFFICULTY='120 per minute',
@@ -328,6 +331,7 @@ def create_app(test_config=None):
     app.register_blueprint(admin_bp)
     app.register_blueprint(audience_bp)
     app.register_blueprint(contact_bp)
+    app.register_blueprint(articles_bp)
     init_suggestions(app)
     init_rate_limiting(app)
     init_usage(app)

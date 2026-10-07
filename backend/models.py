@@ -382,3 +382,21 @@ class ContactMessage(db.Model):
     request_id = db.Column(db.String(64), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True, index=True)
     read_at = db.Column(db.DateTime, nullable=True)
+
+
+class ArticleRating(db.Model):
+    """La force de la grille d'un article, notée de 1 à 6 par un lecteur.
+
+    Une note par personne, par article et par jour : l'empreinte du jour (ADR 0016) permet de remplacer la note
+    d'un lecteur qui se ravise, puis elle s'efface le lendemain (usage.py) ; la note reste, anonyme. Ni adresse
+    IP, ni compte.
+    """
+    __tablename__ = 'article_rating'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow(), index=True)
+    slug = db.Column(db.String(80), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    force = db.Column(db.SmallInteger, nullable=False)
+    visitor = db.Column(db.String(32), nullable=True)
+
+    __table_args__ = (db.Index('ix_article_rating_slug_lang', 'slug', 'lang'),)

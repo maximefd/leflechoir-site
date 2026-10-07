@@ -16,6 +16,10 @@ export function Footer() {
           <Link href="/creer-des-mots-fleches" className="hover:text-primary">
             Guide
           </Link>
+          {/* Nom provisoire de la rubrique : l'auteur le choisit */}
+          <Link href="/articles" className="hover:text-primary">
+            Articles
+          </Link>
           <Link href="/contact" className="hover:text-primary">
             Contact
           </Link>

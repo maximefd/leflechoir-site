@@ -22,7 +22,7 @@ from flask import Flask, current_app, g, request
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db
-from models import ContactMessage, UsageEvent, VisitorSalt, WordSuggestion
+from models import ArticleRating, ContactMessage, UsageEvent, VisitorSalt, WordSuggestion
 from security import client_ip
 
 # Durées de conservation (ADR 0016, page de confidentialité, docs/RGPD.md)
@@ -82,6 +82,10 @@ def _purge(today: date) -> None:
     WordSuggestion.query.filter(WordSuggestion.created_at < now - EVENTS_RETENTION).delete()
     # Les messages de contact (Phase 8, #131) : douze mois
     ContactMessage.query.filter(ContactMessage.created_at < now - CONTACT_RETENTION).delete()
+    # La force des grilles d'articles : l'empreinte ne sert que le jour de la note ; la note reste, anonyme
+    (ArticleRating.query
+     .filter(ArticleRating.created_at < now, ArticleRating.visitor.isnot(None))
+     .update({ArticleRating.visitor: None}, synchronize_session=False))
 
 
 def purge() -> None:

@@ -5,6 +5,20 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Premier article publié** : « Les mots fléchés dans le monde » (/articles/mots-fleches-dans-le-monde), relu par l'auteur le 07/10/2026, avec sa petite grille à jouer. Les deux autres restent en brouillon. Aucun article ne donne plus les mots de sa grille dans le texte : c'étaient les solutions.
+- **Articles** (ligne éditoriale du 06/10/2026 ; « Articles » est un nom provisoire, à choisir par l'auteur) :
+  - `/articles` et une page statique par article : chapeau, signature à la première personne, date, temps de
+    lecture, sommaire, liens vers le générateur, la recherche par motif et le mot mystère ; données structurées
+    `Article` et `BreadcrumbList`, canonique, aperçu « article », sitemap avec `lastmod` ; lien dans le pied de page ;
+  - un brouillon (`draft: true`) reste en `noindex`, hors du sitemap et de la liste publique ; en production, sa
+    page n'affiche que « en préparation » ;
+  - chaque article a sa **petite grille à jouer**, produite par notre générateur avec les mots-clés de l'article
+    (requête, seed et réponse gardées) et définie à la main : au toucher ou au clavier (flèches, Espace, Entrée,
+    Retour arrière), « Vérifier », « Voir la solution » ;
+  - le lecteur note la **force** de la grille de 1 à 6 (`POST /api/articles/<slug>/force`, migration 0016
+    additive) ; la moyenne s'affiche (« Force moyenne : 3,4 sur 6, 27 avis »). Une note par personne et par jour,
+    rattachée à l'empreinte du jour puis anonyme ; déclarée dans la page confidentialité et le registre (traitement 14) ;
+  - trois brouillons à relire : écrire une définition, le retour des mots fléchés, le jeu dans le monde.
 - **Indicateurs de la course** ([#201](https://github.com/maximefd/terminator-app/issues/201), lot C0,
   [ADR 0023](docs/adr/0023-cap-sur-la-premiere-place.md)) : un bloc « La course » dans `/admin` (sous les seuils),
   en tête du bilan du lundi et dans `make stats`, par semaine ISO (du lundi au dimanche, UTC) :

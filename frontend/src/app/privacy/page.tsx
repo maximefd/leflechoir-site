@@ -96,6 +96,17 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
+        <Section title="La force des grilles d’articles" id="force">
+          <p>
+            Sous la petite grille d&apos;un article, tu peux noter sa force de 1 à 6. Sont conservés : la note,
+            l&apos;article, la langue du site et la date. Pour que tu puisses changer d&apos;avis le jour même sans
+            compter deux fois, la note est rattachée à l&apos;empreinte du jour décrite plus bas, jamais à ton adresse
+            IP ni à ton compte ; cette empreinte est effacée le lendemain, et la note reste, sans rien qui te
+            désigne. Elle sert à afficher la force moyenne de la grille et à régler celle des suivantes (intérêt
+            légitime, RGPD art. 6.1.f). Rien n&apos;est écrit dans ton navigateur.
+          </p>
+        </Section>
+
         <Section title="Les mises en page proposées avant octobre 2026">
           <p>
             Jusqu&apos;au 6 octobre 2026, on pouvait proposer au catalogue la mise en page d&apos;une grille faite à

@@ -1,7 +1,7 @@
 # 🛡️ Registre des traitements — Le Fléchoir
 
 > Registre simplifié (modèle de la CNIL) des données personnelles traitées par le site. Il tient avec la [page de confidentialité](../frontend/src/app/privacy/page.tsx) : chaque traitement ici y figure, et inversement. Tout nouveau champ mesuré s'ajoute aux deux ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md)).
-> Dernière mise à jour : 1er octobre 2026.
+> Dernière mise à jour : 6 octobre 2026.
 
 ## Responsable du traitement
 
@@ -28,6 +28,7 @@ Ce qui n'est **pas** traité : le texte des motifs cherchés, les grilles géné
 Les échantillons système et le journal des alertes ([ADR 0022](adr/0022-echantillons-systeme-et-alertes.md)) ne sont pas des traitements de données personnelles : ils décrivent la machine (mémoire, CPU, taille de la base, date de la sauvegarde) et des compteurs. Les alertes partent à l'éditeur seul, par Brevo.
 | 12 | Pages vues ([ADR 0016](adr/0016-mesure-d-usage-sans-cookie.md), point 3, #130) | Tout visiteur, sauf s'il refuse ou si son navigateur envoie Global Privacy Control | La page vue (chemin sans paramètres), **le nom d'hôte seul** du site d'où l'on vient, la langue principale du navigateur, la durée pendant laquelle la page est restée visible, l'export d'une grille en PDF ; pays (`CF-IPCountry`) et empreinte du jour (traitement 10). **Jamais l'adresse IP ni l'identifiant du compte** : la balise ne porte aucun cookie | Statistiques de fréquentation du site : pages lues, temps passé, sources (dont les moteurs de réponse IA), langues (Phase 10) ; ni publicité, ni profil, ni recoupement | Intérêt légitime (art. 6.1.f) ; exemption de consentement de la CNIL pour la mesure d'audience (statistiques anonymes, information, opposition) ; rien n'est écrit dans le navigateur pour mesurer : **seul le refus du visiteur** y est noté (`localStorage`, clé `mesure`) | 13 mois, comme les autres événements d'usage. Le refus ne coupe que cette balise, pas la mesure des recherches et des générations (traitement 10) | Base PostgreSQL (OVH, France) |
 | 13 | Mises en page proposées (roadmap 5C, **recueil arrêté le 06/10/2026**, #221) | Titulaires d'un compte qui ont proposé une mise en page avant cette date | La forme (taille, place des cases définitions), la date, la langue, le compte ; jamais les mots ni les définitions | Plus aucune : la proposition est retirée du site et du curateur ; les formes reçues sont gardées, sans nouvel usage | Intérêt légitime (art. 6.1.f) | Jusqu'à la suppression du compte | Serveur (OVH), table `layout_proposal` |
+| 14 | Force des grilles d'articles (ACQUISITION §7) | Tout lecteur qui note la petite grille d'un article | La note (1 à 6), l'article, la langue du site, la date ; l'empreinte du jour (traitement 10), le temps de pouvoir changer sa note le jour même. **Jamais l'adresse IP ni le compte** ; rien n'est écrit dans le navigateur | Afficher la force moyenne de chaque grille ; régler la force des grilles suivantes | Intérêt légitime (art. 6.1.f) | L'empreinte : effacée le lendemain par la purge quotidienne (`usage.py`). La note, devenue anonyme : sans limite | Base PostgreSQL (OVH, France), table `article_rating` |
 
 ## Sous-traitants (art. 28)
 
