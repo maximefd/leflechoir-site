@@ -605,6 +605,7 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   - les mots visés par une règle automatique disparaissent de la file de tri et du reste à trier.
 
 ### Modifié
+- **Signature des PDF** : « Grille créée sur leflechoir.fr » en bas de chaque page (corps 9, gris foncé), au lieu de l'adresse seule, en gris clair, qui disparaissait à la photocopie. Accord de l'auteur du 08/10/2026 ([ACQUISITION](docs/ACQUISITION.md) §8.1, B1).
 - **Moteur 1,5 à 1,8 fois plus rapide, aux mêmes grilles** ([#211](https://github.com/maximefd/terminator-app/issues/211),
   lot C1) : MRV incrémental (motifs et nombres de candidats des slots gardés d'un appel à l'autre, corrigés quand un
   mot est pris ou rendu), validation croisée par le motif du slot croisé, slots croisés précalculés. Appels par
@@ -725,6 +726,7 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   confidentialité et `docs/RGPD.md` à jour.
 
 ### Corrigé
+- **Next.js 15.5.27** : deux failles modérées de 15.5.25 (GHSA-4jqv-mc3x-m676, GHSA-mcj8-r9mp-w47p, cache des rendus SSG/ISR). Le site, en export statique, n'y était pas exposé, mais `pnpm audit` bloquait la CI.
 - **Accroche et vocabulaire** :
   - nouvelle accroche du site : « Le Fléchoir — créer des mots fléchés de pro, simplement » (titre de l'accueil,
     partages, manifeste) ;

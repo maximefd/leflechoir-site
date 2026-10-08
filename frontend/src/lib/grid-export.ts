@@ -73,11 +73,13 @@ async function drawPage(pdf: jsPDF, svg: SVGSVGElement, title: string) {
   pdf.text(title, MARGIN, MARGIN);
   await svg2pdf(svg, pdf, { x: MARGIN, y: MARGIN + TITLE_SIZE, width, height });
 
-  // Le filigrane : l'adresse du site, discrète, en bas à droite de chaque page (elle se lit, sans gêner)
+  // La signature, en bas à droite de chaque page : discrète, mais lisible après une photocopie. Une grille imprimée
+  // pour un club ou une maison de retraite passe dans des dizaines de mains (acquisition, B1 ; accord de l'auteur du
+  // 08/10/2026). Désactivable plus tard pour les pros (offre payante, C8).
   pdf.setFont(GRID_FONT, "normal");
-  pdf.setFontSize(8);
-  pdf.setTextColor(150);
-  pdf.text(new URL(site.url).host, A4.width - MARGIN, A4.height - MARGIN / 2, { align: "right" });
+  pdf.setFontSize(9);
+  pdf.setTextColor(110);
+  pdf.text(`Grille créée sur ${new URL(site.url).host}`, A4.width - MARGIN, A4.height - MARGIN / 2, { align: "right" });
   pdf.setTextColor(0);
 }
 
