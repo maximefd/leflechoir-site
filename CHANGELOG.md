@@ -5,6 +5,145 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **La grille du jour quand le calendrier ne suit pas le stock** (choix de l'auteur du 21/10/2026, ADR 0026 révisée) :
+  - le stock épuisé, `/jouer` le dit (« La grille du jour arrive bientôt ») et propose de rejouer les grilles parues,
+    au lieu de garder l'ancienne sous le titre du jour ;
+  - une grille à venir ne se voit plus avant son jour : sa page n'écrit pas la grille au build et annonce sa date,
+    puis la charge le jour venu, sans redéployer (`components/jouer/page-grille.tsx`) ; le sitemap ne porte que
+    les grilles parues au build ; l'outil `tools.grilles.produire` écrit les pages sous cette forme ;
+  - `/jouer` écrit au build, sous la grille, une présentation de la rubrique et les quatorze grilles parues, chacune
+    vers sa page datée : ce que lit un moteur avant d'exécuter la page ; le navigateur y ajoute les grilles parues
+    depuis le build, et le repli s'appuie sur cette liste ;
+  - parcours `tests/jouer.spec.ts` (horloge du navigateur fixée).
+- **Jouer et écrire au doigt, sans accroc** (demande de l'auteur du 21/10/2026), dans la grille du jour, la grille
+  des articles et l'éditeur (mode lettres), par un même champ de saisie (`components/grid/saisie-grille.tsx`) :
+  - le champ invisible qui ouvre le clavier se pose sur la case touchée : le téléphone défile jusqu'à elle, et non
+    plus jusqu'au haut de la grille (une case du bas finissait sous le clavier) ;
+  - la case du curseur reste à l'écran : de côté dans une grille plus large que l'écran, en hauteur au-dessus du
+    clavier (`visualViewport`) et sous ce qui colle en haut ;
+  - le Retour arrière marche avec les claviers qui ne nomment pas la touche (Gboard sur Android), grâce à un
+    caractère témoin gardé dans le champ ; une suggestion du clavier qui insère plusieurs lettres les écrit toutes ;
+  - plus de zoom au double toucher sur une grille (`touch-action: manipulation`) : toucher deux fois une case
+    change de sens ;
+  - la définition en cours colle en haut de l'écran (sous l'en-tête à partir de la tablette) ; sur téléphone,
+    l'en-tête ne colle plus, pour laisser la place à la grille une fois le clavier ouvert ;
+  - Android : le clavier rétrécit la page au lieu de la recouvrir (`interactive-widget=resizes-content`) ;
+  - éditeur : les trois choix « Combler les trous / Remplacer le mot / Plus court » passent à la ligne au lieu de
+    faire déborder la page sur téléphone ;
+  - parcours `tests/tactile.spec.ts` (téléphone 390 px, tablette 820 px, clavier ouvert simulé).
+- **La navigation en rubriques des maquettes du 07/10/2026** (`docs/maquettes/navigation-2026-10/`, choix de l'auteur
+  du 21/10/2026), sans le nouveau style, qui attend son accord :
+  - ordinateur : le logo, le compte et « Créer une grille », puis la ligne Accueil, Créer, Jouer, Articles, Outils,
+    avec « Mes grilles » à droite ;
+  - téléphone : le logo et « Menu », puis quatre pastilles (Créer, Jouer, Articles, Outils) qui se partagent la
+    largeur ; le menu regroupe tous les liens et le compte ;
+  - la rubrique de la page est marquée (`aria-current`) ; deux pages de navigation, `/creer` et `/outils`, hors des
+    moteurs (`noindex, follow`) ;
+  - « À toi de jouer » devient « Jouer » dans la barre et « La grille du jour » sur la page (il se lisait aussi
+    « fais ta grille ») ; les articles gardent leur « À toi de jouer » ;
+  - le pied de page et les fils d'Ariane des listes de mots ne changent pas ; ancres et hauteur de l'éditeur
+    suivent le nouvel en-tête.
+  - textes accordés à la navigation : les invitations des listes de mots mènent à la grille du jour (`/jouer`), sans
+    promettre qu'elle est plus facile ; la FAQ des listes ne dit plus « ta grille du jour » pour la grille du
+    lecteur ; la page confidentialité situe les dictionnaires dans Outils.
+  - un seul nom par outil (choix de l'auteur du 21/10/2026) : « Chercher un mot » pour la recherche par motif
+    (titres, boutons, liens ; le titre pour les moteurs reste « Recherche de mots ») et « Mes dictionnaires »
+    partout, comme « Mes grilles ».
+- **Être cité par les assistants IA** (demande de l'auteur du 20/10/2026, #134) : une FAQ de onze questions sous
+  l'accueil, en clair et en données `FAQPage` (`content/faq-accueil.ts`) ; une page `/a-propos`, « Qui fait Le
+  Fléchoir », en données `AboutPage`, reliée au pied de page et au sitemap ; `/llms.txt`, écrit au build depuis la
+  configuration du site (outils, guide, articles publiés, listes, FAQ). `robots.txt` ne change pas. Ce qui reste à
+  l'auteur (Bing Webmaster Tools, se faire citer ailleurs, relevé mensuel) : `docs/VISIBILITE-IA.md`, privé.
+- **Listes de mots de 2 à 8 lettres, toutes au même format** (demande de l'auteur du 20/10/2026) : pour chaque
+  longueur, l'outil puis une page par initiale et par terminaison avec la liste complète (2, 3, 4, 7 et 8 lettres
+  rejoignent 5 et 6). Terminaisons : une lettre pour 2 et 3 lettres ; celles de 5 lettres pour 4 ; à 7 et 8 lettres,
+  celles de 6 plus ERA, AIT, ABLE, ANCE, ETTE, EUSE, ISME. Listes refaites d'après la curation terminée : 86, 426,
+  1 528, 4 211, 7 226, 11 001 et 15 128 mots. Les pages « Mots de 2 / 3 lettres » gardent leur adresse et leur titre
+  pour les moteurs ; « Et aussi » mène à la même combinaison une lettre de moins et une de plus.
+- **Pages de mots protégées contre la copie en bloc** (15/10/2026) : les listes rangées dans `frontend/src/content/mots/listes/`, qui ne part plus dans le dépôt public ; `robots.txt` ferme `/mots/` aux robots d'entraînement d'IA (pas à Google) ; mentions légales : section « Les listes de mots » (protection de la base de données, art. L341-1 CPI).
+- **Les pages de mots, porte d'entrée depuis Google : une page par initiale et par terminaison, la liste complète dans
+  le HTML** (demande de l'auteur du 08/10/2026 ; face à listesdemots.net, motsavec.fr… : listes propres, sans publicité,
+  outil en tête, maillage serré) :
+  - **84 pages** : `/mots/cinq-lettres/commencant-par-a` à `…-z` (25 pages : pas de X, qui n'a aucun mot) et
+    `/mots/cinq-lettres/finissant-par-ez` (13 terminaisons : E, S, R, T, ER, RE, TE, ES, ON, NT, EE, IE, EZ),
+    `/mots/six-lettres/…` (25 initiales et 21 terminaisons, avec AGE, EUR, ION, ENT, ANT, ISE, ONS, IER). Une
+    combinaison sans mot n'a pas de page (404), jamais une page vide. H1 « Mots de 5 lettres commençant par A », titre
+    de 60 caractères au plus, description unique avec le nombre de mots et trois exemples, canonique, `BreadcrumbList`
+    à quatre niveaux ;
+  - **liste complète dans le HTML** (statique, indexable), groupée par deuxième lettre (« commençant par ») ou par
+    initiale (« finissant par »), **en caractères normaux** (ni gras ni chasse fixe), aérée, en colonnes aussi larges
+    que le mot est long ; court texte d'accroche varié par page (six tournures par type, conseil propre à la lettre ou
+    à la terminaison, nombre de mots et trois exemples de la liste), **à relire par l'auteur** (`content/mots/intros.ts`) ;
+  - données : `tools/lexicon/listes.py` étendu (`ListSpec.terminaisons`, `cinq-lettres.json`, `six-lettres.json`, et
+    `catalogue.json` : effectifs par initiale et par terminaison, date de génération qui ne bouge que si la liste
+    change) ; les lots gardés par l'IA (`-ia.`) comptent désormais comme validés ; tests dans `tools/lexicon/tests/` ;
+  - maillage : page d'avant et d'après (A ↔ B), toutes les initiales et terminaisons de la longueur, la même page pour
+    l'autre longueur (5 ↔ 6), l'outil, l'index ; l'index `/mots` présente les longueurs et les combinaisons ;
+  - sitemap : toutes les pages, **`lastModified` = date de génération des listes**.
+- **Recherche qui se met à jour toute seule** (même API que `/search`, anti-rebond de 300 ms) dans les cases des pages
+  de mots ; « Chercher » et Entrée restent immédiats ; sur une page de combinaison, la liste statique laisse la place
+  aux résultats dès qu'on touche aux cases (« Remettre la liste » la rend). Le motif reste dans l'adresse (`?motif=`),
+  de 2 à 15 lettres : la rangée s'adapte à sa longueur.
+- **Sélecteur de longueur (2 à 15 lettres)** au-dessus des cases : un lien vers la page de la longueur quand elle
+  existe (2 et 3 : les listes ; 4 à 10 : les outils), sinon la rangée change de taille sur place et la recherche s'y
+  fait. Les cases se répartissent sur deux rangées égales au-delà de 8.
+- **Pages « Mot de 4, 6, 7, 8, 9 et 10 lettres »** (outil, FAQ, texte court, **à relire par l'auteur**). Le hub de 5 et de
+  6 lettres est vide tant qu'on ne cherche pas (l'outil, les liens vers toutes les pages « commençant par » et
+  « finissant par », le texte, la FAQ) ; la liste ne s'affiche d'emblée que sur une page de combinaison ou avec `?motif=` ;
+  4 à 10 gardent leurs raccourcis en boutons.
+- **Signaler un mot** depuis les listes : un mode « Signaler un mot » (discret, sous la liste) fait apparaître un
+  drapeau par mot (`SuggestWord`, `POST /api/suggestions`) avec la nouvelle origine **`mots`** (schéma, test, poste de
+  pilotage et curateur) ; lien « Il manque un mot ? Écris-moi » vers le contact.
+- **Invitation après les résultats**, en second temps : « Cette grille te donne du fil à retordre ? Joue une grille
+  plus facile » (constante `ADRESSE_JOUER` : l'article `/articles/mots-fleches-dans-le-monde` en attendant `/jouer`) et
+  « Et si tu fabriquais la tienne ? C'est guidé pas à pas » (`/grid`).
+- **FAQ à six questions** : « Tu te sers de cet outil pour combler les trous d'une grille que tu crées ? » (compte
+  gratuit, dictionnaires personnels en premier ; liens vers `/search` et `/register`), `FAQPage` sur tous les hubs.
+- **Style ocre** (maquettes du 07/10/2026) sur les pages de mots : cases, pastilles de raccourcis, en-têtes de section,
+  titres en Georgia sur ordinateur, peu de gras sur téléphone ; contrastes calculés (WCAG AA).
+- **« Mot de 5 lettres » : les mots s'affichent sur la page même, avec une FAQ** (`/mots/cinq-lettres`, porte d'entrée
+  depuis « mot de 5 lettres commençant par a ») :
+  - « Chercher » (et Entrée) appelle l'API de recherche (`apiFetch`, `POST /api/search`, 500 mots au plus) et affiche
+    les mots en gros caractères, en colonnes, sous les raccourcis, avec leur nombre ; message clair sans résultat, et
+    en cas d'erreur de l'API avec un bouton « Réessayer » ; lien discret « Ouvrir dans la recherche complète » ;
+  - les raccourcis « commençant par » et « finissant par » deviennent des **boutons** qui remplissent les cases et
+    lancent la recherche sur place ; la page reste statique (aucun mot dans le HTML) ;
+  - le motif est écrit dans l'adresse (`?motif=A????`) et relu au chargement (lettres et `?`, accents retirés, de la
+    longueur de la page, au moins une lettre, sinon ignoré) ;
+  - zone de résultats annoncée (`aria-live="polite"`) ; sous-titres « Mots de 5 lettres commençant par… » et
+    « finissant par… » ;
+  - **FAQ** de 5 questions (`content/mots/faq-longueur.ts`, paramétrées par la longueur, **à relire par l'auteur**) et
+    données structurées `FAQPage` à côté de la `BreadcrumbList` ;
+  - `RangeeDeLettres` devient contrôlée (état dans le nouveau `OutilLongueur`) ; tests e2e mis à jour, axe avec
+    résultats ajouté à `accessibility.spec.ts`.
+- **« Mot de 5 lettres »** (`/mots/cinq-lettres`, réorientation des pages de mots du 08/10/2026 : la demande est « mot de 5 lettres commençant par… », de gens bloqués dans une grille) :
+  - **en haut, l'outil** : une rangée de 5 cases comme une ligne de grille ; on tape les lettres connues, on laisse
+    vides les autres, « Chercher » ouvre la recherche par motif (`/search?motif=P???E`, cases vides = `?`). Passage
+    automatique à la case suivante, Retour arrière qui revient en arrière, flèches, Entrée, collage d'un mot entier,
+    accents retirés ; cases de 48 px au moins, une étiquette par case, gros caractères ; aucun appel d'API (page
+    statique) ;
+  - raccourcis « Commençant par » (A à Z) et « Finissant par » (E, S, R, T, ER, RE, TE, ES, ON, NT, EE, IE) vers la
+    recherche ; pas de liste de mots (le lexique reste privé) ; un court texte, **à relire par l'auteur**
+    (commentaire en tête de la page) ;
+  - **gabarit pour 4 à 10 lettres** : `PageLongueur` et `RangeeDeLettres` prennent la longueur en paramètre ; une
+    nouvelle longueur demande une entrée dans `content/mots/longueurs.ts` et un dossier `app/mots/<slug>/page.tsx`
+    avec son texte ; seule la page de 5 lettres est publiée ;
+  - titre, description, canonique, aperçu, fil d'Ariane, sitemap ; dans l'index `/mots`, **en tête**, avant les listes
+    de 2 et 3 lettres (qu'on garde, sans les mettre en avant) ; tests dans `tests/mots-longueur.spec.ts`.
+- **Listes de mots** (décision de l'auteur du 06/10/2026, [docs/ACQUISITION.md](docs/ACQUISITION.md) §3 angle 3 et §5 « S2 ») :
+  - les pages `/mots` (index), `/mots/deux-lettres` et `/mots/trois-lettres` : les mots validés par l'auteur, groupés
+    par initiale en gros caractères (colonnes qui se resserrent sur téléphone), un lien « A?? dans la recherche » par
+    initiale, un texte éditorial (à quoi servent ces mots, les pièges, une astuce de verbicruciste), liens vers le
+    générateur et le guide ; titre, description, canonique, aperçu, fil d'Ariane en données structurées, sitemap, lien
+    « Listes de mots » dans le pied de page. **Texte à relire par l'auteur** (commentaire en tête de chaque page) ;
+  - la **recherche par motif lit `?motif=`** (lettres et `?` seulement) : les pages de listes y mènent avec le motif
+    rempli ;
+  - `make listes` (`python -m tools.lexicon listes`) écrit `frontend/src/content/mots/<slug>.json` depuis les
+    décisions de l'auteur (lots `-ia.` exclus) et les mots gardés d'office, dans le lexique curé ; ni fréquence ni
+    définition ([ADR 0021](docs/adr/0021-moteur-prive-site-public.md)) ; tests dans `tools/lexicon/tests/test_listes.py` ;
+    `docs/LEXICON.md`.
+- **Le sens des mots** ([ADR 0028](docs/adr/0028-sens-des-mots-wiktionnaire.md)) : deux acceptions du Wiktionnaire sous chaque mot de la grille générée, dans l'éditeur (encadré « Sens du mot », sans bouton « Utiliser »), dans la recherche par motif et sous la grille du jour une fois finie ; affiché d'office, une case le masque ; une mention de licence par écran ; `make lexicon-sens` construit le fichier, `make deploy-lexicon` l'envoie s'il a changé. Jamais dans les cases ni le PDF.
+- **ADR 0028** : « Le sens des mots », tiré du Wiktionnaire (CC BY-SA), affiché à côté des grilles (Générer, éditeur, recherche, grille du jour une fois finie), jamais dans les cases ni le PDF ; cadrage du lot dans l'ADR.
 - **Premier article publié** : « Les mots fléchés dans le monde » (/articles/mots-fleches-dans-le-monde), relu par l'auteur le 07/10/2026, avec sa petite grille à jouer. Les deux autres restent en brouillon. Aucun article ne donne plus les mots de sa grille dans le texte : c'étaient les solutions.
 - **Articles** (ligne éditoriale du 06/10/2026 ; « Articles » est un nom provisoire, à choisir par l'auteur) :
   - `/articles` et une page statique par article : chapeau, signature à la première personne, date, temps de
@@ -13,12 +152,41 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   - un brouillon (`draft: true`) reste en `noindex`, hors du sitemap et de la liste publique ; en production, sa
     page n'affiche que « en préparation » ;
   - chaque article a sa **petite grille à jouer**, produite par notre générateur avec les mots-clés de l'article
-    (requête, seed et réponse gardées) et définie à la main : au toucher ou au clavier (flèches, Espace, Entrée,
-    Retour arrière), « Vérifier », « Voir la solution » ;
+    (requête, seed et réponse gardées) et définie à la main : au toucher ou au clavier (flèches, Tab, Entrée,
+    Retour arrière), « Vérifier », « Voir la solution » ; le remplissage s'écrit au crayon (Architects Daughter) ;
   - le lecteur note la **force** de la grille de 1 à 6 (`POST /api/articles/<slug>/force`, migration 0016
     additive) ; la moyenne s'affiche (« Force moyenne : 3,4 sur 6, 27 avis »). Une note par personne et par jour,
     rattachée à l'empreinte du jour puis anonyme ; déclarée dans la page confidentialité et le registre (traitement 14) ;
   - trois brouillons à relire : écrire une définition, le retour des mots fléchés, le jeu dans le monde.
+- **Reprise du texte des articles dans la page** (demande de l'auteur du 07/10,
+  [ADR 0027](docs/adr/0027-texte-des-articles-editable.md)) : le texte d'un article vit dans
+  `textes/<slug>.json` (titre, description, chapeau, sections ; balisage léger `**gras**` et
+  `[lien](/adresse)`), assemblé par la coquille TSX qui garde dates, brouillon, liens et grille — le rendu ne
+  change pas. En développement, un **crayon sur la page de l'article** (sans compte : le développement suffit)
+  rend le texte **écrivable dans la page même, dans sa typographie** — pas de plein écran ni de formulaire
+  (retour de l'auteur du soir) : zones sans cadre qui grandissent, gestes du paragraphe touché (« Une phrase
+  dessous », suppression), barre d'enregistrement fixe au pouce. `GET`/`PUT /api/articles/<slug>/texte`
+  réécrit le fichier **du dépôt** (dossier monté en dev seulement, `TEXTES_DIR`) ; le git reste la vérité,
+  l'auteur relit le diff. Des **notes de relecture** jaunes s'accrochent aux sections (ancre stable, donc pas
+  de dérive quand un paragraphe bouge) plus une pour l'article entier ; elles se gardent seules au flou
+  (`GET`/`PUT /api/articles/<slug>/notes`, dossier `data/annotations/` monté en dev seulement, `NOTES_DIR`)
+  et ne partent jamais ni dans le site ni dans le dépôt public (`tools/public/prive.txt`). Sans dossier monté
+  — la production — les adresses répondent 404. Aucune création d'article, aucune traversée de chemin,
+  écriture atomique, corps validé (ancres uniques, longueurs).
+- **La grille du jour** ([ADR 0026](docs/adr/0026-la-grille-du-jour.md), axe joueurs J2) : `/jouer` publie une
+  grille nouvelle chaque jour, dessinée par notre moteur, et `/jouer/<date>` garde chaque grille passée (une
+  grille, une page, au sitemap) — le build casse s'il reste moins de sept jours de grilles devant lui
+  (`tools/grilles/produire.py` écrit la donnée et la page du jour, requête et réponse gardées). Le jeu : dans
+  les cases, au toucher ou au clavier (flèches, **Tab** pour le sens, Entrée pour le mot suivant), définitions
+  en clair sous la grille, chrono discret qui part à la première lettre, mot mystère qui se remplit au fil des
+  lettres, et le remplissage **au crayon** (Architects Daughter, capitales à la main, OFL — crédit dans les
+  mentions légales). **Joker** vérifie les cases déjà complétées et compte ses tours (la première fois, un
+  dialogue s'explique avant d'agir) ; **Voir la solution** demande d'abord — un coup d'œil de trois secondes
+  ou l'abandon définitif ; **Imprimer** sort la grille seule, jamais la solution ; **Partager** envoie le lien
+  de la page (feuille de partage du téléphone, presse-papiers sinon) — le lien seul, pas une partie. La mesure
+  ajoute la **partie jouée** (la première lettre écrite, la même balise que les pages vues, sans cookie) :
+  déclarée dans la page de confidentialité et le registre (traitement 12), elle remplit « Parties jouées »
+  dans les indicateurs de la course.
 - **Indicateurs de la course** ([#201](https://github.com/maximefd/terminator-app/issues/201), lot C0,
   [ADR 0023](docs/adr/0023-cap-sur-la-premiere-place.md)) : un bloc « La course » dans `/admin` (sous les seuils),
   en tête du bilan du lundi et dans `make stats`, par semaine ISO (du lundi au dimanche, UTC) :
@@ -605,7 +773,12 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   - les mots visés par une règle automatique disparaissent de la file de tri et du reste à trier.
 
 ### Modifié
+- **Grille à la main, la grille de magazine d'abord** : dans le tutoriel comme dans le panneau de l'éditeur, le premier bouton, celui mis en avant, tire une grille de magazine au hasard ; « Première ligne et première colonne » (anciennement « Préremplir » dans le panneau) passe en second. Il reste le premier quand la grille est trop petite pour un tirage.
+- **Définitions plus grandes dans les cases** (retour de l'auteur du 07/10/2026) : la flèche ne mord plus que 8 unités de la case définition (20 à 22 avant), le texte récupère la largeur et grossit (16 au lieu de 11,5 en case pleine, 14 au lieu de 10,5 en demi-case). Une définition longue rétrécit jusqu'au plancher d'avant : rien de ce qui tenait ne déborde. Écran et PDF identiques ; `benchmarks/clue_fit.py` suit.
+- **Taille conseillée mesurée aussi en hauteur** (retour de l'auteur du 07/10/2026 : un conseil toujours carré) : la table de difficulté du sur mesure n'avait que des carrés. Les formats 7×9 à 16×20 sont mesurés (2 160 générations) et le conseil choisit parmi carrés et formats en hauteur la plus petite surface qui a le meilleur taux : TULIPE, JARDIN, PIVOINE en 7×9, ORNITHORYNQUE en 10×13 au lieu de 13×13. `difficulty_sur_mesure.py` accepte `--sizes 8x10`.
 - **Signature des PDF** : « Grille créée sur leflechoir.fr » en bas de chaque page (corps 9, gris foncé), au lieu de l'adresse seule, en gris clair, qui disparaissait à la photocopie. Accord de l'auteur du 08/10/2026 ([ACQUISITION](docs/ACQUISITION.md) §8.1, B1).
+- **Pages de mots, second retour du 08/10/2026** : le choix de la longueur est replié (« Mot de 5 lettres · Changer de longueur ») ; « Resserrer la liste » propose, d'après les mots affichés, la lettre suivante (« EN 15 », « ET 22 »…) et resserre d'un clic ; plus de lien vers la recherche complète (outil des créateurs, autre public) ni de pastilles d'ancres dans la liste.
+- **Pages de mots, retours de l'auteur du 08/10/2026** : style du site actuel (plus de Georgia ni d'aplats crème ; une seule touche d'ocre sur la longueur choisie et les cases remplies), courtes animations (apparition des résultats, survols, case active) ; « Effacer » vide tout, « Remettre la liste » disparaît ; 60 premiers mots puis « Afficher les N autres », pour que la FAQ reste à portée ; une seule FAQ, réécrite pour le joueur bloqué sur sa grille (sept questions, dont « Ce n'est pas un peu tricher ? ») ; une page de combinaison de moins de 5 mots existe toujours (l'outil y répond) mais reste hors des moteurs (`noindex`, hors sitemap).
 - **Moteur 1,5 à 1,8 fois plus rapide, aux mêmes grilles** ([#211](https://github.com/maximefd/terminator-app/issues/211),
   lot C1) : MRV incrémental (motifs et nombres de candidats des slots gardés d'un appel à l'autre, corrigés quand un
   mot est pris ou rendu), validation croisée par le motif du slot croisé, slots croisés précalculés. Appels par
@@ -726,7 +899,9 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   confidentialité et `docs/RGPD.md` à jour.
 
 ### Corrigé
+- **Éditeur sur téléphone** : toucher une case de la grille ouvre le clavier, en mode lettres (grille faite à la main comme grille générée). La grille écoutait le clavier sans champ de saisie, et un téléphone n'ouvre son clavier que pour un champ.
 - **Next.js 15.5.27** : deux failles modérées de 15.5.25 (GHSA-4jqv-mc3x-m676, GHSA-mcj8-r9mp-w47p, cache des rendus SSG/ISR). Le site, en export statique, n'y était pas exposé, mais `pnpm audit` bloquait la CI.
+- **`make deploy` s'arrêtait selon la langue du terminal** : quatre messages collaient une variable à des points de suspension (`$DEPLOY_HOST…`) ; avec le bash 3.2 de macOS dans un terminal en UTF-8 (le cas normal), le shell lisait « … » comme une partie du nom (« unbound variable »). Variables entre accolades dans `deploy.sh` et `server.sh`.
 - **Accroche et vocabulaire** :
   - nouvelle accroche du site : « Le Fléchoir — créer des mots fléchés de pro, simplement » (titre de l'accueil,
     partages, manifeste) ;

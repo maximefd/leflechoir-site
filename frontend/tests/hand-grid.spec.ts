@@ -53,8 +53,8 @@ test("une première grille à la main est guidée jusqu'aux définitions", async
   await expect(page.getByRole("button", { name: "Grille de magazine au hasard" })).toHaveCount(0);
   await page.getByRole("button", { name: "Grille vierge" }).click();
   await expect(etape(page, 2)).toBeVisible();
-  await page.getByRole("button", { name: "Préremplir" }).click();
-  await expect(page.getByRole("button", { name: "Préremplir" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Première ligne et première colonne" }).click();
+  await expect(page.getByRole("button", { name: "Première ligne et première colonne" })).toHaveCount(0);
 
   // Étapes 2 et 3 : elles se valident en écrivant
   await ecrire(page, 0, 1, "SALE");

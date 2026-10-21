@@ -40,7 +40,7 @@ test("la définition d'un mot du dictionnaire est proposée dans l'éditeur", as
   await page.getByLabel("Hauteur").fill("4");
   await page.getByRole("button", { name: /Créer une grille vide de 4\s*×\s*4/ }).click();
   await page.getByRole("button", { name: "Passer le tutoriel" }).click();
-  await page.getByRole("button", { name: "Préremplir" }).click();
+  await page.getByRole("button", { name: "Première ligne et première colonne" }).click();
   await ecrire(page, 0, 1, "SALE");
   await ecrire(page, 0, 3, "RIRE");
   await page.getByRole("button", { name: "Les mots me conviennent : écrire les définitions" }).click();

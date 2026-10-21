@@ -67,7 +67,7 @@ export function isMeasurablePath(path: string): boolean {
   return PATH_PATTERN.test(path) && !path.startsWith("/admin");
 }
 
-type Beacon = { kind: "view" | "pdf"; path: string; referrer?: string; visible_ms?: number };
+type Beacon = { kind: "view" | "pdf" | "play"; path: string; referrer?: string; visible_ms?: number };
 
 function send(beacon: Beacon) {
   if (!isMeasured() || !isMeasurablePath(beacon.path)) return;
@@ -95,4 +95,9 @@ export function trackPageView(path: string, referrer: string, visibleMs: number)
 /** Un export PDF se fait dans le navigateur : le serveur ne le voit pas. */
 export function trackPdfExport() {
   send({ kind: "pdf", path: window.location.pathname });
+}
+
+/** Une partie jouée : la première lettre écrite dans une grille publiée (ADR 0026). Le serveur ne la voit pas. */
+export function trackPlay() {
+  send({ kind: "play", path: window.location.pathname });
 }

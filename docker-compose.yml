@@ -30,6 +30,10 @@ services:
       - ./backend:/app
       # Lexique curé exporté par le curateur (lecture seule), rechargé à chaud par l'API
       - ./data/lexicon/build:/lexicon:ro
+      # Textes des articles, réécrits par l'auteur depuis la page (ADR 0027, développement seulement)
+      - ./frontend/src/content/articles/textes:/textes
+      # Annotations de relecture de l'auteur : hors du site publié (ADR 0027)
+      - ./data/annotations:/annotations
     environment:
       - APP_ENV=${APP_ENV:-development}
       - FLASK_DEBUG=1
@@ -50,6 +54,9 @@ services:
       # Lexique curé s'il a été exporté, sinon repli automatique sur le DELA complet
       - LEXICON_PATH=${LEXICON_PATH:-/lexicon/lexique_cure.csv}
       - LEXICON_RELOAD_INTERVAL_S=${LEXICON_RELOAD_INTERVAL_S:-30}
+      # Édition des textes en place (ADR 0027) : les dossiers montés ci-dessus
+      - TEXTES_DIR=/textes
+      - NOTES_DIR=/annotations
       # E-mails du compte (ADR 0014) : ils arrivent dans Mailpit, http://localhost:8025, et ne partent jamais
       - MAIL_BACKEND=smtp
       - SMTP_HOST=mail

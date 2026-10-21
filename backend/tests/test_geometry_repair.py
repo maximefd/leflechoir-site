@@ -390,3 +390,21 @@ def test_the_smallest_grid_with_the_best_chance_is_advised(monkeypatch):
     assert difficulty.best_sur_mesure_size(["ORNITHORYNQUE"]) == {"width": 13, "height": 13, "success_rate": 1.0}
     assert difficulty.best_sur_mesure_size(["APPLAUDISSEMENTS"])["width"] == 20
     assert difficulty.best_sur_mesure_size([]) is None
+
+
+def test_the_advice_follows_the_measured_portrait_sizes():
+    """Retour de l'auteur du 07/10/2026 : le conseil était toujours carré, faute de formats en hauteur mesurés.
+
+    Mesurés, ils reçoivent mieux les mots imposés que le carré de même surface : le conseil les propose."""
+    from engine import difficulty
+
+    # Trois mots de 6-7 lettres : 0,81 en 7 × 7, 1,0 en 7 × 9
+    assert difficulty.best_sur_mesure_size(["TULIPE", "JARDIN", "PIVOINE"]) == {"width": 7, "height": 9,
+                                                                                 "success_rate": 1.0}
+    # Un mot de 8 lettres n'entre pas dans un 7 × 7 ; le grand côté d'un 7 × 9 l'accueille
+    assert difficulty.sur_mesure_rate(["ARROSOIR", "ROSE"], 7, 7) == 0.0
+    assert difficulty.best_sur_mesure_size(["ARROSOIR", "ROSE"])["height"] == 9
+    # Un mot de 13 lettres : 10 × 13 plutôt que 13 × 13
+    assert difficulty.best_sur_mesure_size(["ORNITHORYNQUE"]) == {"width": 10, "height": 13, "success_rate": 1.0}
+    # Quand le carré est vraiment le plus petit qui marche, il reste conseillé
+    assert difficulty.best_sur_mesure_size(["ROSE"]) == {"width": 7, "height": 7, "success_rate": 1.0}

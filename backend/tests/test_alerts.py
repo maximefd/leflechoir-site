@@ -281,8 +281,11 @@ def test_the_weekly_report_opens_with_the_race_over_the_last_four_complete_weeks
                      "en hausse (+1, +50 %)",  # 3 générations réussies contre 2
                      "S40 : du 28/09 au 04/10/2026. Tendance : S40 contre S39."):
         assert expected in block, expected
+    # Les parties jouées se comptent depuis la grille du jour (ADR 0026) : ici, personne n'a joué, zéro s'affiche
+    ligne_parties = next(line for line in block.splitlines() if line.startswith("Parties jouées"))
+    assert ligne_parties.endswith("stable")
     # Ce qui ne se mesure pas encore est annoncé, jamais chiffré
-    for label in ("Parties jouées", "Grilles publiées", "Avis reçus"):
+    for label in ("Grilles publiées", "Avis reçus"):
         assert any(line.startswith(label) and line.endswith("à venir") for line in block.splitlines()), label
     assert "S41" not in block and "*" not in block  # la semaine en cours attend le bilan suivant
     # Le reste du bilan est là, à sa place

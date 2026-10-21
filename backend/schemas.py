@@ -110,7 +110,7 @@ class SuggestionRequest(ApiModel):
     """Un mot signalé (à retirer) ou proposé (à ajouter), en un clic (roadmap 1e)."""
     kind: Literal["remove", "add"]
     word: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=30, pattern=WORD_PATTERN)]
-    source: Literal["search", "search_empty", "grid", "editor", "editor_unknown"]
+    source: Literal["search", "search_empty", "grid", "editor", "editor_unknown", "mots"]
 
 
 class ContactRequest(ApiModel):
@@ -147,12 +147,12 @@ class ContactReadRequest(ApiModel):
 
 
 class AudienceRequest(ApiModel):
-    """Une page vue, ou un export PDF, signalé par le navigateur (ADR 0016, point 3, #130).
+    """Une page vue, un export PDF ou une partie jouée, signalé par le navigateur (ADR 0016, point 3, #130).
 
     Tout est borné : un chemin sans paramètres, le nom d'hôte seul du référent, la langue du navigateur.
     Rien ici ne désigne une personne.
     """
-    kind: Literal["view", "pdf"]
+    kind: Literal["view", "pdf", "play"]
     path: Annotated[str, StringConstraints(min_length=1, max_length=100, pattern=r"^/[A-Za-z0-9/_.-]*$")]
     referrer: Annotated[str, StringConstraints(max_length=100, pattern=r"^[A-Za-z0-9.-]*$")] = ""
     lang: Annotated[str, StringConstraints(max_length=12, pattern=r"^[A-Za-z0-9-]*$")] = ""
@@ -174,6 +174,13 @@ class GridSize(ApiModel):
 GridWord = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=2, max_length=30, pattern=WORD_PATTERN)
 ]
+
+
+class SensRequest(ApiModel):
+    """« Le sens des mots » (ADR 0028) : les mots d'une grille ou d'une recherche. Au-delà de MAX_SENS_WORDS,
+    la route répond avec un `reason` ; la borne du schéma n'arrête que les corps démesurés."""
+    mots: Annotated[list[GridWord], Field(min_length=1, max_length=2000)]
+
 
 MysteryInput = Annotated[str, StringConstraints(strip_whitespace=True, max_length=40, pattern=MYSTERY_INPUT_PATTERN)]
 

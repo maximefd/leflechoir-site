@@ -58,7 +58,7 @@ check_commit() {
 }
 
 deploy_api() {
-    say "API : envoi du code sur $DEPLOY_HOST…"
+    say "API : envoi du code sur ${DEPLOY_HOST}…"
     git archive --format=tar HEAD \
         | ssh_server "mkdir -p $REMOTE_BASE/releases/$VERSION && tar -x -C $REMOTE_BASE/releases/$VERSION"
     ssh_server "sh $REMOTE_BASE/releases/$VERSION/tools/deploy/server.sh deploy $VERSION"
@@ -93,8 +93,8 @@ deploy_front() {
 sha256() { if command -v sha256sum >/dev/null; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
 
 # Le lexique curé que le curateur exporte sur ce Mac (tous les 500 mots triés) : il part tel quel, sans la
-# colonne des définitions. Elles viennent du Wiktionnaire (CC BY-SA) et le site ne les sert pas : elles
-# restent sur le Mac. Le serveur vérifie l'empreinte, redémarre l'API, et reprend le précédent si elle échoue.
+# colonne des définitions, qui restent sur le Mac. Le sens des mots (ADR 0028) part à côté, dans son propre
+# fichier, affiché avec sa licence (CC BY-SA). Le serveur vérifie l'empreinte, redémarre l'API, et reprend le précédent si elle échoue.
 deploy_lexicon() {
     source_file="data/lexicon/build/lexique_cure.csv"
     [ -s "$source_file" ] || die "$source_file absent : le curateur l'écrit tous les 500 mots triés (ou make lexicon-export)"
@@ -119,9 +119,24 @@ with open(source, encoding="utf-8", newline="") as f, open(target, "w", encoding
 print(count)
 PY
 )"
-    say "Lexique : $lines lignes, exporté le $(date -r "$source_file" '+%d/%m/%Y à %H:%M'). Envoi sur $DEPLOY_HOST…"
+    say "Lexique : $lines lignes, exporté le $(date -r "$source_file" '+%d/%m/%Y à %H:%M'). Envoi sur ${DEPLOY_HOST}…"
     ssh_server "mkdir -p $REMOTE_BASE/lexicon && cat > $REMOTE_BASE/lexicon/lexique_cure.csv.nouveau" < "$work/lexique_cure.csv"
-    ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh lexicon $(sha256 "$work/lexique_cure.csv")"
+    # Le sens des mots (ADR 0028) : envoyé seulement s'il a changé (environ 40 Mo). Il vient lui aussi du
+    # Wiktionnaire, mais le site l'affiche avec sa licence ; make lexicon-sens le reconstruit.
+    sens_file="data/lexicon/build/sens.sqlite"
+    sens_sha=""
+    if [ -s "$sens_file" ]; then
+        local_sha="$(sha256 "$sens_file")"
+        remote_sha="$(ssh_server "sha256sum $REMOTE_BASE/lexicon/sens.sqlite 2>/dev/null | cut -d' ' -f1" || true)"
+        if [ "$local_sha" != "$remote_sha" ]; then
+            say "Sens des mots : envoi de $sens_file ($(du -h "$sens_file" | cut -f1 | tr -d ' '))…"
+            ssh_server "cat > $REMOTE_BASE/lexicon/sens.sqlite.nouveau" < "$sens_file"
+            sens_sha="$local_sha"
+        fi
+    else
+        say "Sens des mots : $sens_file absent (make lexicon-sens) ; le site s'en passe."
+    fi
+    ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh lexicon $(sha256 "$work/lexique_cure.csv") $sens_sha"
     curl -fsS --max-time 20 "$DEPLOY_API_URL/api/status" >/dev/null \
         || die "l'API ne répond pas par $DEPLOY_API_URL : voir docs/PRODUCTION.md"
     say "Lexique en service."

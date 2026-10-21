@@ -26,6 +26,28 @@
   src: url("/fonts/archivo-narrow-700.ttf") format("truetype");
 }
 
+/*
+ * L'écriture du joueur dans les grilles à jouer (ADR 0026) : Architects Daughter, des capitales
+ * imprimées à la main, pour un remplissage « au crayon ». Nom d'un seul tenant, comme Archivo :
+ * le convertisseur PDF ne retrouve pas une famille en deux mots.
+ * Un seul fichier graisse 400, déclaré aussi en 700 : le texte des lettres demande du gras, et
+ * le navigateur n'a pas à le dessiner lui-même — le gras synthétique bave.
+ */
+@font-face {
+  font-family: "ArchitectsDaughter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/architects-daughter.ttf") format("truetype");
+}
+@font-face {
+  font-family: "ArchitectsDaughter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/architects-daughter.ttf") format("truetype");
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

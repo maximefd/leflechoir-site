@@ -8,7 +8,7 @@ TOOLS_RUN := docker run --rm -v "$(CURDIR)":/repo -w /repo -e PYTHONDONTWRITEBYT
 
 .PHONY: help setup dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report \
 	deploy deploy-api deploy-front deploy-lexicon rollback deploy-status suggestions-pull \
-	lexicon-download lexicon-build lexicon-export lexicon-stats \
+	lexicon-download lexicon-build lexicon-export lexicon-sens lexicon-stats listes \
 	curator curator-bg curator-stop curator-logs curator-check curator-urls \
 	preview-remote
 
@@ -48,8 +48,14 @@ lexicon-build: ## Construit data/lexicon/build/lexicon.sqlite (plusieurs minutes
 lexicon-export: ## Exporte le lexique curé (data/lexicon/build/lexique_cure.csv)
 	$(TOOLS_RUN) "python -m tools.lexicon export"
 
+lexicon-sens: ## Construit data/lexicon/build/sens.sqlite, le sens des mots tiré du Wiktionnaire (ADR 0028)
+	$(TOOLS_RUN) "python -m tools.lexicon sens"
+
 lexicon-stats: ## Avancement de la curation
 	$(TOOLS_RUN) "python -m tools.lexicon stats"
+
+listes: ## Écrit les listes de mots du site (frontend/src/content/mots), d'après le lexique curé (make lexicon-export d'abord)
+	$(TOOLS_RUN) "python -m tools.lexicon listes"
 
 CURATOR_CONTAINER := terminator_curator
 CURATOR_DOCKER_ARGS := -p 8765:8765 -v "$(CURDIR)":/repo -w /repo --env-file .env -e TZ=Europe/Paris \

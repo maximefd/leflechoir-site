@@ -216,6 +216,14 @@ def _page_events(visit: _Visit, has_grid: bool) -> list[dict]:
                        "route": "/api/audience", "duration_ms": 4, "cpu_ms": 1,
                        "data": {"path": "/grids/edit", "referrer": "", "browser_lang": language, "visible_ms": 0},
                        "words": None})
+    # Une partie jouée : le joueur a écrit au moins une lettre dans une grille du jour (ADR 0026)
+    if rng.random() < 0.4:
+        at += timedelta(seconds=rng.uniform(2, 30))
+        day = rng.choice(("2026-09-14", "2026-09-21", "2026-09-28"))
+        events.append({**visit.common, "created_at": at, "kind": "page", "outcome": "play", "status": 204,
+                       "route": "/api/audience", "duration_ms": 4, "cpu_ms": 1,
+                       "data": {"path": f"/jouer/{day}", "referrer": "", "browser_lang": language, "visible_ms": 0},
+                       "words": None})
     return events
 
 

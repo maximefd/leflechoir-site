@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { site } from "@/config/site";
@@ -9,6 +9,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 // Le nom vient de la configuration du site (ADR 0017) : chaque page ne donne que son propre titre
+// Sur Android, le clavier qui s'ouvre rétrécit la page au lieu de la recouvrir : la case qu'on remplit et la
+// définition en cours restent au-dessus de lui (saisie-grille.tsx). Safari l'ignore et suit la fenêtre visible.
+export const viewport: Viewport = { width: "device-width", initialScale: 1, interactiveWidget: "resizes-content" };
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: { default: `${site.name} — ${site.tagline}`, template: `%s | ${site.name}` },

@@ -5,7 +5,7 @@ import type { Clue } from "@/components/grid/grid-svg";
 const keyOf = (clue: Pick<Clue, "x" | "y" | "direction">) => `${clue.x}-${clue.y}-${clue.direction}`;
 
 /**
- * Les petites grilles à jouer des articles.
+ * Les grilles à jouer des articles et du jour.
  *
  * La grille vient de notre propre générateur (`POST /api/grids/generate`, les mots-clés de l'article en mots
  * imposés ou souhaités) : la requête et la réponse sont gardées à côté de l'article
@@ -22,12 +22,14 @@ export type MiniGridSpec = {
   rows: string[];
   /** Le texte de chaque définition, par mot (« CECI » : « Pas cela ») */
   clues: Record<string, string>;
+  /** Mot mystère (#218) : une case par lettre, dans l'ordre. Facultatif : toutes les grilles n'en ont pas. */
+  mystery?: { word: string; cells: { x: number; y: number }[] };
 };
 
 /** Une grille générée, telle que l'API l'a rendue, avec la requête qui l'a produite */
 export type GeneratedGrid = {
   request: Record<string, unknown>;
-  response: { grid: { width: number; height: number; cells: { x: number; y: number; char: string; is_black: boolean }[]; words: { text: string; x: number; y: number; direction: string }[] } };
+  response: { grid: { width: number; height: number; cells: { x: number; y: number; char: string; is_black: boolean }[]; words: { text: string; x: number; y: number; direction: string }[]; mystery?: { word: string; seed: number | null; cells: { x: number; y: number }[] } } };
 };
 
 /** La grille d'un article à partir de la réponse du générateur, et ses définitions écrites à la main */
@@ -39,10 +41,11 @@ export function specFromGeneration({ response: { grid } }: GeneratedGrid, clues:
       return !cell || cell.is_black ? "#" : cell.char;
     }).join(""),
   );
+  const spec: MiniGridSpec = { rows, clues, mystery: grid.mystery ? { word: grid.mystery.word, cells: grid.mystery.cells } : undefined };
   const expected = grid.words.map((word) => `${word.text}-${word.x}-${word.y}-${word.direction}`).sort().join(" ");
-  const found = buildMiniGrid({ rows, clues }).words.map((word) => `${word.text}-${word.x}-${word.y}-${word.direction}`).sort().join(" ");
+  const found = buildMiniGrid(spec).words.map((word) => `${word.text}-${word.x}-${word.y}-${word.direction}`).sort().join(" ");
   if (expected !== found) throw new Error(`Les mots de la grille ne sont pas ceux du générateur : ${found} / ${expected}`);
-  return { rows, clues };
+  return spec;
 }
 
 export type MiniWord = { text: string; x: number; y: number; direction: "across" | "down"; cells: string[] };
@@ -51,6 +54,8 @@ export type MiniGrid = {
   grid: GridData;
   /** Par clé de mot (clueKey), le texte affiché dans la case définition */
   definitions: Record<string, string>;
+  /** Le texte des définitions, par mot écrit (« CECI » : « Pas cela ») — pour la liste en clair */
+  cluesByWord: Record<string, string>;
   words: MiniWord[];
   /** La lettre attendue dans chaque case (« x-y ») */
   solution: Record<string, string>;
@@ -67,7 +72,7 @@ const EXITS: Record<string, "right" | "bottom"> = {
   [BENT_DOWN_RIGHT]: "bottom",
 };
 
-export function buildMiniGrid({ rows, clues }: MiniGridSpec): MiniGrid {
+export function buildMiniGrid({ rows, clues, mystery }: MiniGridSpec): MiniGrid {
   const height = rows.length;
   const width = rows[0]?.length ?? 0;
   if (!height || rows.some((row) => row.length !== width || !/^[#A-Z]+$/.test(row))) {
@@ -122,6 +127,22 @@ export function buildMiniGrid({ rows, clues }: MiniGridSpec): MiniGrid {
   const solution: Record<string, string> = {};
   rows.forEach((row, y) => [...row].forEach((char, x) => char !== "#" && (solution[`${x}-${y}`] = char)));
 
+  // Le mot mystère (#218) : chaque case doit porter la lettre qu'on attend d'elle, sans quoi la rangée mentirait
+  if (mystery) {
+    const letters = mystery.word.replaceAll(" ", "");
+    if (mystery.cells.length !== letters.length) {
+      throw new Error(`Mot mystère ${mystery.word} : ${mystery.cells.length} cases pour ${letters.length} lettres`);
+    }
+    if (new Set(mystery.cells.map(({ x, y }) => `${x}-${y}`)).size !== mystery.cells.length) {
+      throw new Error(`Mot mystère ${mystery.word} : une case y est numérotée deux fois`);
+    }
+    mystery.cells.forEach(({ x, y }, index) => {
+      if (rows[y]?.[x] !== letters[index]) {
+        throw new Error(`Mot mystère ${mystery.word} : la case ${x}-${y} ne porte pas la lettre ${letters[index]}`);
+      }
+    });
+  }
+
   return {
     grid: {
       width,
@@ -134,8 +155,10 @@ export function buildMiniGrid({ rows, clues }: MiniGridSpec): MiniGrid {
       wish_ratio: 0,
       must_words: [],
       clues: gridClues,
+      mystery: mystery ? { word: mystery.word, seed: null, cells: mystery.cells } : undefined,
     },
     definitions: Object.fromEntries(gridClues.map((clue) => [keyOf(clue), clues[clue.text]])),
+    cluesByWord: clues,
     words,
     solution,
   };

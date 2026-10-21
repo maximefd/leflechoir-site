@@ -28,6 +28,8 @@ backend/tests/test_geometry.py
 backend/tests/test_skeleton.py
 backend/tests/test_generation_geometry.py
 data/lexicon
+# Annotations de relecture de l'auteur sur les articles (ADR 0027) : du travail privé, pas du contenu
+data/annotations
 tools/lexicon
 tools/curator
 docs/ENGINE.md
@@ -42,6 +44,7 @@ docs/ETUDE-GRILLES-THEME-IA.md
 docs/ROADMAP.md
 docs/CONCURRENCE.md
 docs/ACQUISITION.md
+docs/VISIBILITE-IA.md
 docs/adr/0023-cap-sur-la-premiere-place.md
 # Le moteur v2 (#210) : ce qui est livré, les mesures, ce qui ne l'est pas
 docs/adr/0025-moteur-v2.md
@@ -51,3 +54,7 @@ docs/DEFINITIONS-SOURCES.md
 .github
 # Exemples de définitions de l'auteur, pour les grilles des articles
 docs/STYLE-DEFINITIONS.md
+# La grille du jour : rythme de production, angle face aux sites qui reprennent les grilles d'éditeurs
+docs/adr/0026-la-grille-du-jour.md
+# Listes de mots publiées (pages /mots) : lisibles sur le site page par page, jamais téléchargeables d'un bloc
+frontend/src/content/mots/listes

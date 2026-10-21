@@ -4,11 +4,17 @@ import type { MiniGridSpec } from "@/lib/mini-grid";
 /**
  * Un article : écrit à la première personne, signé « je », relu par l'auteur.
  *
- * Le contenu est du TSX, et non du MDX : le site est un export statique sans chargeur de plus, et un article
- * reste un fichier qu'on relit d'une traite. Le nom du fichier est l'adresse de l'article (`slug`) ; l'API
- * en garde la liste (`backend/articles.py`) pour accepter la note de force de sa grille.
+ * Le texte (titre, chapeau, description, sections, paragraphes) vit dans `textes/<slug>.json` : l'auteur le
+ * reprend directement dans la page, au téléphone (ADR 0027). Le fichier TSX garde ce qui ne s'édite pas au
+ * fil de la lecture — dates, brouillon, liens du bas, grille et ses définitions — et s'assemble par
+ * `articleAvecTexte`. L'API en garde la liste (`backend/articles.py`) pour accepter la note de force de sa
+ * grille ; le texte éditable est servi par `backend/article_texte.py`.
  */
 export type ArticleSection = { id: string; title: string; body: ReactNode };
+
+/** Le texte éditable d'un article (ADR 0027) : tout ce qui se réécrit depuis la page. */
+export type TexteSection = { id: string; title: string; paragraphs: string[] };
+export type TexteArticle = { title: string; description: string; chapo: string; sections: TexteSection[] };
 
 /** Les fonctions du site vers lesquelles un article peut renvoyer, en fin de page */
 export type RelatedFeature = "generer" | "recherche" | "mystere" | "guide";

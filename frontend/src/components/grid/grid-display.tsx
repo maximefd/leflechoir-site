@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Toggle } from "@/components/ui/toggle";
 import { GridSvg, type Clue, type GridVariant } from "@/components/grid/grid-svg";
 import { SuggestWord } from "@/components/suggestions/suggest-word";
+import { SensMention, SensTexte, useSensDesMots, useShowSens } from "@/components/sens/sens-des-mots";
 
 export type Cell = { x: number; y: number; char: string; is_black: boolean };
 
@@ -63,6 +64,9 @@ const SOURCES: Record<string, { label: string; cell: string; badge: string }> = 
  */
 export function GridDisplay({ gridData, unplaced = [] }: { gridData: GridData; unplaced?: string[] }) {
   const [variant, setVariant] = useState<GridVariant>("solution");
+  // Le sens des mots (ADR 0028) : affiché d'office, sous chaque mot, une seule mention de la licence
+  const [showSens, setShowSens] = useShowSens();
+  const sens = useSensDesMots(gridData.words.map((word) => word.text), showSens);
 
   // Une case peut appartenir à deux mots : la provenance la plus « voulue » l'emporte à l'affichage
   const priority = ["common", "wish", "must"];
@@ -124,6 +128,11 @@ export function GridDisplay({ gridData, unplaced = [] }: { gridData: GridData; u
       */}
       <details className="rounded-md border p-3" open={mine.length > 0 || unplaced.length > 0}>
         <summary className="cursor-pointer text-sm font-medium">Les mots de la grille</summary>
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={showSens} onChange={(event) => setShowSens(event.target.checked)}
+                 className="h-4 w-4 accent-primary" />
+          Afficher le sens des mots
+        </label>
         <div className="mt-3 grid gap-4 sm:grid-cols-3">
           {["must", "wish", "common"].map((source) => {
             const words = bySource(source);
@@ -133,11 +142,14 @@ export function GridDisplay({ gridData, unplaced = [] }: { gridData: GridData; u
                 <p className={`mb-2 inline-block rounded-full px-2 py-1 text-xs font-semibold ${SOURCES[source].badge}`}>
                   {SOURCES[source].label} · {words.length}
                 </p>
-                <ul className="space-y-1 font-mono text-sm">
+                <ul className="space-y-2 font-mono text-sm">
                   {words.map((word) => (
-                    <li key={`${word.text}-${word.x}-${word.y}`} className="flex items-center justify-between gap-1">
-                      {word.text}
-                      {source === "common" && <SuggestWord word={word.text} kind="remove" source="grid" />}
+                    <li key={`${word.text}-${word.x}-${word.y}`}>
+                      <div className="flex items-center justify-between gap-1">
+                        {word.text}
+                        {source === "common" && <SuggestWord word={word.text} kind="remove" source="grid" />}
+                      </div>
+                      {showSens && <SensTexte word={word.text} sens={sens[word.text.toUpperCase()]} className="font-sans" />}
                     </li>
                   ))}
                 </ul>
@@ -145,6 +157,7 @@ export function GridDisplay({ gridData, unplaced = [] }: { gridData: GridData; u
             );
           })}
         </div>
+        {showSens && Object.keys(sens).length > 0 && <SensMention className="mt-4 border-t pt-3" />}
         {unplaced.length > 0 && (
           <p className="mt-4 border-t pt-3 text-xs text-muted-foreground">
             Sans place dans cette grille :{" "}

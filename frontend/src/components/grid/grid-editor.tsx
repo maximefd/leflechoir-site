@@ -44,6 +44,8 @@ import { brokenDescription, movedNumbers } from "@/lib/mystery";
 const NEXT_STEP: Partial<Record<TutorialStep, TutorialStep>> = { 1: 2, 2: 3, 3: 4, 6: 7 };
 import type { GridData } from "@/components/grid/grid-display";
 import { exportJson, exportPdf } from "@/lib/grid-export";
+import { placerChamp, SaisieGrille } from "@/components/grid/saisie-grille";
+import { SensMention, SensTexte, useSensDesMots } from "@/components/sens/sens-des-mots";
 
 /** Ce qui sort des conventions des layouts : signalé, jamais refusé (roadmap, point 5A). */
 type LayoutWarning = { kind: string; message: string; cells: [number, number][] };
@@ -131,7 +133,8 @@ export function GridEditor({ gridId }: { gridId: number }) {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const blankRef = useRef<HTMLDivElement>(null);
-  const lettersRef = useRef<HTMLDivElement>(null);
+  // Le mode lettres écrit par un champ invisible posé sur la grille : seul un champ ouvre le clavier d'un téléphone
+  const letterInputRef = useRef<HTMLInputElement>(null);
   // Fermer l'avertissement d'export rend le focus au bouton PDF, sauf si l'on part compléter
   const writeAfterDialog = useRef(false);
   const solutionRef = useRef<HTMLDivElement>(null);
@@ -232,6 +235,10 @@ export function GridEditor({ gridId }: { gridId: number }) {
     );
     return list;
   }, [content]);
+
+  // Le sens des mots (ADR 0028) : un aide-mémoire sous le champ, jamais une définition à reprendre. Un seul
+  // appel pour toute la grille ; un mot inachevé (« P?RTE ») n'en a pas
+  const sens = useSensDesMots(clues.map((clue) => clue.text).filter((text) => /^[A-Z]{2,}$/.test(text)));
 
   // Le mot choisi peut disparaître quand l'auteur déplace une case définition : on repart du premier
   useEffect(() => {
@@ -420,10 +427,17 @@ export function GridEditor({ gridId }: { gridId: number }) {
 
   const writeLetters = (cells: CellEdit[], remember = true) => writeEdit({ cells }, remember);
 
+  // Les écritures partent l'une après l'autre : deux frappes rapprochées, envoyées ensemble, faisaient perdre la
+  // première au serveur (chacune relit la grille, la dernière enregistrée gagne), et la réponse arrivée la dernière
+  // pouvait réafficher une lettre déjà effacée
+  const writeQueue = useRef<Promise<unknown>>(Promise.resolve());
+
   const writeEdit = async (edit: GridEdit, remember = true) => {
     const before = inverseOf(edit);
     try {
-      const updated = await apiFetch(`/api/grids/${gridId}`, { method: "PATCH", body: edit });
+      const turn = writeQueue.current.then(() => apiFetch(`/api/grids/${gridId}`, { method: "PATCH", body: edit }));
+      writeQueue.current = turn.catch(() => undefined);
+      const updated = await turn;
       // Une lettre numérotée corrigée : son numéro passe sur une autre case, et l'auteur doit le savoir (#218)
       const moved = movedNumbers(content?.mystery, updated.grid.mystery);
       if (moved.length > 0) {
@@ -492,6 +506,10 @@ export function GridEditor({ gridId }: { gridId: number }) {
   };
 
   const selectCell = (cell: { x: number; y: number }) => {
+    // Dans le geste même du toucher : plus tard, le téléphone n'ouvrirait pas son clavier. Le champ se pose d'abord
+    // sur la case : le clavier qui s'ouvre fait défiler jusqu'à elle, pas jusqu'au haut de la grille
+    placerChamp(letterInputRef.current, cell);
+    letterInputRef.current?.focus({ preventScroll: true });
     setPendingBlock(null);
     // Un second clic sur la même case change de sens : c'est le geste des grilles croisées.
     // Mais seulement si un mot y passe dans l'autre sens — sinon le panneau se viderait sans raison.
@@ -508,7 +526,53 @@ export function GridEditor({ gridId }: { gridId: number }) {
     }
   };
 
-  const onLetterKey = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  /**
+   * Écrit des lettres à partir de la case du curseur, dans le sens du mot, et avance d'autant. Le plus souvent une
+   * seule ; plusieurs quand un clavier de téléphone insère d'un coup la suggestion qu'on a touchée.
+   */
+  const typeLetters = (keys: string) => {
+    if (!content || !cursor) return;
+    if (content.cells.some((cell) => cell.x === cursor.x && cell.y === cursor.y && cell.is_black)) return;
+    // Le moteur travaille en majuscules sans accent : on y ramène la frappe
+    const chars = keys.normalize("NFD").replace(/[^A-Za-z]/g, "").toUpperCase();
+    if (!chars) return;
+    const isFree = (cell: { x: number; y: number }) =>
+      content.cells.some((candidate) => candidate.x === cell.x && candidate.y === cell.y && !candidate.is_black);
+    const writes: { x: number; y: number; char: string }[] = [];
+    let at = cursor;
+    for (const char of chars) {
+      writes.push({ ...at, char });
+      const next = direction === "across" ? { x: at.x + 1, y: at.y } : { x: at.x, y: at.y + 1 };
+      if (!isFree(next)) break;
+      at = next;
+    }
+    void writeLetters(writes);
+    setCursor(at);
+  };
+
+  /**
+   * Retour arrière : on efface la case courante si elle porte une lettre, sinon on recule et on efface celle d'avant.
+   * Maintenu, il remonte le mot en le vidant — c'est le geste attendu. Il arrive par la touche d'un vrai clavier, ou
+   * par le champ quand un clavier de téléphone ne dit pas la touche (saisie-grille.tsx).
+   */
+  const eraseBack = () => {
+    if (!content || !cursor) return;
+    if (content.cells.some((cell) => cell.x === cursor.x && cell.y === cursor.y && cell.is_black)) return;
+    const inGrid = (cell: { x: number; y: number }) =>
+      content.cells.some((candidate) => candidate.x === cell.x && candidate.y === cell.y && !candidate.is_black);
+    const letterAt = (cell: { x: number; y: number }) =>
+      content.cells.find((candidate) => candidate.x === cell.x && candidate.y === cell.y)?.char ?? "";
+    const back = direction === "across" ? { x: cursor.x - 1, y: cursor.y } : { x: cursor.x, y: cursor.y - 1 };
+    if (letterAt(cursor)) {
+      void writeLetters([{ ...cursor, char: "" }]);
+      if (inGrid(back)) setCursor(back);
+    } else if (inGrid(back)) {
+      void writeLetters([{ ...back, char: "" }]);
+      setCursor(back);
+    }
+  };
+
+  const onLetterKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (!content) return;
     // Annuler et rétablir marchent même sans case sélectionnée
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
@@ -528,22 +592,10 @@ export function GridEditor({ gridId }: { gridId: number }) {
     const isLetter = /^[a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ]$/.test(event.key);
     const inGrid = (cell: { x: number; y: number }) =>
       content.cells.some((candidate) => candidate.x === cell.x && candidate.y === cell.y && !candidate.is_black);
-    const letterAt = (cell: { x: number; y: number }) =>
-      content.cells.find((candidate) => candidate.x === cell.x && candidate.y === cell.y)?.char ?? "";
 
-    // Retour arrière : on efface la case courante si elle porte une lettre, sinon on recule et on
-    // efface celle d'avant. Maintenu, il remonte le mot en le vidant — c'est le geste attendu.
     if (event.key === "Backspace") {
       event.preventDefault();
-      const back =
-        direction === "across" ? { x: cursor.x - 1, y: cursor.y } : { x: cursor.x, y: cursor.y - 1 };
-      if (letterAt(cursor)) {
-        void writeLetters([{ ...cursor, char: "" }]);
-        if (inGrid(back)) setCursor(back);
-      } else if (inGrid(back)) {
-        void writeLetters([{ ...back, char: "" }]);
-        setCursor(back);
-      }
+      eraseBack();
       return;
     }
     // Suppr efface sans bouger : utile quand on nettoie une case au milieu d'un mot
@@ -555,12 +607,7 @@ export function GridEditor({ gridId }: { gridId: number }) {
 
     if (isLetter) {
       event.preventDefault();
-      // Le moteur travaille en majuscules sans accent : on y ramène la frappe
-      const char = event.key.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
-      void writeLetters([{ x: cursor.x, y: cursor.y, char }]);
-      const next =
-        direction === "across" ? { x: cursor.x + 1, y: cursor.y } : { x: cursor.x, y: cursor.y + 1 };
-      if (inGrid(next)) setCursor(next);
+      typeLetters(event.key);
       return;
     }
 
@@ -689,17 +736,18 @@ export function GridEditor({ gridId }: { gridId: number }) {
   const pickWord = (word: PlacedWord) => {
     setCursor({ x: word.x, y: word.y });
     setDirection(word.direction);
-    lettersRef.current?.focus();
+    placerChamp(letterInputRef.current, { x: word.x, y: word.y });
+    letterInputRef.current?.focus({ preventScroll: true });
   };
 
   return (
     /*
      * Un plan de travail, pas une page qui défile : sur grand écran l'éditeur occupe la fenêtre
-     * (moins l'en-tête de 4 rem), la grille prend la hauteur qui reste et le panneau défile seul.
+     * (moins l’en-tête et sa ligne de rubriques, 7,25 rem), la grille prend la hauteur qui reste et le panneau défile seul.
      * En dessous de `lg`, la page redevient un document qu'on fait défiler — une grille et un
      * panneau côte à côte n'y tiendraient pas.
      */
-    <main className="container mx-auto flex flex-col p-4 md:p-6 lg:h-[calc(100svh-4rem)] lg:overflow-hidden">
+    <main className="container mx-auto flex flex-col p-4 md:p-6 lg:h-[calc(100svh-7.25rem)] lg:overflow-hidden">
       <div className="mb-4 flex shrink-0 flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <Button asChild variant="ghost" size="sm" className="-ml-2">
@@ -895,31 +943,39 @@ export function GridEditor({ gridId }: { gridId: number }) {
           {/* Grille vide créée à la main : l'allure classique, en un clic (roadmap 5B) */}
           {mode === "lettres" && canPrefill && tutorial !== 1 && (
             <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-md border bg-secondary/20 p-2 text-xs">
-              <span>
-                Placer les cases définitions habituelles : une sur deux sur la première ligne et la première
-                colonne ?
-              </span>
+              <span>Où placer les cases définitions ?</span>
+              {/* Le même ordre que le tutoriel : la grille de magazine d'abord (retour de l'auteur du 09/10/2026) */}
               <span className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={() => void writeEdit({ blocks: classicBlocks })}>
-                  Préremplir
-                </Button>
                 {canDrawMagazine && (
-                  <Button size="sm" variant="outline" disabled={isDrawing} onClick={() => void drawMagazine()}>
+                  <Button size="sm" disabled={isDrawing} onClick={() => void drawMagazine()}>
                     Grille de magazine au hasard
                   </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant={canDrawMagazine ? "outline" : "default"}
+                  onClick={() => void writeEdit({ blocks: classicBlocks })}
+                >
+                  Première ligne et première colonne
+                </Button>
               </span>
             </div>
           )}
 
-          {/* Le mode lettres écoute le clavier : c'est la grille elle-même qui prend le focus */}
           <div
-            ref={lettersRef}
-            tabIndex={mode === "lettres" ? 0 : -1}
-            onKeyDown={mode === "lettres" ? onLetterKey : undefined}
-            className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="relative flex min-h-0 flex-1 items-start justify-center overflow-hidden rounded-md outline-none has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-ring"
             aria-label={mode === "lettres" ? "Grille, correction des lettres" : undefined}
           >
+            {/* Le mode lettres écoute le clavier par ce champ : les touchers passent au travers, jusqu'aux cases */}
+            {mode === "lettres" && (
+              <SaisieGrille
+                inputRef={letterInputRef}
+                cursor={cursor}
+                onLetters={typeLetters}
+                onBackspace={eraseBack}
+                onKeyDown={onLetterKey}
+              />
+            )}
             {mode === "apercu" ? (
               <GridSvg
                 grid={content}
@@ -1187,6 +1243,13 @@ export function GridEditor({ gridId }: { gridId: number }) {
                           </Button>
                         </div>
                       ))}
+                    {sens[selectedClue.text] && (
+                      <div className="mt-2 space-y-1 rounded-md border border-dashed p-2">
+                        <p className="text-xs font-medium">Sens du mot</p>
+                        <SensTexte word={selectedClue.text} sens={sens[selectedClue.text]} />
+                        <SensMention />
+                      </div>
+                    )}
                     {overflows(selectedClue, current) && (
                       <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500">
                         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />

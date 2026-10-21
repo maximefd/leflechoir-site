@@ -61,6 +61,9 @@ const PAPER = {
 // et retombait sur une serif large — visible seulement sur le papier.
 export const GRID_FONT = "ArchivoNarrow";
 
+/** L'écriture du joueur dans les grilles à jouer : des capitales à la main, comme au crayon (ADR 0026). */
+export const HAND_FONT = "ArchitectsDaughter";
+
 const SOURCE_TINT: Record<string, string> = { must: PAPER.must, wish: PAPER.wish };
 
 /** Profondeur de la flèche dans la case voisine, longueur et demi-largeur de sa pointe. */
@@ -69,6 +72,11 @@ const TIP = 11;
 const HALF_TIP = 6;
 /** Les flèches coudées longent le bord de la case suivante pour ne pas barrer sa lettre. */
 const CORNER = 16;
+/**
+ * Ce que la flèche mord de la case définition : un court départ, pas plus. Elle en prenait 20 à 22 unités, et le
+ * texte se serrait d'autant (retour de l'auteur du 07/10/2026 : des définitions écrasées sur un côté).
+ */
+const STEM = 8;
 
 /** Trait et pointe d'une flèche, en coordonnées locales à la case définition. */
 function arrowShape(arrow: string, halfOffset: number) {
@@ -77,25 +85,25 @@ function arrowShape(arrow: string, halfOffset: number) {
     // La définition est à gauche du mot : on sort par la droite, tout droit
     case "droite":
       return {
-        d: `M ${edge - 22} ${halfOffset} H ${edge + IN}`,
+        d: `M ${edge - STEM} ${halfOffset} H ${edge + IN}`,
         head: `${edge + IN + TIP},${halfOffset} ${edge + IN},${halfOffset - HALF_TIP} ${edge + IN},${halfOffset + HALF_TIP}`,
       };
     // La définition est au-dessus du mot : on sort par le bas, tout droit
     case "bas":
       return {
-        d: `M ${halfOffset} ${edge - 22} V ${edge + IN}`,
+        d: `M ${halfOffset} ${edge - STEM} V ${edge + IN}`,
         head: `${halfOffset},${edge + IN + TIP} ${halfOffset - HALF_TIP},${edge + IN} ${halfOffset + HALF_TIP},${edge + IN}`,
       };
     // Mot collé au bord gauche : on descend le long de sa première lettre, puis on part à droite
     case "coudee_bas_droite":
       return {
-        d: `M ${CORNER} ${edge - 20} V ${edge + CORNER} H ${CORNER + 10}`,
+        d: `M ${CORNER} ${edge - STEM} V ${edge + CORNER} H ${CORNER + 10}`,
         head: `${CORNER + 10 + TIP},${edge + CORNER} ${CORNER + 10},${edge + CORNER - HALF_TIP} ${CORNER + 10},${edge + CORNER + HALF_TIP}`,
       };
     // Mot collé au bord haut : on entre dans sa première lettre par la gauche, puis on descend
     case "coudee_droite_bas":
       return {
-        d: `M ${edge - 20} ${halfOffset} H ${edge + CORNER} V ${halfOffset + 10}`,
+        d: `M ${edge - STEM} ${halfOffset} H ${edge + CORNER} V ${halfOffset + 10}`,
         head: `${edge + CORNER},${halfOffset + 10 + TIP} ${edge + CORNER - HALF_TIP},${halfOffset + 10} ${edge + CORNER + HALF_TIP},${halfOffset + 10}`,
       };
     default:
@@ -210,6 +218,17 @@ type GridSvgProps = {
   className?: string;
   /** Mots absents du lexique : soulignés dans la grille, pour qu'on les voie sans lire la liste. */
   unknownCells?: string[];
+  /**
+   * La police des lettres que la main du joueur écrit (`HAND_FONT` dans les grilles à jouer) : le
+   * remplissage au crayon, quand c'est un humain qui joue. Sans elle, la police de l'imprimé.
+   * La rangée du mot mystère suit : les lettres du joueur au crayon, la solution à l'imprimé.
+   */
+  letterFont?: string;
+  /**
+   * Les lettres du mot mystère écrites par le joueur, par numéro de case. Une grille à jouer donne cet objet
+   * (vide au départ) : la rangée suit alors la grille remplie, jamais la solution — sinon le mot s'y lirait.
+   */
+  mysteryLetters?: Record<number, string>;
   /** Faux : pas de cadre extérieur, pour une grille dont on n'a pas encore tracé le contour (guide). */
   frame?: boolean;
 };
@@ -227,6 +246,8 @@ export function GridSvg({
   onSelectCell,
   litCells,
   unknownCells,
+  letterFont,
+  mysteryLetters,
   className = "h-auto w-full",
   frame = true,
 }: GridSvgProps) {
@@ -281,6 +302,8 @@ export function GridSvg({
     <svg
       viewBox={`${-BORDER / 2} ${-BORDER / 2} ${grid.width * CELL + BORDER} ${grid.height * CELL + extra + BORDER}`}
       className={className}
+      // Une grille qu'on touche : pas de zoom au double toucher (toucher deux fois une case change de sens)
+      style={onSelectCell || onSelect ? { touchAction: "manipulation" } : undefined}
       role="img"
       aria-label={
         `Grille ${grid.width} sur ${grid.height}, ${grid.words.length} mots` +
@@ -301,45 +324,49 @@ export function GridSvg({
           >
             MOT MYSTÈRE
           </text>
-          {row.boxes.map((box) => (
-            <g key={`rangee-${box.number}`} data-mystery-box={box.number}>
-              <rect
-                x={box.x}
-                y={rowTop + box.y}
-                width={row.size}
-                height={row.size}
-                fill={PAPER.cell}
-                stroke={PAPER.line}
-                strokeWidth={LINE * 1.3}
-              />
-              <text
-                x={box.x + row.size - 5}
-                y={rowTop + box.y + row.size - 6}
-                textAnchor="end"
-                fontSize={row.size * 0.26}
-                fontWeight="700"
-                fontFamily={GRID_FONT}
-                fill={PAPER.letter}
-              >
-                {box.number}
-              </text>
-              {showLetters && (
+          {row.boxes.map((box) => {
+            // Une grille à jouer : la rangée montre ce que le joueur a écrit, pas la solution
+            const letter = mysteryLetters ? (mysteryLetters[box.number] ?? "") : showLetters ? box.letter : "";
+            return (
+              <g key={`rangee-${box.number}`} data-mystery-box={box.number}>
+                <rect
+                  x={box.x}
+                  y={rowTop + box.y}
+                  width={row.size}
+                  height={row.size}
+                  fill={PAPER.cell}
+                  stroke={PAPER.line}
+                  strokeWidth={LINE * 1.3}
+                />
                 <text
-                  data-mystery-letter=""
-                  x={box.x + row.size / 2}
-                  y={rowTop + box.y + row.size / 2}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fontSize={row.size * 0.56}
+                  x={box.x + row.size - 5}
+                  y={rowTop + box.y + row.size - 6}
+                  textAnchor="end"
+                  fontSize={row.size * 0.26}
                   fontWeight="700"
                   fontFamily={GRID_FONT}
                   fill={PAPER.letter}
                 >
-                  {box.letter}
+                  {box.number}
                 </text>
-              )}
-            </g>
-          ))}
+                {letter && (
+                  <text
+                    data-mystery-letter=""
+                    x={box.x + row.size / 2}
+                    y={rowTop + box.y + row.size / 2}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={row.size * 0.56}
+                    fontWeight="700"
+                    fontFamily={mysteryLetters && letterFont ? letterFont : GRID_FONT}
+                    fill={PAPER.letter}
+                  >
+                    {letter}
+                  </text>
+                )}
+              </g>
+            );
+          })}
         </g>
       )}
       <g transform={extra ? `translate(0 ${extra})` : undefined}>
@@ -387,7 +414,7 @@ export function GridSvg({
               dominantBaseline="central"
               fontSize={CELL * 0.56}
               fontWeight="700"
-              fontFamily={GRID_FONT}
+              fontFamily={letterFont ?? GRID_FONT}
               fill={PAPER.letter}
             >
               {letters.get(`${cell.x}-${cell.y}`)}
@@ -503,6 +530,8 @@ export function GridSvg({
             height={CELL}
             fill="transparent"
             className={cell.is_black ? "cursor-pointer" : "cursor-text"}
+            // Repère de la case : le champ de saisie s'y pose, et l'écran la garde visible (saisie-grille.tsx)
+            data-cell={`${cell.x}-${cell.y}`}
             onClick={() => onSelectCell({ x: cell.x, y: cell.y })}
           />
         ))}
@@ -555,14 +584,12 @@ const WIDEST_CHAR = 0.68;
 export const printedCase = (text: string) => text.toLocaleUpperCase("fr");
 
 export function wrapDefinition(text: string, arrow: string | null, half: boolean, bold = true) {
-  // La flèche traverse la case : le texte se serre dans ce qu'elle laisse, et le côté dépend de la
-  // flèche — la coudée d'un mot collé au bord gauche descend le long de la gauche, pas de la droite.
+  // Le texte laisse à la flèche son court départ (STEM), du côté où elle sort : en bas pour celles qui
+  // descendent (la coudée d'un mot collé au bord gauche aussi), à droite pour les autres. Le reste de la
+  // case est au texte.
   const reserved = { left: 0, right: 0, bottom: 0 };
-  if (arrow === "coudee_bas_droite") reserved.left = 30;
-  else if (arrow === "bas") {
-    if (half) reserved.right = 34;
-    else reserved.bottom = 26;
-  } else reserved.right = 26;
+  if (arrow === "bas" || arrow === "coudee_bas_droite") reserved.bottom = STEM + 1;
+  else reserved.right = STEM + 1;
 
   const height = half ? CELL / 2 : CELL;
   const usable = CELL - reserved.left - reserved.right - 8;
@@ -603,26 +630,33 @@ export function wrapDefinition(text: string, arrow: string | null, half: boolean
   // Un mot ne se coupe pas : s'il est plus large que la case, c'est la police qui cède. Sans cette
   // borne, « RECOMMANDÉES » sortait de sa case — un texte qui déborde est un défaut, pas un choix.
   const tenable = longest > 0 ? usable / (WIDEST_CHAR * longest) : Number.POSITIVE_INFINITY;
-  const nominal = Math.min(half ? CELL * 0.105 : CELL * 0.115, tenable);
-
-  // Une définition longue fait ensuite rétrécir sa police plutôt que de gagner une ligne : c'est ce
-  // que font les magazines, et c'est ce qui sauve « IL DONNE LA CADENCE » d'une troisième ligne à
-  // deux lettres.
-  let best = layout(nominal);
-  for (let size = nominal - 0.5; size >= nominal * 0.8; size -= 0.5) {
-    const candidate = layout(size);
-    if (candidate.lines.length < best.lines.length) best = candidate;
-  }
+  // Plus gros qu'avant (0,105 et 0,115 : retour de l'auteur du 07/10/2026) : la place rendue par la flèche va à la
+  // taille du texte. Une définition longue fait rétrécir sa police plutôt que de gagner une ligne, comme dans les
+  // magazines, jusqu'au plancher d'avant : ce qui tenait dans une case y tient toujours.
+  const nominal = Math.min(half ? CELL * 0.14 : CELL * 0.16, tenable);
+  const floor = Math.min(half ? CELL * 0.084 : CELL * 0.092, nominal);
 
   /**
    * Au-delà de trois lignes dans une demi-case, une définition n'est plus lisible dans une grille,
    * même si elle y tient géométriquement. Le plafond est typographique, pas arithmétique : sans lui,
    * une définition de soixante-dix caractères « passait » en six lignes minuscules, sans un mot.
    */
-  const maxLines = Math.min(
-    half ? 3 : 5,
-    Math.max(2, Math.floor((height - reserved.bottom - 4) / best.lineHeight)),
-  );
+  const linesFor = (lineHeight: number) =>
+    Math.min(half ? 3 : 5, Math.max(2, Math.floor((height - reserved.bottom - 4) / lineHeight)));
+
+  // La plus grande taille où la définition tient ; puis, à 80 % de celle-ci au plus, une taille qui lui
+  // épargne une ligne (« IL DONNE LA CADENCE » sans troisième ligne à deux lettres)
+  const sizes: number[] = [];
+  for (let size = nominal; size >= floor - 1e-9; size -= 0.5) sizes.push(size);
+  const layouts = sizes.map(layout);
+  const fitting = layouts.findIndex((candidate) => candidate.lines.length <= linesFor(candidate.lineHeight));
+  let best = layouts[fitting === -1 ? layouts.length - 1 : fitting];
+  const largest = best.fontSize;
+  for (const candidate of layouts.slice(fitting + 1)) {
+    if (fitting === -1 || candidate.fontSize < largest * 0.8) break;
+    if (candidate.lines.length < best.lines.length) best = candidate;
+  }
+  const maxLines = linesFor(best.lineHeight);
 
   return {
     lines: best.lines.slice(0, maxLines),

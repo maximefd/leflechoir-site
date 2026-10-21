@@ -299,6 +299,8 @@ RACE_COUNTED = {
     ("account", "register"): "registers",
     ("grid", "saved"): "saved",
     ("page", "pdf"): "pdf",
+    # Une partie jouée : le joueur a écrit au moins une lettre dans une grille publiée (ADR 0026)
+    ("page", "play"): "games",
 }
 
 

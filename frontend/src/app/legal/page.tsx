@@ -67,6 +67,17 @@ export default function LegalPage() {
           </p>
         </Section>
 
+        <Section title="Les listes de mots">
+          <p>
+            Le choix des mots de {site.name} est le fruit d&apos;un tri fait à la main, mot par mot, par
+            l&apos;éditeur. Cette sélection, et les listes de mots publiées sur le site qui en sont issues, forment une
+            base de données protégée par les articles L341-1 et suivants du Code de la propriété intellectuelle : leur
+            extraction ou leur réutilisation, en totalité ou pour une partie substantielle, notamment par des moyens
+            automatisés, est interdite sans autorisation écrite. Les ressources d&apos;origine citées ci-dessous restent
+            disponibles sous leurs propres licences.
+          </p>
+        </Section>
+
         <Section title="Crédits">
           <ul className="list-disc space-y-1 pl-5">
             <li>
@@ -82,8 +93,20 @@ export default function LegalPage() {
               <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr" className={linkClass}>CC BY-SA 4.0</a>.
             </li>
             <li>
+              <strong className="text-foreground">Le sens des mots</strong> : tiré du{" "}
+              <a href="https://fr.wiktionary.org/" className={linkClass}>Wiktionnaire</a> (extrait de{" "}
+              <a href="https://kaikki.org/" className={linkClass}>kaikki.org</a>), sous licence{" "}
+              <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr" className={linkClass}>CC BY-SA 4.0</a>,
+              cité tel quel ou abrégé. Il s&apos;affiche à côté des grilles, jamais dans leurs cases.
+            </li>
+            <li>
               <strong className="text-foreground">Police des grilles</strong> : Archivo Narrow (Omnibus-Type), sous
               licence <a href="/fonts/OFL.txt" className={linkClass}>SIL Open Font License 1.1</a>.
+            </li>
+            <li>
+              <strong className="text-foreground">Police de l&apos;écriture du joueur</strong> : Architects Daughter
+              (Kimberly Geswein), sous licence{" "}
+              <a href="/fonts/OFL-ArchitectsDaughter.txt" className={linkClass}>SIL Open Font License 1.1</a>.
             </li>
             <li>
               <strong className="text-foreground">Police du site</strong> : Inter (Rasmus Andersson), sous licence SIL

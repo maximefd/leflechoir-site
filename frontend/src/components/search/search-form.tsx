@@ -7,23 +7,39 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiFetch } from "@/lib/api-client";
 import { SuggestWord } from "@/components/suggestions/suggest-word";
+import { type SensDuMot, SensMention, SensTexte, useShowSens } from "@/components/sens/sens-des-mots";
 
 type SearchResult = {
   mot: string;
   source: string;
   definition?: string;
+  /** Le sens du mot tiré du Wiktionnaire (ADR 0028), à part de `definition`, celle des dictionnaires */
+  sens?: SensDuMot | null;
 };
 
 /** Motifs proposés à l'écran vide : ils se chargent d'un clic plutôt que d'être à recopier. */
 const EXAMPLES = ["P??LE", "?A?SON", "MER??"];
 
+/** Un motif passé dans l'adresse (`/search?motif=A%3F%3F`) : lettres et points d'interrogation seulement */
+function motifDeLAdresse(search: string): string {
+  const motif = new URLSearchParams(search).get("motif") ?? "";
+  return motif.toUpperCase().replace(/[^A-Z?]/g, "").slice(0, 30);
+}
+
 export function SearchForm() {
   const [pattern, setPattern] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [showSens, setShowSens] = useShowSens();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const debouncedPattern = useDebounce(pattern, 300);
+
+  // Les pages de listes de mots (/mots) arrivent ici avec leur motif : la page statique ne le connaît qu'au chargement
+  useEffect(() => {
+    const motif = motifDeLAdresse(window.location.search);
+    if (motif) setPattern(motif);
+  }, []);
 
   useEffect(() => {
     let loadingTimer: NodeJS.Timeout;
@@ -70,7 +86,7 @@ export function SearchForm() {
   return (
     <div className="w-full max-w-xl">
       <div className="mb-4 space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Trouver le mot manquant</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Chercher un mot</h1>
         <p className="text-sm text-muted-foreground">
           Tape les lettres que tu connais et un <span className="font-mono font-semibold">?</span> par
           case vide. La recherche part dès la deuxième lettre.
@@ -157,9 +173,16 @@ export function SearchForm() {
           <div className="rounded-md border">
             <ScrollArea className="h-[60vh]">
               <div className="p-4">
-                <p className="mb-4 text-sm font-medium text-muted-foreground">
-                  {results.length} résultat{results.length > 1 ? 's' : ''}
-                </p>
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {results.length} résultat{results.length > 1 ? 's' : ''}
+                  </p>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={showSens} onChange={(event) => setShowSens(event.target.checked)}
+                           className="h-4 w-4 accent-primary" />
+                    Afficher le sens
+                  </label>
+                </div>
                 <div className="space-y-4">
                   {results.map((word, index) => (
                     <div key={`${word.mot}-${index}`}>
@@ -178,8 +201,12 @@ export function SearchForm() {
                           {word.definition}
                         </p>
                       )}
+                      {showSens && <SensTexte word={word.mot} sens={word.sens ?? undefined} className="mt-1" />}
                     </div>
                   ))}
+                  {showSens && results.some((word) => (word.sens?.textes?.length ?? 0) > 0) && (
+                    <SensMention className="border-t pt-3" />
+                  )}
                 </div>
               </div>
             </ScrollArea>

@@ -117,10 +117,13 @@ def test_rating_is_rate_limited():
 
 
 def test_every_article_of_the_site_is_known_to_the_api():
-    """Le site statique et l'API doivent connaître les mêmes adresses (le frontend n'est pas monté en CI : on saute)."""
+    """Le site statique et l'API doivent connaître les mêmes adresses (le frontend n'est pas monté : on saute).
+
+    Un article, c'est son texte (`textes/<slug>.json`, ADR 0027) : le dossier tient aussi des fichiers qui n'en
+    sont pas (`avec-texte.tsx`, l'assemblage commun)."""
     if not FRONTEND_ARTICLES.is_dir():
         pytest.skip("frontend absent")
-    slugs = {path.stem for path in FRONTEND_ARTICLES.glob("*.tsx")}
+    slugs = {path.stem for path in (FRONTEND_ARTICLES / "textes").glob("*.json")}
     assert slugs == set(ARTICLE_SLUGS)
 
 

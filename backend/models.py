@@ -227,7 +227,7 @@ class WordSuggestion(db.Model):
     word = db.Column(db.String(50), nullable=False, index=True)
     display = db.Column(db.String(50), nullable=False)
     lang = db.Column(db.String(5), nullable=False)
-    # D'où vient la suggestion : search, search_empty, grid, editor, editor_unknown, editor_replaced (implicite)
+    # D'où vient la suggestion : search, search_empty, grid, editor, editor_unknown, mots (listes de mots), editor_replaced (implicite)
     source = db.Column(db.String(20), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True, index=True)
     visitor = db.Column(db.String(32), nullable=True)

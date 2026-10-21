@@ -57,6 +57,8 @@ RATE_LIMITED_ENDPOINTS = {
     "auth.register": "RATELIMIT_REGISTER",
     "auth.refresh": "RATELIMIT_REFRESH",
     "main.search_words": "RATELIMIT_SEARCH",
+    # Le sens des mots (ADR 0028) : public, une demande par grille affichée
+    "sens.senses": "RATELIMIT_SENS",
     "suggestions.suggest": "RATELIMIT_SUGGEST",
     "audience.beacon": "RATELIMIT_AUDIENCE",
     "contact.send_message": "RATELIMIT_CONTACT",

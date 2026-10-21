@@ -20,9 +20,11 @@ from stats import init_stats_cli
 from admin import admin_bp, init_admin_cli
 from alerts import init_system_cli
 from suggestions import init_suggestions
+from sens import sens_bp
 from audience import audience_bp
 from contact import contact_bp
 from articles import articles_bp
+from article_texte import texte_bp
 
 DEV_SECRET = 'default-secret-for-dev'
 # Nom public du site (ADR 0017) : Terminator est le nom du moteur, jamais montré aux visiteurs
@@ -82,6 +84,8 @@ DEFAULT_SETTINGS = dict(
     # Appelé à chaque frappe de l'auteur, et sans génération : plafond de la recherche, pas de la génération
     RATELIMIT_DIFFICULTY='120 per minute',
     LEXICON_PATH=None,  # Lexique curé ; à défaut, le DELA complet (backend/dela_clean.csv)
+    SENS_PATH=None,  # Le sens des mots (ADR 0028) ; à défaut, sens.sqlite à côté de LEXICON_PATH
+    RATELIMIT_SENS='120 per minute',
     # Vérification des changements du lexique (0 : pas de rechargement à chaud). Jamais en production :
     # le lexique y est un fichier livré avec l'application (ADR 0013).
     LEXICON_RELOAD_INTERVAL_S=30,
@@ -234,6 +238,12 @@ def _load_config_from_env() -> dict:
         ) or DEFAULT_SETTINGS['RATELIMIT_GENERATE'],
         MAX_GRIDS_PER_USER=int(os.environ.get('MAX_GRIDS_PER_USER') or DEFAULT_SETTINGS['MAX_GRIDS_PER_USER']),
         LEXICON_PATH=os.environ.get('LEXICON_PATH') or None,
+        # « Le sens des mots » (ADR 0028) : à défaut, sens.sqlite à côté du lexique curé
+        SENS_PATH=os.environ.get('SENS_PATH') or None,
+        # Édition des textes d'articles en place (ADR 0027) : dossier monté par le conteneur de
+        # développement uniquement — absent, l'adresse répond 404, l'édition est fermée.
+        TEXTES_DIR=os.environ.get('TEXTES_DIR') or None,
+        NOTES_DIR=os.environ.get('NOTES_DIR') or None,
         # En production, le lexique est livré avec l'application et change avec elle, au redémarrage.
         # Sous gunicorn, le surveillant ne tournerait d'ailleurs que dans le processus maître : il
         # chargerait un second lexique que les workers ne verraient jamais (ADR 0013).
@@ -332,6 +342,8 @@ def create_app(test_config=None):
     app.register_blueprint(audience_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(articles_bp)
+    app.register_blueprint(texte_bp)
+    app.register_blueprint(sens_bp)
     init_suggestions(app)
     init_rate_limiting(app)
     init_usage(app)

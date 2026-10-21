@@ -121,6 +121,7 @@ const SOURCE_LABELS: Record<string, string> = {
   grid: "grille générée",
   editor: "éditeur",
   editor_unknown: "éditeur, hors lexique",
+  mots: "listes de mots",
   editor_replaced: "remplacé à la main",
   must_unknown: "mot imposé inconnu",
   dictionaries: "dictionnaires",

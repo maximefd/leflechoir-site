@@ -106,7 +106,9 @@ def test_the_admin_sees_aggregates_and_nothing_personal(grid_app, client, admin_
     race = {row["key"]: row for row in data["race"]["indicators"]}
     assert len(data["race"]["weeks"]) == 4 and data["race"]["current"]["days"] >= 1
     assert race["registers"]["current"] >= 2 and race["grids"]["current"] >= 1 and race["visitors"]["current"] >= 1
-    assert (race["games"]["available"], race["games"]["values"], race["games"]["trend"]) == (False, None, None)
+    # « Parties jouées » est livrée (ADR 0026) : comptée, à zéro tant que personne n'a joué ici
+    assert race["games"]["available"] and race["games"]["current"] == 0
+    assert (race["published"]["available"], race["published"]["values"], race["published"]["trend"]) == (False, None, None)
     assert data["thresholds"]["p95_limit_ms"] == 15000
     assert [(row["format"], row["total"], row["grid"]) for row in data["formats"]] == [("5x5", 1, 1)]
     # Les dernières générations, sans rien qui désigne un visiteur

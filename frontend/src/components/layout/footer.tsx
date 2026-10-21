@@ -20,6 +20,12 @@ export function Footer() {
           <Link href="/articles" className="hover:text-primary">
             Articles
           </Link>
+          <Link href="/mots" className="hover:text-primary">
+            Listes de mots
+          </Link>
+          <Link href="/a-propos" className="hover:text-primary">
+            Qui fait le site
+          </Link>
           <Link href="/contact" className="hover:text-primary">
             Contact
           </Link>

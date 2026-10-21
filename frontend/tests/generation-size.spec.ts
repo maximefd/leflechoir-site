@@ -72,12 +72,15 @@ test("un mot de 13 lettres : la taille conseillée le loge, dès la saisie", asy
   expect(order.every((index) => index >= 0)).toBe(true);
   expect(order).toEqual([...order].sort((a, b) => a - b));
 
+  // On part d'une autre taille : sinon le conseil, égal au défaut 10 × 13, se prend sans bouton
+  await page.locator("label").filter({ hasText: /^Petite\s*7\s*×\s*9$/ }).click();
   const mot = page.getByLabel("Mot à placer dans la grille");
   await mot.fill("ORNITHORYNQUE");
   await mot.press("Enter");
-  // #222 : un mot de plus de 9 lettres n'est plus refusé, il demande une grille d'au moins 13 cases de côté
-  await page.getByRole("button", { name: /^Prendre 13\s*×\s*13$/ }).click();
-  await expect(page.getByLabel("Largeur")).toHaveValue("13");
+  // #222 : un mot de plus de 9 lettres n'est plus refusé ; depuis la mesure en hauteur (07/10),
+  // le conseil le loge dans un 10 × 13 plutôt qu'un carré de 13
+  await page.getByRole("button", { name: /^Prendre 10\s*×\s*13$/ }).click();
+  await expect(page.getByLabel("Largeur")).toHaveValue("10");
   await expect(page.getByLabel("Hauteur")).toHaveValue("13");
   await expect(page.getByText("Ces mots ne tiennent pas dans une grille de cette taille")).toHaveCount(0);
 });

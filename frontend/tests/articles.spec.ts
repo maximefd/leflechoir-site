@@ -57,7 +57,7 @@ test("un brouillon reste en noindex, hors du sitemap", async ({ page }) => {
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
 });
 
-test("la petite grille se joue au clavier : lettres, Retour arrière, Entrée, solution", async ({ page }) => {
+test("la petite grille se joue au clavier : lettres, Retour arrière, Entrée, Tab, flèches", async ({ page }) => {
   await page.goto(`/articles/${SLUG}`);
   const game = page.getByRole("figure", { name: GRID });
   const clue = game.getByTestId("mini-grid-clue");
@@ -66,7 +66,6 @@ test("la petite grille se joue au clavier : lettres, Retour arrière, Entrée, s
 
   await input.focus();
   await expect(clue).toHaveText(/\(\d+ lettres?\)$/);
-  const first = await clue.textContent();
   // Aucun mot de la grille ne commence par X : une erreur sûre
   await input.pressSequentially("x");
   await game.getByRole("button", { name: "Vérifier" }).click();
@@ -79,7 +78,15 @@ test("la petite grille se joue au clavier : lettres, Retour arrière, Entrée, s
 
   await input.focus();
   await input.press("Enter");
-  await expect(clue).not.toHaveText(first ?? "");
+  await expect(clue).toHaveText("Ferme en société (4 lettres)");
+  await input.pressSequentially("ear");
+  await input.press("Backspace");
+  await input.press("Tab");
+  await expect(clue).toHaveText("Sans cuisson ni détour (3 lettres)");
+  await input.press("ArrowLeft");
+  await expect(clue).toHaveText("Ferme en société (4 lettres)");
+  await game.getByRole("button", { name: "Vérifier" }).click();
+  await expect(status).toHaveText(/^Aucune erreur pour l’instant\. Il reste \d+ cases à remplir\.$/);
 
   await game.getByRole("button", { name: "Voir la solution" }).click();
   await expect(status).toHaveText("Voici la solution.");

@@ -67,7 +67,7 @@ export default function GuidePage() {
 
       <article className="mt-6 space-y-6 leading-relaxed text-muted-foreground [&_p]:text-[1.05rem]">
         <section aria-labelledby="ce-que-demande-une-grille" className="space-y-4">
-          <h2 id="ce-que-demande-une-grille" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Ce que demande une grille</h2>
+          <h2 id="ce-que-demande-une-grille" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Ce que demande une grille</h2>
           <p>
             Dans une grille de mots fléchés, aucune case ne se repose. Chaque lettre appartient à un mot, souvent à deux, et chaque mot a sa définition écrite dans une case voisine, d’où part une flèche. Il n’y a pas de cases noires pour souffler comme dans les mots croisés : ce sont les cases définitions qui en tiennent lieu. Il en faut assez pour loger tous les textes, mais pas trop, sinon la grille se couvre de petits mots sans intérêt.
           </p>
@@ -82,7 +82,7 @@ export default function GuidePage() {
           </p>
         </section>
         <section aria-labelledby="au-depart-deux-mots" className="space-y-4">
-          <h2 id="au-depart-deux-mots" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Au départ, deux mots</h2>
+          <h2 id="au-depart-deux-mots" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Au départ, deux mots</h2>
           <p>
             Je ne commence jamais par une grille vide. Je commence par deux mots que j’ai envie d’y voir et qui peuvent se croiser. Pour celle-ci, CONTREBAS et BLASON. CONTREBAS parce qu’il est long et qu’il lui manque deux lettres pour faire une contrebasse : sa définition était trouvée d’avance, « Contrebasse écourtée ». BLASON parce que je savais déjà comment le définir : « Redoré quand on se rattrape ».
           </p>
@@ -92,7 +92,7 @@ export default function GuidePage() {
           <StepFigure n={1} />
         </section>
         <section aria-labelledby="le-cadre" className="space-y-4">
-          <h2 id="le-cadre" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Le cadre</h2>
+          <h2 id="le-cadre" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Le cadre</h2>
           <p>
             Autour de la croix, je trace un rectangle. C’est lui qui donne le format de la grille. CONTREBAS fait neuf cases de haut, BLASON et sa case définition sept de large : ce sera une grille de 7 sur 9.
           </p>
@@ -102,7 +102,7 @@ export default function GuidePage() {
           <StepFigure n={2} />
         </section>
         <section aria-labelledby="chercher-ce-qui-croise" className="space-y-4">
-          <h2 id="chercher-ce-qui-croise" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Chercher ce qui croise</h2>
+          <h2 id="chercher-ce-qui-croise" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Chercher ce qui croise</h2>
           <p>
             Le plus gros morceau, c’est la deuxième ligne. Elle part du bord gauche, traverse toute la grille, et chacune de ses lettres commencera une colonne. Je sais seulement que sa deuxième lettre est le O de CONTREBAS. En motif, ça s’écrit ?O?????, un point d’interrogation par lettre inconnue. Mon dictionnaire en propose des centaines.
           </p>
@@ -111,7 +111,7 @@ export default function GuidePage() {
           </p>
         </section>
         <section aria-labelledby="quand-ca-coince" className="space-y-4">
-          <h2 id="quand-ca-coince" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Quand ça coince</h2>
+          <h2 id="quand-ca-coince" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Quand ça coince</h2>
           <p>
             La dernière colonne descend sur huit cases, depuis le U de MORCEAU jusqu’en bas de la grille, et elle passe par le N final de BLASON. Motif : U????N??. Je cherche, je retourne le problème dans tous les sens : pas un seul mot courant. Seulement des mots que je n’avais jamais vus, et que le joueur n’aurait jamais trouvés.
           </p>
@@ -128,7 +128,7 @@ export default function GuidePage() {
           <StepFigure n={4} />
         </section>
         <section aria-labelledby="refermer-la-grille" className="space-y-4">
-          <h2 id="refermer-la-grille" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Refermer la grille</h2>
+          <h2 id="refermer-la-grille" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Refermer la grille</h2>
           <p>
             Avec trois mots longs sur les bords, le reste se resserre. En bas, la dernière ligne part du S de CONTREBAS et finit sur le E de SOUTENUE : S????E. Des dizaines de possibilités ; je prends SIECLE. La deuxième ligne, elle, ne m’a pas laissé le choix : entre le N de CONTREBAS et le O de SOUTENUE, N????O n’a qu’une réponse courante, NUMERO.
           </p>
@@ -144,7 +144,7 @@ export default function GuidePage() {
           <StepFigure n={5} />
         </section>
         <section aria-labelledby="les-definitions" className="space-y-4">
-          <h2 id="les-definitions" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Les définitions</h2>
+          <h2 id="les-definitions" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Les définitions</h2>
           <p>
             Une fois la grille pleine, je change de métier. Quelques définitions sont déjà dans la marge, arrivées en même temps que le mot. Pour les autres, je prends mon temps. C’est la partie que je préfère, et c’est elle que le joueur retiendra.
           </p>
@@ -163,7 +163,7 @@ export default function GuidePage() {
           <StepFigure n={6} />
         </section>
         <section aria-labelledby="l-epreuve-de-la-table" className="space-y-4">
-          <h2 id="l-epreuve-de-la-table" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">L’épreuve de la table</h2>
+          <h2 id="l-epreuve-de-la-table" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">L’épreuve de la table</h2>
           <p>
             Je fais la plupart de mes grilles pour les voir résolues à plusieurs, et c’est là qu’elles se jugent vraiment. Je les fais tester, si possible par deux ou trois personnes en même temps, et j’essaie de me taire. Les silences trop longs sur une même case me signalent une définition ratée ou ambiguë. Les rires me disent ce qu’il faut garder. Et quand quelqu’un écrit une autre réponse que la mienne et qu’elle passe dans les croisements, j’ai une ambiguïté à corriger.
           </p>
@@ -175,7 +175,7 @@ export default function GuidePage() {
           </p>
         </section>
         <section aria-labelledby="si-tu-veux-aller-plus-vite" className="space-y-4">
-          <h2 id="si-tu-veux-aller-plus-vite" className="scroll-mt-20 pt-6 text-2xl font-semibold text-foreground">Si tu veux aller plus vite</h2>
+          <h2 id="si-tu-veux-aller-plus-vite" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Si tu veux aller plus vite</h2>
           <p>
             Tout ce qui précède se fait avec un crayon. Si le remplissage te décourage, le <Link href="/grid" className={linkClass}>générateur du Fléchoir</Link> remplit une grille automatiquement, et la <Link href="/search" className={linkClass}>recherche par motif</Link> trouve les mots qui correspondent à un motif comme S????N??. Les définitions, en revanche, restent entièrement à toi.
           </p>

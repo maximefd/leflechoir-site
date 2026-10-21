@@ -12,7 +12,7 @@ export function DictionariesClientLayout() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Tes dictionnaires</h1>
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Mes dictionnaires</h1>
         <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
           Tes mots par thème, avec leurs définitions. Ils passent en tête de la recherche par motif et
           alimentent les mots souhaités des grilles que tu génères.

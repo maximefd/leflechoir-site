@@ -83,15 +83,16 @@ export function HandTutorial({
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {step === 1 && (
           <>
-            {/* Trois départs (#221) */}
-            <Button size="sm" onClick={onPrefill}>
-              Première ligne et première colonne
-            </Button>
+            {/* Trois départs (#221). La grille de magazine en premier (retour de l'auteur du 09/10/2026) ; trop petite
+                pour en tirer une, la grille part de sa première ligne et de sa première colonne */}
             {onMagazine && (
-              <Button size="sm" variant="outline" disabled={isDrawing} onClick={onMagazine}>
+              <Button size="sm" disabled={isDrawing} onClick={onMagazine}>
                 Grille de magazine au hasard
               </Button>
             )}
+            <Button size="sm" variant={onMagazine ? "outline" : "default"} onClick={onPrefill}>
+              Première ligne et première colonne
+            </Button>
             <Button size="sm" variant="outline" onClick={onNext}>
               Grille vierge
             </Button>

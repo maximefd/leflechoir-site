@@ -65,7 +65,9 @@ export default function TermsPage() {
           <p>
             Le tri du dictionnaire commun, les formats de grilles et le moteur de génération sont le travail du
             site ; les ressources qu&apos;il emprunte gardent leur licence (voir les crédits des{" "}
-            <Link href="/legal" className={linkClass}>mentions légales</Link>). Quand tu suggères un mot à ajouter
+            <Link href="/legal" className={linkClass}>mentions légales</Link>). Le sens des mots affiché à côté des
+            grilles vient du Wiktionnaire et reste sous sa licence (CC BY-SA 4.0) : tu peux le réutiliser selon ses
+            termes. Quand tu suggères un mot à ajouter
             ou à retirer, tu acceptes qu&apos;il soit utilisé, gratuitement et sans limite de durée, pour enrichir
             ce dictionnaire ; il n&apos;y a aucun droit à réclamer sur le résultat, y compris le jour où le site
             proposerait une offre payante.

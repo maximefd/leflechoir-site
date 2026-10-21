@@ -618,7 +618,7 @@ export function GridClientLayout() {
         <AccountBenefits next="/grid" page="generation" />
         </div>
 
-        <section ref={resultRef} aria-label="Grille générée" aria-live="polite" className="scroll-mt-20">
+        <section ref={resultRef} aria-label="Grille générée" aria-live="polite" className="scroll-mt-32">
           {failure && (
             <FailureNotice
               error={failure}

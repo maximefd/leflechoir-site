@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,8 @@ const STEPS = [
   },
 ];
 
-export function Landing() {
+/** `children` : ce que la page serveur ajoute sous l'accueil (la FAQ, écrite au build avec ses données structurées) */
+export function Landing({ children }: { children?: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const [solution, setSolution] = useState(false);
 
@@ -181,14 +182,14 @@ export function Landing() {
               <ExamplePattern />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Trouver le mot manquant</h3>
+              <h3 className="text-lg font-semibold">Chercher un mot</h3>
               <p className="text-sm text-muted-foreground">
                 Les lettres que tu connais, un <span className="font-mono font-semibold">?</span> par case
                 vide.
               </p>
             </div>
             <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-primary">
-              Chercher un motif
+              Lancer une recherche
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </span>
           </Link>
@@ -201,7 +202,7 @@ export function Landing() {
               <ExampleDictionary />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Tes propres dictionnaires</h3>
+              <h3 className="text-lg font-semibold">Mes dictionnaires</h3>
               <p className="text-sm text-muted-foreground">
                 Tes mots par thème, avec leurs définitions. Ils remontent dans la recherche, et alimentent
                 les grilles que tu génères.
@@ -237,6 +238,8 @@ export function Landing() {
           </>
         )}
       </section>
+
+      {children}
     </main>
   );
 }

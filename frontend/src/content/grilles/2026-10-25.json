@@ -1,0 +1,1049 @@
+{
+  "date": "2026-10-25",
+  "force": 1,
+  "request": {
+    "size": {
+      "width": 8,
+      "height": 8
+    },
+    "seed": 263025,
+    "quality": "best",
+    "geometry": "sur_mesure",
+    "frequency_mode": "exact",
+    "wish_words": [
+      "PAIN",
+      "BLE",
+      "FOUR",
+      "MIE",
+      "CROUTE",
+      "PATE",
+      "FARINE",
+      "LEVAIN",
+      "BAGUETTE",
+      "MIETTE"
+    ]
+  },
+  "response": {
+    "grid": {
+      "cells": [
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 0
+        },
+        {
+          "char": "B",
+          "is_black": false,
+          "x": 3,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 0
+        },
+        {
+          "char": "F",
+          "is_black": false,
+          "x": 5,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 6,
+          "y": 0
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 7,
+          "y": 0
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 1,
+          "y": 1
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 2,
+          "y": 1
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 1
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 5,
+          "y": 1
+        },
+        {
+          "char": "D",
+          "is_black": false,
+          "x": 6,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 7,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 2
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 4,
+          "y": 2
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 5,
+          "y": 2
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 6,
+          "y": 2
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 7,
+          "y": 2
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 0,
+          "y": 3
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 1,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 2,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 3
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 4,
+          "y": 3
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 5,
+          "y": 3
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 6,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 7,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 1,
+          "y": 4
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 2,
+          "y": 4
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 3,
+          "y": 4
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 5,
+          "y": 4
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 6,
+          "y": 4
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 7,
+          "y": 4
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 0,
+          "y": 5
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 5
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 2,
+          "y": 5
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 3,
+          "y": 5
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 4,
+          "y": 5
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 5,
+          "y": 5
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 6,
+          "y": 5
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 7,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 6
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 1,
+          "y": 6
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 6
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 3,
+          "y": 6
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 4,
+          "y": 6
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 5,
+          "y": 6
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 6,
+          "y": 6
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 7,
+          "y": 6
+        },
+        {
+          "char": "B",
+          "is_black": false,
+          "x": 0,
+          "y": 7
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 1,
+          "y": 7
+        },
+        {
+          "char": "G",
+          "is_black": false,
+          "x": 2,
+          "y": 7
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 3,
+          "y": 7
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 7
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 5,
+          "y": 7
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 6,
+          "y": 7
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 7,
+          "y": 7
+        }
+      ],
+      "clues": [
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 8,
+          "slot_id": 0,
+          "text": "ETRIPERA",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 1,
+          "text": "BLE",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 2,
+          "text": "FOUR",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 6,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 3,
+          "text": "LES",
+          "x": 7,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 4,
+          "text": "ETAL",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 4,
+          "cell_y": 1,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 5,
+          "text": "ODE",
+          "x": 5,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 6,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 7,
+          "slot_id": 6,
+          "text": "DEALENT",
+          "x": 6,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 2,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 7,
+          "text": "EMUES",
+          "x": 3,
+          "y": 2
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 1,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 8,
+          "text": "MIETTE",
+          "x": 4,
+          "y": 2
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 9,
+          "text": "MIE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 2,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 10,
+          "text": "EAU",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 3,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 11,
+          "text": "IRA",
+          "x": 4,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 12,
+          "text": "PATE",
+          "x": 1,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 3,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 13,
+          "text": "TROU",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 5,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 14,
+          "text": "LE",
+          "x": 6,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 7,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 15,
+          "text": "ESSE",
+          "x": 7,
+          "y": 4
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 8,
+          "slot_id": 16,
+          "text": "MEURTRES",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 5,
+          "cell_y": 4,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 17,
+          "text": "ROT",
+          "x": 5,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 2,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 18,
+          "text": "OTONS",
+          "x": 3,
+          "y": 6
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 8,
+          "slot_id": 19,
+          "text": "BAGUETTE",
+          "x": 0,
+          "y": 7
+        }
+      ],
+      "fill_ratio": 1.0,
+      "geometry": "sur_mesure",
+      "height": 8,
+      "layout": "sur-mesure",
+      "must_words": [],
+      "seed": 263025,
+      "statistics": {
+        "attempts": 1314,
+        "cache_stats": {
+          "hits": 0,
+          "misses": 0
+        },
+        "metrics": {
+          "backtracks": 8858,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "candidates_tested": 8019,
+          "fc_checks": 6645,
+          "fc_skips": 4466,
+          "recursive_calls": 15626,
+          "repairs": 1239
+        },
+        "placement_history": [
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 1,
+            "score": 27,
+            "slot_id": 3,
+            "word": "LES"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 2,
+            "score": 19,
+            "slot_id": 14,
+            "word": "LE"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 3,
+            "score": 42,
+            "slot_id": 15,
+            "word": "ESSE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 4,
+            "score": 21,
+            "slot_id": 17,
+            "word": "ROT"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 5,
+            "score": 34,
+            "slot_id": 18,
+            "word": "OTONS"
+          },
+          {
+            "direction": "across",
+            "length": 8,
+            "order": 6,
+            "score": 66,
+            "slot_id": 16,
+            "word": "MEURTRES"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 7,
+            "score": 22,
+            "slot_id": 5,
+            "word": "ODE"
+          },
+          {
+            "direction": "down",
+            "length": 7,
+            "order": 8,
+            "score": 58,
+            "slot_id": 6,
+            "word": "DEALENT"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 9,
+            "score": 27,
+            "slot_id": 13,
+            "word": "TROU"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 10,
+            "score": 35,
+            "slot_id": 4,
+            "word": "ETAL"
+          },
+          {
+            "direction": "down",
+            "length": 8,
+            "order": 11,
+            "score": 69,
+            "slot_id": 0,
+            "word": "ETRIPERA"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 12,
+            "score": 43,
+            "slot_id": 7,
+            "word": "EMUES"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 13,
+            "score": 25,
+            "slot_id": 11,
+            "word": "IRA"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 14,
+            "score": 28,
+            "slot_id": 10,
+            "word": "EAU"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 15,
+            "score": 24,
+            "slot_id": 9,
+            "word": "MIE"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 16,
+            "score": 32,
+            "slot_id": 12,
+            "word": "PATE"
+          },
+          {
+            "direction": "across",
+            "length": 8,
+            "order": 17,
+            "score": 58,
+            "slot_id": 19,
+            "word": "BAGUETTE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 18,
+            "score": 21,
+            "slot_id": 1,
+            "word": "BLE"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 19,
+            "score": 21,
+            "slot_id": 2,
+            "word": "FOUR"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 20,
+            "score": 51,
+            "slot_id": 8,
+            "word": "MIETTE"
+          }
+        ]
+      },
+      "width": 8,
+      "wish_ratio": 0.3,
+      "words": [
+        {
+          "direction": "down",
+          "id": 0,
+          "score": 69,
+          "source": "common",
+          "text": "ETRIPERA",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 1,
+          "score": 21,
+          "source": "wish",
+          "text": "BLE",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 2,
+          "score": 21,
+          "source": "wish",
+          "text": "FOUR",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 3,
+          "score": 27,
+          "source": "common",
+          "text": "LES",
+          "x": 7,
+          "y": 0
+        },
+        {
+          "direction": "across",
+          "id": 4,
+          "score": 35,
+          "source": "common",
+          "text": "ETAL",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 5,
+          "score": 22,
+          "source": "common",
+          "text": "ODE",
+          "x": 5,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 6,
+          "score": 58,
+          "source": "common",
+          "text": "DEALENT",
+          "x": 6,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 7,
+          "score": 43,
+          "source": "common",
+          "text": "EMUES",
+          "x": 3,
+          "y": 2
+        },
+        {
+          "direction": "down",
+          "id": 8,
+          "score": 51,
+          "source": "wish",
+          "text": "MIETTE",
+          "x": 4,
+          "y": 2
+        },
+        {
+          "direction": "across",
+          "id": 9,
+          "score": 24,
+          "source": "wish",
+          "text": "MIE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "direction": "down",
+          "id": 10,
+          "score": 28,
+          "source": "common",
+          "text": "EAU",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 11,
+          "score": 25,
+          "source": "common",
+          "text": "IRA",
+          "x": 4,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 12,
+          "score": 32,
+          "source": "wish",
+          "text": "PATE",
+          "x": 1,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 13,
+          "score": 27,
+          "source": "common",
+          "text": "TROU",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 14,
+          "score": 19,
+          "source": "common",
+          "text": "LE",
+          "x": 6,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 15,
+          "score": 42,
+          "source": "common",
+          "text": "ESSE",
+          "x": 7,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 16,
+          "score": 66,
+          "source": "common",
+          "text": "MEURTRES",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "direction": "down",
+          "id": 17,
+          "score": 21,
+          "source": "common",
+          "text": "ROT",
+          "x": 5,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 18,
+          "score": 34,
+          "source": "common",
+          "text": "OTONS",
+          "x": 3,
+          "y": 6
+        },
+        {
+          "direction": "across",
+          "id": 19,
+          "score": 58,
+          "source": "wish",
+          "text": "BAGUETTE",
+          "x": 0,
+          "y": 7
+        }
+      ]
+    }
+  },
+  "clues": {
+    "ETRIPERA": "Mettra en pièces",
+    "BLE": "Il fait la farine",
+    "FOUR": "Échec ou cuisson",
+    "LES": "Article pluriel",
+    "ETAL": "Table de marché",
+    "ODE": "Chant lyrique",
+    "DEALENT": "Vendent sous le manteau",
+    "EMUES": "Touchées au cœur",
+    "MIETTE": "Reste de pain",
+    "MIE": "Le mou du pain",
+    "EAU": "Elle coule de source",
+    "IRA": "Se rendra",
+    "PATE": "À pain, ou à modeler",
+    "TROU": "Il y en a dans le gruyère",
+    "LE": "Article",
+    "ESSE": "Crochet de boucher",
+    "MEURTRES": "Crimes de sang",
+    "ROT": "Bruit après le repas",
+    "OTONS": "Retirons",
+    "BAGUETTE": "Pain, ou bâton de fée"
+  }
+}

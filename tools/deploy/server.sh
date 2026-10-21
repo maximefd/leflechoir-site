@@ -4,7 +4,7 @@
 #
 # Usage : server.sh deploy VERSION   met en service releases/VERSION (déjà copiée par deploy.sh)
 #         server.sh rollback         revient à la version précédente
-#         server.sh lexicon SHA256   met en service le lexique envoyé par deploy.sh (lexicon/…nouveau)
+#         server.sh lexicon SHA256 [SHA256]   met en service le lexique (et le sens des mots) envoyés par deploy.sh
 #         server.sh status           versions, lexique et dernière sauvegarde
 #         server.sh suggestions-export   les suggestions de mots en attente, en JSON (make suggestions-pull)
 #         server.sh suggestions-apply    les décisions de l'auteur, lues sur l'entrée standard (make deploy-lexicon)
@@ -103,7 +103,7 @@ deploy() {
     say "La version $new ne répond pas correctement. Journal de l'API :" >&2
     compose "$new" logs --tail 40 api >&2 || true
     if [ -n "$prev" ] && [ "$prev" != "$new" ]; then
-        say "Retour à $prev…" >&2
+        say "Retour à ${prev}…" >&2
         start "$prev" && smoke "$prev" && say "Retour à $prev fait." >&2
         schema_after="$(schema_version)"
         if [ "$schema_before" != "$schema_after" ]; then
@@ -118,16 +118,27 @@ deploy() {
 # Le lexique curé, envoyé par deploy.sh : vérifié, mis en service, et remplacé par le précédent si l'API
 # ne le charge pas. Il vit hors des versions (LEXICON_DIR), et l'API le lit au démarrage.
 lexicon() {
-    expected="${1:?Usage : server.sh lexicon SHA256}"
+    expected="${1:?Usage : server.sh lexicon SHA256 [SHA256_DU_SENS]}"
+    sens_expected="${2:-}"
     dir="$BASE/lexicon"
     new="$dir/lexique_cure.csv.nouveau"; live="$dir/lexique_cure.csv"; old="$dir/lexique_cure.csv.precedent"
+    sens_new="$dir/sens.sqlite.nouveau"; sens_live="$dir/sens.sqlite"; sens_old="$dir/sens.sqlite.precedent"
     [ -s "$new" ] || die "$new absent : relancer make deploy-lexicon"
     [ "$(sha256sum "$new" | cut -d' ' -f1)" = "$expected" ] || die "le lexique reçu est abîmé (empreinte différente) : relancer make deploy-lexicon"
+    if [ -n "$sens_expected" ]; then
+        [ -s "$sens_new" ] && [ "$(sha256sum "$sens_new" | cut -d' ' -f1)" = "$sens_expected" ] \
+            || die "le fichier du sens des mots reçu est abîmé (empreinte différente) : relancer make deploy-lexicon"
+    fi
     current="$(release_of current)"
     [ -n "$current" ] || die "aucune version en service : make deploy d'abord"
 
     [ -f "$live" ] && cp -p "$live" "$old"
     mv "$new" "$live"
+    # Le sens des mots (ADR 0028) : lu à chaque requête, il suit le lexique et revient en arrière avec lui
+    if [ -n "$sens_expected" ]; then
+        [ -f "$sens_live" ] && cp -p "$sens_live" "$sens_old"
+        mv "$sens_new" "$sens_live"
+    fi
     say "Redémarrage de l'API avec le nouveau lexique ($(wc -l < "$live" | tr -d ' ') lignes)…"
     if compose "$current" restart api && start "$current" && smoke "$current" curated; then
         say "Lexique en service."
@@ -135,6 +146,9 @@ lexicon() {
     fi
     say "L'API ne tourne pas avec ce lexique : retour au précédent." >&2
     if [ -f "$old" ]; then mv "$old" "$live"; else rm -f "$live"; fi
+    if [ -n "$sens_expected" ]; then
+        if [ -f "$sens_old" ]; then mv "$sens_old" "$sens_live"; else rm -f "$sens_live"; fi
+    fi
     compose "$current" restart api && start "$current" && smoke "$current"
     exit 1
 }
@@ -142,7 +156,7 @@ lexicon() {
 rollback() {
     current="$(release_of current)"; previous="$(release_of previous)"
     [ -n "$previous" ] || die "aucune version précédente"
-    say "Retour de $current à $previous…"
+    say "Retour de ${current} à ${previous}…"
     start "$previous" && smoke "$previous" || die "$previous ne répond pas non plus : voir docs/PRODUCTION.md"
     link current "$previous"
     link previous "$current"

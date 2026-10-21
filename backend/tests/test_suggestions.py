@@ -35,6 +35,16 @@ def test_anyone_can_flag_a_word_in_one_click(client):
     assert row.user_id is None and row.visitor  # sans compte : l'empreinte du jour
 
 
+def test_a_word_flagged_from_the_word_lists_keeps_its_origin(client):
+    response = suggest(client, "abaca", source="mots")
+
+    assert response.status_code == 201
+    [row] = WordSuggestion.query.all()
+    assert (row.kind, row.word, row.source, row.status) == ("remove", "ABACA", "mots", "pending")
+    [group] = suggestions.grouped()
+    assert group["sources"] == {"mots": 1}
+
+
 def test_with_an_account_the_account_counts_not_the_fingerprint(client):
     headers = auth_headers(client)
     suggest(client, "porte-monnaie", kind="add", source="search_empty", headers=headers)

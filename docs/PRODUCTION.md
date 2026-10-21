@@ -230,7 +230,8 @@ make deploy-lexicon
 ```
 
 La commande :
-- envoie le fichier **sans la colonne des définitions** : elles viennent du Wiktionnaire (CC BY-SA), le site ne les sert pas, elles restent donc sur le Mac ;
+- envoie le fichier **sans la colonne des définitions**, qui restent sur le Mac ;
+- envoie aussi `data/lexicon/build/sens.sqlite`, le sens des mots ([ADR 0028](adr/0028-sens-des-mots-wiktionnaire.md)), s'il a changé depuis le dernier envoi (environ 40 Mo). On le reconstruit avec `make lexicon-sens` (quelques minutes) après de gros changements du lexique ; absent, le site s'en passe ;
 - fait vérifier son empreinte par le serveur, puis redémarre l'API (environ une minute de coupure) ;
 - s'assure que l'API a bien chargé le lexique curé, avec plus de 50 000 mots ;
 - remet le lexique précédent en service si ce n'est pas le cas.

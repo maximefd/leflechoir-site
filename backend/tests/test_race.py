@@ -163,9 +163,23 @@ def test_what_is_not_measured_yet_reads_coming_soon_never_zero(test_app):
     assert [row["key"] for row in data["indicators"]] == [
         "visitors", "grids", "finished", "pdf", "saved", "registers", "games", "published", "feedback"]
     assert [row["label"] for row in data["indicators"][-3:]] == ["Parties jouées", "Grilles publiées", "Avis reçus"]
-    for key in ("games", "published", "feedback"):
+    # « Parties jouées » est livrée (ADR 0026) : comptée, à zéro tant que personne n'a joué
+    assert (indicator(data, "games")["available"], indicator(data, "games")["values"],
+            indicator(data, "games")["current"]) == (True, [0, 0, 0, 0], 0)
+    for key in ("published", "feedback"):
         assert indicator(data, key) == {"key": key, "label": indicator(data, key)["label"], "detail": False,
                                         "available": False, "values": None, "current": None, "trend": None}
+
+
+def test_a_played_game_counts_through_the_browser_beacon(test_app):
+    add("page", "play", "2026-09-29T10:00:00")
+    add("page", "play", "2026-09-29T10:00:00", visitor=B)
+    add("page", "view", "2026-09-29T10:00:00")  # lire la grille du jour n'est pas y jouer
+
+    games = indicator(race(), "games")
+
+    assert (games["available"], games["values"], games["current"]) == (True, [0, 0, 0, 2], 0)
+    assert games["trend"] == {"change": 2, "share": None, "direction": "up"}
 
 
 def test_a_lot_that_ships_its_function_fills_its_row_by_declaring_its_event(test_app, monkeypatch):
@@ -249,7 +263,7 @@ def test_the_text_block_is_the_one_of_the_report(test_app):
         "  dont exports PDF               0     0     0     1   en hausse (+1)",
         "  dont grilles conservées        0     0     0     0   stable",
         "Comptes créés                    0     0     0     1   en hausse (+1)",
-        "Parties jouées              à venir",
+        "Parties jouées                   0     0     0     0   stable",
         "Grilles publiées            à venir",
         "Avis reçus                  à venir",
         "S40 : du 28/09 au 04/10/2026. Tendance : S40 contre S39.",

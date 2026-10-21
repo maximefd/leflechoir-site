@@ -66,7 +66,8 @@ def test_one_command_fills_the_dashboard(test_app, runner):
         assert all(count > 0 for count in race[key]["values"]), key
     for key in ("pdf", "saved", "registers"):  # plus rares : le total des quatre semaines, pas chaque semaine
         assert sum(race[key]["values"]) > 0, key
-    assert [key for key, row in race.items() if not row["available"]] == ["games", "published", "feedback"]
+    assert sum(race["games"]["values"]) > 0  # des parties jouées, elles aussi (ADR 0026)
+    assert [key for key, row in race.items() if not row["available"]] == ["published", "feedback"]
     assert runner.invoke(args=["stats"]).exit_code == 0
 
 

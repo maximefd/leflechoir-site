@@ -44,7 +44,8 @@ test("une grille générée se conserve et se retrouve", async ({ page }) => {
   await page.getByRole("button", { name: "Générer la grille" }).click();
   // Budget serveur : 20 s, et la première génération charge le lexique
   await expect(page.getByText("Cette grille te plaît ?")).toBeVisible({ timeout: 60_000 });
-  const firstWord = (await page.locator("details ul li").first().textContent())?.trim();
+  // Le mot seul : son sens (ADR 0028) arrive après, dans le même élément de liste
+  const firstWord = (await page.locator("details ul li > div").first().textContent())?.trim();
 
   // L'inscription ramène à la grille, qui a attendu
   // Nom exact : l'encadré « Avec un compte gratuit » a aussi un lien « Créer un compte gratuit »
@@ -55,7 +56,7 @@ test("une grille générée se conserve et se retrouve", async ({ page }) => {
   await page.getByRole("button", { name: "Créer un compte" }).click();
   await expect(page).toHaveURL(/\/grid$/);
   await expect(page.getByTestId("logout-button")).toBeVisible();
-  await expect(page.locator("details ul li").first()).toHaveText(firstWord ?? "");
+  await expect(page.locator("details ul li > div").first()).toHaveText(firstWord ?? "");
   await expect(page.getByRole("radio", { name: /7\s*×\s*9/ })).toBeChecked();
 
   await page.getByLabel("Nom (facultatif)").fill("Essai du parcours");

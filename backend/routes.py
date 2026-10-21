@@ -13,6 +13,7 @@ from flask_jwt_extended import jwt_required, get_current_user, unset_jwt_cookies
 
 # On importe depuis nos modules centraux
 from normalization import normalize_pattern, normalize_phrase, normalize_word
+from sens import lookup_for_app as lookup_sens
 from models import db, Dictionary, PersonalWord, SavedGrid
 from engine.difficulty import request_difficulty, sur_mesure_difficulty
 from engine.word_repository import WholeLexicon
@@ -273,6 +274,11 @@ def search_words():
             final_results.append({"mot": word, "definition": None})
 
     results = final_results[:payload.limit]
+    # Le sens des mots (ADR 0028) : un champ à part, jamais mêlé à `definition` (celle des dictionnaires) ;
+    # le lemme vient avec, pour qu'une forme fléchie dise de quel mot vient son sens (ADMET : « de admettre »)
+    senses = lookup_sens([r["mot"] for r in results]) or {}
+    for result in results:
+        result["sens"] = senses.get(normalize_word(result["mot"]))
     usage.add_details(pattern_length=len(cleaned_mask), wildcards=cleaned_mask.count('?'),
                       results=len(results), logged_in=user is not None)
     return jsonify({"results": results}), 200

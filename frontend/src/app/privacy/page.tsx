@@ -188,8 +188,9 @@ export default function PrivacyPage() {
             </li>
             <li><strong className="text-foreground">la langue de ton navigateur</strong> (« fr », « en »…) ;</li>
             <li>
-              <strong className="text-foreground">le temps pendant lequel la page est restée visible</strong>, et le
-              fait d&apos;avoir exporté une grille en PDF.
+              <strong className="text-foreground">le temps pendant lequel la page est restée visible</strong>, le
+              fait d&apos;avoir exporté une grille en PDF, et celui d&apos;avoir joué une grille publiée
+              (la première lettre écrite dans une de nos grilles à jouer).
             </li>
           </ul>
           <p>
@@ -260,7 +261,7 @@ export default function PrivacyPage() {
 
         <Section title="Tes droits">
           <p>
-            Tu peux consulter tes données dans l&apos;application (Mon compte, Dictionnaires, Mes grilles), les
+            Tu peux consulter tes données dans l&apos;application (Mon compte, Mes grilles, et tes dictionnaires dans Outils), les
             corriger, les effacer, t&apos;opposer à un traitement ou en demander la limitation, et demander à les
             recevoir dans un format lisible. Écris à{" "}
             <a href={`mailto:${site.contactEmail}`} className={linkClass}>{site.contactEmail}</a>, depuis

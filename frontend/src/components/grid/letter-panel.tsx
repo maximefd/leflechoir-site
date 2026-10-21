@@ -128,8 +128,9 @@ export function LetterPanel({
           laissent les croisements valides sont proposés.
         </p>
 
-        {/* Combler les trous ou repartir de zéro : deux gestes différents, deux listes différentes */}
-        <div className="mt-2 flex w-fit gap-1 rounded-md border p-1">
+        {/* Combler les trous ou repartir de zéro : deux gestes différents, deux listes différentes. Sur téléphone, les
+            trois boutons passent à la ligne plutôt que de faire déborder la page */}
+        <div className="mt-2 flex w-fit max-w-full flex-wrap gap-1 rounded-md border p-1">
           <Toggle size="sm" pressed={variant === "combler"} onPressedChange={() => setVariant("combler")}>
             <PenLine className="mr-1 h-3.5 w-3.5" />
             Combler les trous

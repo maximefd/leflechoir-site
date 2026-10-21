@@ -29,6 +29,7 @@ Chaque décision structurante du projet est consignée dans un court document : 
 | [0023](0023-cap-sur-la-premiere-place.md) | Cap sur la première place (document privé) | Acceptée |
 | [0024](0024-source-des-definitions.md) | Source des définitions proposées automatiquement | Proposée |
 | [0025](0025-moteur-v2.md) | Moteur v2 : la meilleure de plusieurs grilles, et des grilles « Sur mesure » à côté du catalogue (document privé) | Proposée |
+| [0028](0028-sens-des-mots-wiktionnaire.md) | Le sens des mots, tiré du Wiktionnaire, à côté des grilles (jamais dans les cases) | Acceptée |
 
 ## Modèle
 

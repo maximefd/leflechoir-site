@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api-client";
 
-type Source = "search" | "search_empty" | "grid" | "editor" | "editor_unknown";
+type Source = "search" | "search_empty" | "grid" | "editor" | "editor_unknown" | "mots";
 
 /**
  * Suggérer un mot en un clic (roadmap 1e) : le signaler (à retirer du lexique) ou le proposer (à y ajouter).

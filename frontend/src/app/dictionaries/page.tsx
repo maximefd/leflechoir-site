@@ -3,7 +3,7 @@ import { DictionariesClientLayout } from "@/components/dictionary/dictionaries-c
 import { privatePage } from "@/lib/seo";
 
 export const metadata: Metadata = privatePage({
-  title: "Tes dictionnaires",
+  title: "Mes dictionnaires",
   description: "Rassemble tes mots par thème, avec leurs définitions : ils passent en tête de la recherche par motif et alimentent les grilles que tu génères.",
 });
 
