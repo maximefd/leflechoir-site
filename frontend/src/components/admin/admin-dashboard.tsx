@@ -10,6 +10,7 @@ import {
 import { ContactInbox } from "@/components/admin/contact-inbox";
 import { RaceGroup, type Race } from "@/components/admin/race-group";
 import { SystemGroup, type SystemState } from "@/components/admin/system-group";
+import { TableauDeBord } from "@/components/admin/tableau-de-bord";
 import { useAuth } from "@/contexts/auth-context";
 import { ApiError, apiFetch } from "@/lib/api-client";
 import { site } from "@/config/site";
@@ -520,249 +521,258 @@ function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggesti
         </p>
       </header>
 
-      <section aria-label="Seuils de l'ADR 0013" className="grid gap-4 sm:grid-cols-2">
-        <Indicator label="Durée p95 des générations réussies (30 jours)" value={seconds(thresholds.p95_ms)}
-          limit={seconds(thresholds.p95_limit_ms)} level={thresholds.p95_level}
-          note={`7 derniers jours : ${seconds(thresholds.week.p95_ms)} (${LEVELS[thresholds.week.p95_level].label.toLowerCase()})`} />
-        <Indicator label="Refus « occupé » (30 jours)" value={percent(thresholds.busy_share)}
-          limit={percent(thresholds.busy_limit, 0)} level={thresholds.busy_level}
-          note={`7 derniers jours : ${percent(thresholds.week.busy_share)} (${LEVELS[thresholds.week.busy_level].label.toLowerCase()})`} />
-        <p className="text-xs text-muted-foreground sm:col-span-2">
-          Au-delà d&apos;un seuil, l&apos;ADR 0013 prévoit de passer au serveur supérieur. L&apos;indicateur prévient
-          dès {percent(thresholds.near_share, 0)} du seuil.
-        </p>
-      </section>
-
-      <RaceGroup race={stats.race} />
+      <TableauDeBord />
 
       <ContactInbox />
 
-      <Group id="usage" title="Usage">
-        <Section title="Chiffres" description="Aujourd'hui depuis minuit UTC, puis les 7 et 30 derniers jours.">
-          <PeriodTable label="Chiffres par période" periods={stats.periods} rows={ROWS} />
-        </Section>
+      {/* Le détail d'avant le tableau de bord (ADR 0029) : replié, il reste à un clic */}
+      <details className="group space-y-10 rounded-lg border p-4 [&[open]>summary]:mb-6">
+        <summary className="cursor-pointer text-lg font-semibold">Tout le détail : seuils, la course, usage, audience, générations, erreurs, système</summary>
+        <div className="space-y-10">
+          <section aria-label="Seuils de l'ADR 0013" className="grid gap-4 sm:grid-cols-2">
+            <Indicator label="Durée p95 des générations réussies (30 jours)" value={seconds(thresholds.p95_ms)}
+              limit={seconds(thresholds.p95_limit_ms)} level={thresholds.p95_level}
+              note={`7 derniers jours : ${seconds(thresholds.week.p95_ms)} (${LEVELS[thresholds.week.p95_level].label.toLowerCase()})`} />
+            <Indicator label="Refus « occupé » (30 jours)" value={percent(thresholds.busy_share)}
+              limit={percent(thresholds.busy_limit, 0)} level={thresholds.busy_level}
+              note={`7 derniers jours : ${percent(thresholds.week.busy_share)} (${LEVELS[thresholds.week.busy_level].label.toLowerCase()})`} />
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              Au-delà d&apos;un seuil, l&apos;ADR 0013 prévoit de passer au serveur supérieur. L&apos;indicateur prévient
+              dès {percent(thresholds.near_share, 0)} du seuil.
+            </p>
+          </section>
 
-        <Section title="Évolution par jour" description="Les 30 derniers jours (UTC). Survole un jour pour lire ses chiffres.">
-          <div className="grid gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
-            <DailyColumns title="Visiteurs" days={days}
-              summary={`${number.format(sum(daily, "visitors"))} visiteurs d'un jour en 30 jours.`}
-              series={[{ label: "Visiteurs", color: "blue", values: daily.map((day) => day.visitors) }]} />
-            <DailyColumns title="Recherches" days={days}
-              summary={`${number.format(sum(daily, "searches"))} recherches en 30 jours.`}
-              series={[{ label: "Recherches", color: "blue", values: daily.map((day) => day.searches) }]} />
-            <DailyColumns title="Générations" days={days}
-              summary={`${number.format(sum(daily, "generations"))} demandes en 30 jours, dont ${number.format(sum(daily, "grids"))} grilles obtenues.`}
-              series={[
-                { label: "Grilles obtenues", color: "blue", values: daily.map((day) => day.grids) },
-                { label: "Sans grille (échecs et refus)", color: "neutral", values: daily.map((day) => day.generations - day.grids) },
-              ]} />
-            <DailyColumns title="Comptes créés" days={days}
-              summary={`${number.format(sum(daily, "registers"))} inscriptions en 30 jours.`}
-              series={[{ label: "Inscriptions", color: "blue", values: daily.map((day) => day.registers) }]} />
-            <DailyColumns title="Grilles conservées" days={days}
-              summary={`${number.format(sum(daily, "saved"))} grilles conservées en 30 jours.`}
-              series={[{ label: "Grilles conservées", color: "blue", values: daily.map((day) => day.saved) }]} />
-          </div>
-        </Section>
+          <RaceGroup race={stats.race} />
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Section title="Parcours"
-            description="En visiteurs d'un jour : une empreinte ne vit qu'un jour, qui revient le lendemain compte à nouveau. Qui ne fait que lire une page n'est pas vu.">
-            {!week || !month ? <Empty /> : (
-              <div className="space-y-6">
-                {[week, month].map((period) => (
-                  <div key={period.label} className="space-y-2">
-                    <p className="text-sm font-medium">{period.label}</p>
-                    {period.funnel.visits === 0 ? <Empty /> : <FunnelBars steps={funnelSteps(period.funnel)} />}
-                  </div>
-                ))}
+
+          <Group id="usage" title="Usage">
+            <Section title="Chiffres" description="Aujourd'hui depuis minuit UTC, puis les 7 et 30 derniers jours.">
+              <PeriodTable label="Chiffres par période" periods={stats.periods} rows={ROWS} />
+            </Section>
+
+            <Section title="Évolution par jour" description="Les 30 derniers jours (UTC). Survole un jour pour lire ses chiffres.">
+              <div className="grid gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
+                <DailyColumns title="Visiteurs" days={days}
+                  summary={`${number.format(sum(daily, "visitors"))} visiteurs d'un jour en 30 jours.`}
+                  series={[{ label: "Visiteurs", color: "blue", values: daily.map((day) => day.visitors) }]} />
+                <DailyColumns title="Recherches" days={days}
+                  summary={`${number.format(sum(daily, "searches"))} recherches en 30 jours.`}
+                  series={[{ label: "Recherches", color: "blue", values: daily.map((day) => day.searches) }]} />
+                <DailyColumns title="Générations" days={days}
+                  summary={`${number.format(sum(daily, "generations"))} demandes en 30 jours, dont ${number.format(sum(daily, "grids"))} grilles obtenues.`}
+                  series={[
+                    { label: "Grilles obtenues", color: "blue", values: daily.map((day) => day.grids) },
+                    { label: "Sans grille (échecs et refus)", color: "neutral", values: daily.map((day) => day.generations - day.grids) },
+                  ]} />
+                <DailyColumns title="Comptes créés" days={days}
+                  summary={`${number.format(sum(daily, "registers"))} inscriptions en 30 jours.`}
+                  series={[{ label: "Inscriptions", color: "blue", values: daily.map((day) => day.registers) }]} />
+                <DailyColumns title="Grilles conservées" days={days}
+                  summary={`${number.format(sum(daily, "saved"))} grilles conservées en 30 jours.`}
+                  series={[{ label: "Grilles conservées", color: "blue", values: daily.map((day) => day.saved) }]} />
               </div>
-            )}
-          </Section>
+            </Section>
 
-          <Section title="Pays" description="30 jours (CF-IPCountry). Sources et langues des navigateurs : voir « Audience ».">
-            {stats.countries.length === 0 ? <Empty /> : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th scope="col" className="py-2 pr-4 font-medium">Pays</th>
-                    <th scope="col" className="py-2 pl-4 text-right font-medium">Visiteurs</th>
-                    <th scope="col" className="py-2 pl-4 text-right font-medium">Événements</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.countries.map((item) => (
-                    <tr key={item.country} className="border-b last:border-0 tabular-nums">
-                      <th scope="row" className="py-1.5 pr-4 text-left font-normal">{item.country === "?" ? "Inconnu" : item.country}</th>
-                      <td className="py-1.5 pl-4 text-right">{number.format(item.visitors)}</td>
-                      <td className="py-1.5 pl-4 text-right">{number.format(item.events)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </Section>
-        </div>
-      </Group>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Section title="Parcours"
+                description="En visiteurs d'un jour : une empreinte ne vit qu'un jour, qui revient le lendemain compte à nouveau. Qui ne fait que lire une page n'est pas vu.">
+                {!week || !month ? <Empty /> : (
+                  <div className="space-y-6">
+                    {[week, month].map((period) => (
+                      <div key={period.label} className="space-y-2">
+                        <p className="text-sm font-medium">{period.label}</p>
+                        {period.funnel.visits === 0 ? <Empty /> : <FunnelBars steps={funnelSteps(period.funnel)} />}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Section>
 
-      <AudienceGroup audience={stats.audience} />
-
-      <Group id="generations" title="Générations">
-        <Section title="Formats et issues"
-          description="30 jours. Les demandes arrivées jusqu'au générateur ; les refus (occupé, limite de débit) sont comptés à part, hors du taux de réussite.">
-          <OutcomeTable caption="Issues des générations par format" header="Format" rows={stats.formats}
-            name={(row) => row.format}
-            extra={[
-              { label: "Refus", value: (row) => number.format(row.refused) },
-              { label: "Médiane", value: (row) => seconds(row.p50) },
-              { label: "p95", value: (row) => seconds(row.p95) },
-            ]} />
-        </Section>
-
-        <Section title="Selon le nombre de mots imposés" description="30 jours, hors refus.">
-          <OutcomeTable caption="Issues des générations selon le nombre de mots imposés" header="Mots imposés"
-            rows={stats.must_counts} name={(row) => (row.must >= 5 ? "5 et plus" : String(row.must))} />
-        </Section>
-
-        <Section title="Selon la longueur du plus long mot imposé"
-          description="30 jours, demandes avec au moins un mot imposé. C'est la longueur qui pèse, plus que le nombre (#73).">
-          <div className="space-y-8">
-            <OutcomeTable caption="Issues des générations selon la longueur du plus long mot imposé" header="Plus long mot"
-              rows={stats.must_lengths} name={(row) => letters(row.band)} />
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Nombre × longueur : taux de réussite</p>
-              <MustMatrix cells={stats.must_matrix} bands={stats.must_bands} />
+              <Section title="Pays" description="30 jours (CF-IPCountry). Sources et langues des navigateurs : voir « Audience ».">
+                {stats.countries.length === 0 ? <Empty /> : (
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th scope="col" className="py-2 pr-4 font-medium">Pays</th>
+                        <th scope="col" className="py-2 pl-4 text-right font-medium">Visiteurs</th>
+                        <th scope="col" className="py-2 pl-4 text-right font-medium">Événements</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.countries.map((item) => (
+                        <tr key={item.country} className="border-b last:border-0 tabular-nums">
+                          <th scope="row" className="py-1.5 pr-4 text-left font-normal">{item.country === "?" ? "Inconnu" : item.country}</th>
+                          <td className="py-1.5 pl-4 text-right">{number.format(item.visitors)}</td>
+                          <td className="py-1.5 pl-4 text-right">{number.format(item.events)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </Section>
             </div>
-          </div>
-        </Section>
+          </Group>
 
-        <Section title="Durée par jour" description="p95 des générations réussies, jour par jour.">
-          <DailyColumns title="Durée p95" days={days} format={(value) => seconds(value)}
-            summary={slowDays ? `${slowDays} jour${slowDays > 1 ? "s" : ""} au-delà du seuil de ${seconds(thresholds.p95_limit_ms)} en 30 jours.`
-              : `Aucun jour au-delà du seuil de ${seconds(thresholds.p95_limit_ms)} en 30 jours.`}
-            limit={{ value: thresholds.p95_limit_ms, label: `seuil ${seconds(thresholds.p95_limit_ms)}` }}
-            series={[{ label: "p95", color: "blue", values: daily.map((day) => day.p95) }]} />
-        </Section>
+          <AudienceGroup audience={stats.audience} />
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Section title="Mots imposés absents du lexique" description="30 jours : de quoi nourrir la curation.">
-            {stats.unknown_words.length === 0 ? <Empty /> : (
-              <ul className="flex flex-wrap gap-2 text-sm">
-                {stats.unknown_words.map((item) => (
-                  <li key={item.word} className="rounded-md border px-2 py-0.5">
-                    {item.word} <span className="text-muted-foreground tabular-nums">× {item.count}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Section>
+          <Group id="generations" title="Générations">
+            <Section title="Formats et issues"
+              description="30 jours. Les demandes arrivées jusqu'au générateur ; les refus (occupé, limite de débit) sont comptés à part, hors du taux de réussite.">
+              <OutcomeTable caption="Issues des générations par format" header="Format" rows={stats.formats}
+                name={(row) => row.format}
+                extra={[
+                  { label: "Refus", value: (row) => number.format(row.refused) },
+                  { label: "Médiane", value: (row) => seconds(row.p50) },
+                  { label: "p95", value: (row) => seconds(row.p95) },
+                ]} />
+            </Section>
 
-          <Section title="Toutes les issues" description="30 jours, refus et requêtes invalides compris.">
-            {stats.outcomes.length === 0 ? <Empty /> : (
-              <ul className="space-y-1 text-sm">
-                {stats.outcomes.map((item) => (
-                  <li key={item.outcome} className="flex justify-between gap-4 tabular-nums">
-                    <span>{item.outcome}</span>
-                    <span>{number.format(item.count)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Section>
-        </div>
+            <Section title="Selon le nombre de mots imposés" description="30 jours, hors refus.">
+              <OutcomeTable caption="Issues des générations selon le nombre de mots imposés" header="Mots imposés"
+                rows={stats.must_counts} name={(row) => (row.must >= 5 ? "5 et plus" : String(row.must))} />
+            </Section>
 
-        <Section title="Dernières générations">
-          {stats.latest.length === 0 ? <Empty /> : (
-            <Scroll label="Dernières générations">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th scope="col" className="py-2 pr-4 font-medium">Quand (UTC)</th>
-                    <th scope="col" className="py-2 pr-4 font-medium">Format</th>
-                    <th scope="col" className="py-2 pr-4 font-medium">Mise en page</th>
-                    <th scope="col" className="py-2 pr-4 font-medium">Issue</th>
-                    <th scope="col" className="py-2 pr-4 text-right font-medium">Durée</th>
-                    <th scope="col" className="py-2 text-right font-medium">Mots imposés</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.latest.map((item, index) => (
-                    <tr key={`${item.at}-${index}`} className="border-b last:border-0 tabular-nums">
-                      <td className="py-1.5 pr-4">{dateTime.format(new Date(item.at))}</td>
-                      <td className="py-1.5 pr-4">{item.format ?? "?"}</td>
-                      <td className="py-1.5 pr-4">{item.layout ?? "—"}</td>
-                      <td className="py-1.5 pr-4">{item.outcome ?? "?"}</td>
-                      <td className="py-1.5 pr-4 text-right">{seconds(item.duration_ms)}</td>
-                      <td className="py-1.5 text-right">{item.must}</td>
-                    </tr>
+            <Section title="Selon la longueur du plus long mot imposé"
+              description="30 jours, demandes avec au moins un mot imposé. C'est la longueur qui pèse, plus que le nombre (#73).">
+              <div className="space-y-8">
+                <OutcomeTable caption="Issues des générations selon la longueur du plus long mot imposé" header="Plus long mot"
+                  rows={stats.must_lengths} name={(row) => letters(row.band)} />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Nombre × longueur : taux de réussite</p>
+                  <MustMatrix cells={stats.must_matrix} bands={stats.must_bands} />
+                </div>
+              </div>
+            </Section>
+
+            <Section title="Durée par jour" description="p95 des générations réussies, jour par jour.">
+              <DailyColumns title="Durée p95" days={days} format={(value) => seconds(value)}
+                summary={slowDays ? `${slowDays} jour${slowDays > 1 ? "s" : ""} au-delà du seuil de ${seconds(thresholds.p95_limit_ms)} en 30 jours.`
+                  : `Aucun jour au-delà du seuil de ${seconds(thresholds.p95_limit_ms)} en 30 jours.`}
+                limit={{ value: thresholds.p95_limit_ms, label: `seuil ${seconds(thresholds.p95_limit_ms)}` }}
+                series={[{ label: "p95", color: "blue", values: daily.map((day) => day.p95) }]} />
+            </Section>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Section title="Mots imposés absents du lexique" description="30 jours : de quoi nourrir la curation.">
+                {stats.unknown_words.length === 0 ? <Empty /> : (
+                  <ul className="flex flex-wrap gap-2 text-sm">
+                    {stats.unknown_words.map((item) => (
+                      <li key={item.word} className="rounded-md border px-2 py-0.5">
+                        {item.word} <span className="text-muted-foreground tabular-nums">× {item.count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Section>
+
+              <Section title="Toutes les issues" description="30 jours, refus et requêtes invalides compris.">
+                {stats.outcomes.length === 0 ? <Empty /> : (
+                  <ul className="space-y-1 text-sm">
+                    {stats.outcomes.map((item) => (
+                      <li key={item.outcome} className="flex justify-between gap-4 tabular-nums">
+                        <span>{item.outcome}</span>
+                        <span>{number.format(item.count)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Section>
+            </div>
+
+            <Section title="Dernières générations">
+              {stats.latest.length === 0 ? <Empty /> : (
+                <Scroll label="Dernières générations">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th scope="col" className="py-2 pr-4 font-medium">Quand (UTC)</th>
+                        <th scope="col" className="py-2 pr-4 font-medium">Format</th>
+                        <th scope="col" className="py-2 pr-4 font-medium">Mise en page</th>
+                        <th scope="col" className="py-2 pr-4 font-medium">Issue</th>
+                        <th scope="col" className="py-2 pr-4 text-right font-medium">Durée</th>
+                        <th scope="col" className="py-2 text-right font-medium">Mots imposés</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.latest.map((item, index) => (
+                        <tr key={`${item.at}-${index}`} className="border-b last:border-0 tabular-nums">
+                          <td className="py-1.5 pr-4">{dateTime.format(new Date(item.at))}</td>
+                          <td className="py-1.5 pr-4">{item.format ?? "?"}</td>
+                          <td className="py-1.5 pr-4">{item.layout ?? "—"}</td>
+                          <td className="py-1.5 pr-4">{item.outcome ?? "?"}</td>
+                          <td className="py-1.5 pr-4 text-right">{seconds(item.duration_ms)}</td>
+                          <td className="py-1.5 text-right">{item.must}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </Scroll>
+              )}
+            </Section>
+          </Group>
+
+          <Group id="erreurs" title="Erreurs et refus">
+            <Section title="Refus et erreurs" description="Aujourd'hui depuis minuit UTC, puis les 7 et 30 derniers jours.">
+              <PeriodTable label="Refus et erreurs par période" periods={stats.periods} rows={REFUSAL_ROWS} />
+            </Section>
+
+            <Section title="Par jour" description="Les 30 derniers jours (UTC).">
+              <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+                <DailyColumns title="Refus « occupé »" days={days}
+                  summary={`${number.format(sum(daily, "busy"))} refus en 30 jours.`}
+                  series={[{ label: "Refus", color: "blue", values: daily.map((day) => day.busy) }]} />
+                <DailyColumns title="Erreurs" days={days}
+                  summary={`${number.format(sum(daily, "errors"))} erreurs en 30 jours, dont ${number.format(sum(daily, "server_errors"))} erreurs 5xx.`}
+                  series={[
+                    { label: "Erreurs 5xx (pannes)", color: "critical", values: daily.map((day) => day.server_errors) },
+                    { label: "Erreurs 4xx", color: "neutral", values: daily.map((day) => day.errors - day.server_errors) },
+                  ]} />
+              </div>
+            </Section>
+
+            <Section title="Erreurs par route" description="30 jours.">
+              {stats.errors.length === 0 ? <Empty /> : (
+                <ul className="space-y-1 text-sm">
+                  {stats.errors.map((item) => (
+                    <li key={`${item.route} ${item.status}`} className="flex justify-between gap-4 tabular-nums">
+                      <span className="break-all"><span className="font-medium">{item.status}</span> {item.route}</span>
+                      <span>{number.format(item.count)}</span>
+                    </li>
                   ))}
-                </tbody>
-              </table>
-            </Scroll>
-          )}
-        </Section>
-      </Group>
+                </ul>
+              )}
+            </Section>
+          </Group>
 
-      <Group id="erreurs" title="Erreurs et refus">
-        <Section title="Refus et erreurs" description="Aujourd'hui depuis minuit UTC, puis les 7 et 30 derniers jours.">
-          <PeriodTable label="Refus et erreurs par période" periods={stats.periods} rows={REFUSAL_ROWS} />
-        </Section>
+          <SystemGroup system={system} />
 
-        <Section title="Par jour" description="Les 30 derniers jours (UTC).">
-          <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
-            <DailyColumns title="Refus « occupé »" days={days}
-              summary={`${number.format(sum(daily, "busy"))} refus en 30 jours.`}
-              series={[{ label: "Refus", color: "blue", values: daily.map((day) => day.busy) }]} />
-            <DailyColumns title="Erreurs" days={days}
-              summary={`${number.format(sum(daily, "errors"))} erreurs en 30 jours, dont ${number.format(sum(daily, "server_errors"))} erreurs 5xx.`}
-              series={[
-                { label: "Erreurs 5xx (pannes)", color: "critical", values: daily.map((day) => day.server_errors) },
-                { label: "Erreurs 4xx", color: "neutral", values: daily.map((day) => day.errors - day.server_errors) },
-              ]} />
-          </div>
-        </Section>
+          <Group id="details" title="Détail">
+            <Section title="Jour par jour">
+              <DailyTable daily={daily} />
+            </Section>
 
-        <Section title="Erreurs par route" description="30 jours.">
-          {stats.errors.length === 0 ? <Empty /> : (
-            <ul className="space-y-1 text-sm">
-              {stats.errors.map((item) => (
-                <li key={`${item.route} ${item.status}`} className="flex justify-between gap-4 tabular-nums">
-                  <span className="break-all"><span className="font-medium">{item.status}</span> {item.route}</span>
-                  <span>{number.format(item.count)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
-      </Group>
-
-      <SystemGroup system={system} />
-
-      <Group id="details" title="Détail">
-        <Section title="Jour par jour">
-          <DailyTable daily={daily} />
-        </Section>
-
-        <Section title="Suggestions de mots en attente"
-          description={`À trancher dans le curateur (make suggestions-pull), classées par nombre de personnes. Déjà tranchées : ${number.format((suggestions?.counts.accepted ?? 0) + (suggestions?.counts.rejected ?? 0))}.`}>
-          {!suggestions ? <Empty /> : suggestions.pending.length === 0 ? <Empty /> : (
-            <ul className="space-y-1 text-sm">
-              {suggestions.pending.slice(0, 50).map((item) => (
-                <li key={`${item.kind}-${item.word}`} className="flex flex-wrap items-baseline justify-between gap-x-4 tabular-nums">
-                  <span>
-                    <span className="font-mono font-semibold">{item.word}</span>{" "}
-                    <span className="text-muted-foreground">{item.kind === "remove" ? "à retirer" : "à ajouter"}</span>
-                  </span>
-                  <span className="text-muted-foreground">
-                    {number.format(item.people)} personne{item.people > 1 ? "s" : ""} ·{" "}
-                    {Object.entries(item.sources).map(([source, count]) => `${SOURCE_LABELS[source] ?? source} ${count}`).join(", ")}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
-      </Group>
+            <Section title="Suggestions de mots en attente"
+              description={`À trancher dans le curateur (make suggestions-pull), classées par nombre de personnes. Déjà tranchées : ${number.format((suggestions?.counts.accepted ?? 0) + (suggestions?.counts.rejected ?? 0))}.`}>
+              {!suggestions ? <Empty /> : suggestions.pending.length === 0 ? <Empty /> : (
+                <ul className="space-y-1 text-sm">
+                  {suggestions.pending.slice(0, 50).map((item) => (
+                    <li key={`${item.kind}-${item.word}`} className="flex flex-wrap items-baseline justify-between gap-x-4 tabular-nums">
+                      <span>
+                        <span className="font-mono font-semibold">{item.word}</span>{" "}
+                        <span className="text-muted-foreground">{item.kind === "remove" ? "à retirer" : "à ajouter"}</span>
+                      </span>
+                      <span className="text-muted-foreground">
+                        {number.format(item.people)} personne{item.people > 1 ? "s" : ""} ·{" "}
+                        {Object.entries(item.sources).map(([source, count]) => `${SOURCE_LABELS[source] ?? source} ${count}`).join(", ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
+          </Group>
+        </div>
+      </details>
     </main>
   );
 }

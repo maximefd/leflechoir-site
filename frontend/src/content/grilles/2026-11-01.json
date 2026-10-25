@@ -1,0 +1,886 @@
+{
+  "date": "2026-11-01",
+  "request": {
+    "size": {
+      "width": 6,
+      "height": 9
+    },
+    "seed": 261101,
+    "quality": "best",
+    "geometry": "sur_mesure",
+    "frequency_mode": "exact"
+  },
+  "response": {
+    "grid": {
+      "cells": [
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 0
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 3,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 0
+        },
+        {
+          "char": "W",
+          "is_black": false,
+          "x": 5,
+          "y": 0
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 1,
+          "y": 1
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 2,
+          "y": 1
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 1
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 5,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "char": "Y",
+          "is_black": false,
+          "x": 3,
+          "y": 2
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 4,
+          "y": 2
+        },
+        {
+          "char": "K",
+          "is_black": false,
+          "x": 5,
+          "y": 2
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 0,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 3
+        },
+        {
+          "char": "C",
+          "is_black": false,
+          "x": 2,
+          "y": 3
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 3,
+          "y": 3
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 4,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 5,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "char": "C",
+          "is_black": false,
+          "x": 1,
+          "y": 4
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 2,
+          "y": 4
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 3,
+          "y": 4
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 5,
+          "y": 4
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 0,
+          "y": 5
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 5
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 2,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 5
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 4,
+          "y": 5
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 5,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 6
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 1,
+          "y": 6
+        },
+        {
+          "char": "C",
+          "is_black": false,
+          "x": 2,
+          "y": 6
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 3,
+          "y": 6
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 4,
+          "y": 6
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 5,
+          "y": 6
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 0,
+          "y": 7
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 1,
+          "y": 7
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 2,
+          "y": 7
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 3,
+          "y": 7
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 4,
+          "y": 7
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 8
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 1,
+          "y": 8
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 2,
+          "y": 8
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 3,
+          "y": 8
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 4,
+          "y": 8
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 8
+        }
+      ],
+      "clues": [
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 6,
+          "slot_id": 0,
+          "text": "ESPECE",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 1,
+          "text": "TUYAU",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 2,
+          "text": "WOK",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 3,
+          "text": "ISSU",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 2,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 4,
+          "text": "YAK",
+          "x": 3,
+          "y": 2
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 1,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 7,
+          "slot_id": 5,
+          "text": "APPOINT",
+          "x": 4,
+          "y": 2
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 6,
+          "text": "RECAP",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 2,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 7,
+          "text": "COUCOU",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 8,
+          "text": "COUPA",
+          "x": 1,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 5,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 9,
+          "text": "ANNEE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 10,
+          "text": "PEU",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 5,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 11,
+          "text": "ON",
+          "x": 4,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 1,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 12,
+          "text": "COIN",
+          "x": 2,
+          "y": 6
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 3,
+          "cell_y": 5,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 13,
+          "text": "ONT",
+          "x": 3,
+          "y": 6
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 14,
+          "text": "LIONNE",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 1,
+          "cell_y": 6,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 2,
+          "slot_id": 15,
+          "text": "IL",
+          "x": 1,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 16,
+          "text": "LUTTE",
+          "x": 1,
+          "y": 8
+        }
+      ],
+      "fill_ratio": 1.0,
+      "geometry": "sur_mesure",
+      "height": 9,
+      "layout": "sur-mesure",
+      "must_words": [],
+      "seed": 261101,
+      "statistics": {
+        "attempts": 2,
+        "cache_stats": {
+          "hits": 0,
+          "misses": 0
+        },
+        "metrics": {
+          "backtracks": 294,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "candidates_tested": 1465,
+          "fc_checks": 806,
+          "fc_skips": 483,
+          "recursive_calls": 329,
+          "repairs": 4
+        },
+        "placement_history": [
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 1,
+            "score": 22,
+            "slot_id": 10,
+            "word": "PEU"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 2,
+            "score": 30,
+            "slot_id": 3,
+            "word": "ISSU"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 3,
+            "score": 52,
+            "slot_id": 0,
+            "word": "ESPECE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 4,
+            "score": 6,
+            "slot_id": 2,
+            "word": "WOK"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 5,
+            "score": 9,
+            "slot_id": 4,
+            "word": "YAK"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 6,
+            "score": 28,
+            "slot_id": 1,
+            "word": "TUYAU"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 7,
+            "score": 26,
+            "slot_id": 8,
+            "word": "COUPA"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 8,
+            "score": 35,
+            "slot_id": 6,
+            "word": "RECAP"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 9,
+            "score": 47,
+            "slot_id": 14,
+            "word": "LIONNE"
+          },
+          {
+            "direction": "down",
+            "length": 7,
+            "order": 10,
+            "score": 43,
+            "slot_id": 5,
+            "word": "APPOINT"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 11,
+            "score": 28,
+            "slot_id": 7,
+            "word": "COUCOU"
+          },
+          {
+            "direction": "down",
+            "length": 2,
+            "order": 12,
+            "score": 14,
+            "slot_id": 15,
+            "word": "IL"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 13,
+            "score": 39,
+            "slot_id": 16,
+            "word": "LUTTE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 14,
+            "score": 20,
+            "slot_id": 13,
+            "word": "ONT"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 15,
+            "score": 23,
+            "slot_id": 12,
+            "word": "COIN"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 16,
+            "score": 49,
+            "slot_id": 9,
+            "word": "ANNEE"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 17,
+            "score": 13,
+            "slot_id": 11,
+            "word": "ON"
+          }
+        ]
+      },
+      "width": 6,
+      "wish_ratio": 0.0,
+      "words": [
+        {
+          "direction": "down",
+          "id": 0,
+          "score": 52,
+          "source": "common",
+          "text": "ESPECE",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 1,
+          "score": 28,
+          "source": "common",
+          "text": "TUYAU",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 2,
+          "score": 6,
+          "source": "common",
+          "text": "WOK",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "direction": "across",
+          "id": 3,
+          "score": 30,
+          "source": "common",
+          "text": "ISSU",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 4,
+          "score": 9,
+          "source": "common",
+          "text": "YAK",
+          "x": 3,
+          "y": 2
+        },
+        {
+          "direction": "down",
+          "id": 5,
+          "score": 43,
+          "source": "common",
+          "text": "APPOINT",
+          "x": 4,
+          "y": 2
+        },
+        {
+          "direction": "across",
+          "id": 6,
+          "score": 35,
+          "source": "common",
+          "text": "RECAP",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "direction": "down",
+          "id": 7,
+          "score": 28,
+          "source": "common",
+          "text": "COUCOU",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 8,
+          "score": 26,
+          "source": "common",
+          "text": "COUPA",
+          "x": 1,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 9,
+          "score": 49,
+          "source": "common",
+          "text": "ANNEE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 10,
+          "score": 22,
+          "source": "common",
+          "text": "PEU",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 11,
+          "score": 13,
+          "source": "common",
+          "text": "ON",
+          "x": 4,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 12,
+          "score": 23,
+          "source": "common",
+          "text": "COIN",
+          "x": 2,
+          "y": 6
+        },
+        {
+          "direction": "down",
+          "id": 13,
+          "score": 20,
+          "source": "common",
+          "text": "ONT",
+          "x": 3,
+          "y": 6
+        },
+        {
+          "direction": "across",
+          "id": 14,
+          "score": 47,
+          "source": "common",
+          "text": "LIONNE",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "direction": "down",
+          "id": 15,
+          "score": 14,
+          "source": "common",
+          "text": "IL",
+          "x": 1,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 16,
+          "score": 39,
+          "source": "common",
+          "text": "LUTTE",
+          "x": 1,
+          "y": 8
+        }
+      ]
+    }
+  },
+  "clues": {
+    "ANNEE": "Elle a douze mois",
+    "APPOINT": "Monnaie exacte",
+    "COIN": "Lieu de punition",
+    "COUCOU": "Il sort pour l’heure",
+    "COUPA": "Trancha",
+    "ESPECE": "Classe du vivant",
+    "IL": "Lui, sujet",
+    "ISSU": "Né de",
+    "LIONNE": "Chasseuse de savane",
+    "LUTTE": "Corps à corps",
+    "ON": "Nous, familièrement",
+    "ONT": "Possèdent",
+    "PEU": "Pas lourd",
+    "RECAP": "Résumé, en bref",
+    "TUYAU": "Info confidentielle",
+    "WOK": "Poêle asiatique",
+    "YAK": "Bœuf du Tibet"
+  }
+}

@@ -400,3 +400,61 @@ class ArticleRating(db.Model):
     visitor = db.Column(db.String(32), nullable=True)
 
     __table_args__ = (db.Index('ix_article_rating_slug_lang', 'slug', 'lang'),)
+
+
+class SeoDaily(db.Model):
+    """Ce que Google et Bing publient sur les recherches qui mènent au site, un jour par ligne (ADR 0029).
+
+    Rien de personnel : des totaux que les moteurs calculent eux-mêmes. `position` est la position moyenne pondérée
+    par les impressions ; `indexed`, les pages du site dans l'index ce jour-là (quand le moteur le dit).
+    """
+    __tablename__ = 'seo_daily'
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.Date, nullable=False)
+    source = db.Column(db.String(10), nullable=False)  # google, bing
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    clicks = db.Column(db.Integer, nullable=True)
+    impressions = db.Column(db.Integer, nullable=True)
+    position = db.Column(db.Float, nullable=True)
+    indexed = db.Column(db.Integer, nullable=True)
+    updated_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow())
+    # Sur la ligne du jour : le relevé a été tenté (updated_at), et pourquoi il a échoué s'il a échoué
+    sync_error = db.Column(db.String(200), nullable=True)
+
+    __table_args__ = (db.UniqueConstraint('site', 'source', 'day', name='uq_seo_daily_site_source_day'),)
+
+
+class SeoQueryDaily(db.Model):
+    """Une requête tapée dans un moteur, un jour : clics, impressions, position moyenne (ADR 0029). Pas de visiteur."""
+    __tablename__ = 'seo_query_daily'
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.Date, nullable=False)
+    source = db.Column(db.String(10), nullable=False)
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    # « query » en base ; l'attribut s'appelle autrement, `query` étant celui de Flask-SQLAlchemy
+    search = db.Column('query', db.String(200), nullable=False)
+    clicks = db.Column(db.Integer, nullable=False, default=0)
+    impressions = db.Column(db.Integer, nullable=False, default=0)
+    position = db.Column(db.Float, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('site', 'source', 'day', 'query', name='uq_seo_query_daily'),
+        db.Index('ix_seo_query_daily_site_day', 'site', 'day'),
+    )
+
+
+class SeoUrlCheck(db.Model):
+    """Une adresse du sitemap, vue par l'outil d'inspection de Google : indexée ou non, et depuis quand (ADR 0029)."""
+    __tablename__ = 'seo_url_check'
+    id = db.Column(db.Integer, primary_key=True)
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    url = db.Column(db.String(300), nullable=False)
+    checked_at = db.Column(db.DateTime, nullable=True)
+    # PASS (indexée), NEUTRAL, FAIL… tel que Google le rend ; vide tant qu'elle n'a pas été inspectée
+    verdict = db.Column(db.String(20), nullable=True)
+    coverage = db.Column(db.String(120), nullable=True)
+
+    __table_args__ = (db.UniqueConstraint('site', 'url', name='uq_seo_url_check_site_url'),)

@@ -78,7 +78,7 @@ export const QUESTIONS_ACCUEIL: QuestionFaq[] = [
     question: "Y a-t-il une grille à jouer chaque jour ?",
     reponse:
       `Oui : chaque jour, une nouvelle grille de mots fléchés à jouer dans le navigateur, sur téléphone comme sur ordinateur, gratuitement et sans compte. ` +
-      `Sa force est annoncée de 1 à 4, et la solution reste à portée de main.`,
+      `Elle se joue aussi bien au doigt qu’au clavier, et la solution reste à portée de main.`,
     liens: [{ texte: "La grille du jour", href: "/jouer" }],
   },
   {

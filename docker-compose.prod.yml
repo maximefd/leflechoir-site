@@ -73,9 +73,17 @@ services:
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-3}
       # Lexique curé livré avec l'application (#118) ; à défaut, le DELA complet de l'image
       LEXICON_PATH: ${LEXICON_PATH:-/lexicon/lexique_cure.csv}
+      # Les chiffres de Google et Bing pour le poste de pilotage (ADR 0029) : vides, rien n'est relevé.
+      # Le compte de service Google est un fichier, dans le dossier des secrets monté plus bas
+      GSC_CREDENTIALS_FILE: ${GSC_CREDENTIALS_FILE:-}
+      GSC_PROPERTY: ${GSC_PROPERTY:-}
+      BING_WEBMASTER_API_KEY: ${BING_WEBMASTER_API_KEY:-}
+      BING_SITE_URL: ${BING_SITE_URL:-}
     volumes:
       # Sur le serveur, LEXICON_DIR=/opt/leflechoir/lexicon : un dossier partagé par les versions (ADR 0019)
       - ${LEXICON_DIR:-./data/lexicon/build}:/lexicon:ro
+      # Sur le serveur, SECRETS_DIR=/opt/leflechoir/secrets : la clé du compte de service Google (ADR 0029)
+      - ${SECRETS_DIR:-./secrets}:/secrets:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/status', timeout=5)"]
       interval: 30s

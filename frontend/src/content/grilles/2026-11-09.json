@@ -1,0 +1,886 @@
+{
+  "date": "2026-11-09",
+  "request": {
+    "size": {
+      "width": 6,
+      "height": 9
+    },
+    "seed": 1873,
+    "quality": "best",
+    "geometry": "sur_mesure",
+    "frequency_mode": "exact"
+  },
+  "response": {
+    "grid": {
+      "cells": [
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "char": "V",
+          "is_black": false,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 0
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 3,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 0
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 5,
+          "y": 0
+        },
+        {
+          "char": "D",
+          "is_black": false,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 1
+        },
+        {
+          "char": "B",
+          "is_black": false,
+          "x": 2,
+          "y": 1
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 4,
+          "y": 1
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 5,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "char": "D",
+          "is_black": false,
+          "x": 3,
+          "y": 2
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 4,
+          "y": 2
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 5,
+          "y": 2
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 0,
+          "y": 3
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 1,
+          "y": 3
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 2,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 3
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 4,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 1,
+          "y": 4
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 2,
+          "y": 4
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 3,
+          "y": 4
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 5,
+          "y": 4
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 0,
+          "y": 5
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 1,
+          "y": 5
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 2,
+          "y": 5
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 5
+        },
+        {
+          "char": "D",
+          "is_black": false,
+          "x": 4,
+          "y": 5
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 5,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 6
+        },
+        {
+          "char": "D",
+          "is_black": false,
+          "x": 1,
+          "y": 6
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 2,
+          "y": 6
+        },
+        {
+          "char": "F",
+          "is_black": false,
+          "x": 3,
+          "y": 6
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 4,
+          "y": 6
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 5,
+          "y": 6
+        },
+        {
+          "char": "F",
+          "is_black": false,
+          "x": 0,
+          "y": 7
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 1,
+          "y": 7
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 2,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 7
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 4,
+          "y": 7
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 5,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 8
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 1,
+          "y": 8
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 2,
+          "y": 8
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 3,
+          "y": 8
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 8
+        },
+        {
+          "char": "X",
+          "is_black": false,
+          "x": 5,
+          "y": 8
+        }
+      ],
+      "clues": [
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 0,
+          "text": "VELO",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 1,
+          "text": "SUD",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 9,
+          "slot_id": 2,
+          "text": "MATERIAUX",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 3,
+          "text": "DEBUTA",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 8,
+          "slot_id": 4,
+          "text": "TIMIDITE",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 2,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 5,
+          "text": "DIT",
+          "x": 3,
+          "y": 2
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 6,
+          "text": "TON",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 2,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 7,
+          "text": "NUMERO",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 3,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 8,
+          "text": "ME",
+          "x": 4,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 1,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 9,
+          "text": "UNIR",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 3,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 10,
+          "text": "NEF",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 11,
+          "text": "SAMEDI",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 1,
+          "cell_y": 4,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 12,
+          "text": "ADOS",
+          "x": 1,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 13,
+          "text": "DEFIA",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 14,
+          "text": "FOR",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 7,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 15,
+          "text": "TU",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 16,
+          "text": "SOLEX",
+          "x": 1,
+          "y": 8
+        }
+      ],
+      "fill_ratio": 1.0,
+      "geometry": "sur_mesure",
+      "height": 9,
+      "layout": "sur-mesure",
+      "must_words": [],
+      "seed": 1873,
+      "statistics": {
+        "attempts": 1,
+        "cache_stats": {
+          "hits": 0,
+          "misses": 0
+        },
+        "metrics": {
+          "backtracks": 18,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "candidates_tested": 109,
+          "fc_checks": 99,
+          "fc_skips": 64,
+          "recursive_calls": 39,
+          "repairs": 3
+        },
+        "placement_history": [
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 1,
+            "score": 27,
+            "slot_id": 0,
+            "word": "VELO"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 2,
+            "score": 20,
+            "slot_id": 6,
+            "word": "TON"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 3,
+            "score": 40,
+            "slot_id": 3,
+            "word": "DEBUTA"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 4,
+            "score": 17,
+            "slot_id": 1,
+            "word": "SUD"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 5,
+            "score": 18,
+            "slot_id": 5,
+            "word": "DIT"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 6,
+            "score": 15,
+            "slot_id": 14,
+            "word": "FOR"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 7,
+            "score": 26,
+            "slot_id": 12,
+            "word": "ADOS"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 8,
+            "score": 34,
+            "slot_id": 13,
+            "word": "DEFIA"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 9,
+            "score": 21,
+            "slot_id": 10,
+            "word": "NEF"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 10,
+            "score": 29,
+            "slot_id": 9,
+            "word": "UNIR"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 11,
+            "score": 43,
+            "slot_id": 7,
+            "word": "NUMERO"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 12,
+            "score": 33,
+            "slot_id": 16,
+            "word": "SOLEX"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 13,
+            "score": 44,
+            "slot_id": 11,
+            "word": "SAMEDI"
+          },
+          {
+            "direction": "down",
+            "length": 9,
+            "order": 14,
+            "score": 63,
+            "slot_id": 2,
+            "word": "MATERIAUX"
+          },
+          {
+            "direction": "down",
+            "length": 8,
+            "order": 15,
+            "score": 57,
+            "slot_id": 4,
+            "word": "TIMIDITE"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 16,
+            "score": 13,
+            "slot_id": 15,
+            "word": "TU"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 17,
+            "score": 16,
+            "slot_id": 8,
+            "word": "ME"
+          }
+        ]
+      },
+      "width": 6,
+      "wish_ratio": 0.0,
+      "words": [
+        {
+          "direction": "down",
+          "id": 0,
+          "score": 27,
+          "source": "common",
+          "text": "VELO",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 1,
+          "score": 17,
+          "source": "common",
+          "text": "SUD",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 2,
+          "score": 63,
+          "source": "common",
+          "text": "MATERIAUX",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "direction": "across",
+          "id": 3,
+          "score": 40,
+          "source": "common",
+          "text": "DEBUTA",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 4,
+          "score": 57,
+          "source": "common",
+          "text": "TIMIDITE",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 5,
+          "score": 18,
+          "source": "common",
+          "text": "DIT",
+          "x": 3,
+          "y": 2
+        },
+        {
+          "direction": "across",
+          "id": 6,
+          "score": 20,
+          "source": "common",
+          "text": "TON",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "direction": "down",
+          "id": 7,
+          "score": 43,
+          "source": "common",
+          "text": "NUMERO",
+          "x": 2,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 8,
+          "score": 16,
+          "source": "common",
+          "text": "ME",
+          "x": 4,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 9,
+          "score": 29,
+          "source": "common",
+          "text": "UNIR",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 10,
+          "score": 21,
+          "source": "common",
+          "text": "NEF",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 11,
+          "score": 44,
+          "source": "common",
+          "text": "SAMEDI",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "direction": "down",
+          "id": 12,
+          "score": 26,
+          "source": "common",
+          "text": "ADOS",
+          "x": 1,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 13,
+          "score": 34,
+          "source": "common",
+          "text": "DEFIA",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "direction": "across",
+          "id": 14,
+          "score": 15,
+          "source": "common",
+          "text": "FOR",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 15,
+          "score": 13,
+          "source": "common",
+          "text": "TU",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 16,
+          "score": 33,
+          "source": "common",
+          "text": "SOLEX",
+          "x": 1,
+          "y": 8
+        }
+      ]
+    }
+  },
+  "clues": {
+    "ADOS": "Collégiens",
+    "DEBUTA": "Commença",
+    "DEFIA": "Provoqua",
+    "DIT": "Prononcé",
+    "FOR": "Intérieur, dit-on",
+    "MATERIAUX": "Bois, pierre ou brique",
+    "ME": "Moi, devant le verbe",
+    "NEF": "Partie de l’église",
+    "NUMERO": "Il fait le show",
+    "SAMEDI": "Veille du dimanche",
+    "SOLEX": "Vélo à moteur d’antan",
+    "SUD": "Opposé au nord",
+    "TIMIDITE": "Elle fait rougir",
+    "TON": "Pas le mien",
+    "TU": "Pronom familier",
+    "UNIR": "Marier",
+    "VELO": "Petite reine"
+  }
+}

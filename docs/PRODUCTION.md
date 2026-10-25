@@ -188,6 +188,51 @@ Chaque minute, `tools/monitor/tick.sh` lance `flask system tick` dans le contene
 
 **Pour l'arrêter** : `crontab -e`, retirer la ligne. Pour couper seulement les envois : vider `ALERT_EMAIL`.
 
+## Les chiffres de Google et Bing (une fois)
+
+Le tableau de bord du poste de pilotage ([ADR 0029](adr/0029-tableau-de-bord-et-donnees-seo.md)) relève chaque
+nuit les chiffres de la Search Console et de Bing Webmaster. Il lui faut un compte de service Google et une clé
+d'API Bing. Ni l'un ni l'autre ne passe par le dépôt ni par une conversation : ils vont directement sur le serveur.
+Les libellés des consoles peuvent varier un peu d'une version à l'autre.
+
+**Google** (une dizaine de minutes) :
+1. console.cloud.google.com → le sélecteur de projet, en haut → **Nouveau projet** → nom `leflechoir-pilotage` →
+   **Créer**.
+2. Menu ☰ → **API et services** → **Bibliothèque** → chercher « Google Search Console API » → **Activer**.
+3. Menu ☰ → **IAM et administration** → **Comptes de service** → **Créer un compte de service** → nom
+   `pilotage` → **Créer et continuer** → aucun rôle → **OK**. Noter son adresse
+   (`pilotage@leflechoir-pilotage.iam.gserviceaccount.com`).
+4. Ouvrir le compte → onglet **Clés** → **Ajouter une clé** → **Créer une clé** → **JSON** → **Créer** : le fichier
+   se télécharge.
+5. search.google.com/search-console → la propriété **leflechoir.fr** → **Paramètres** → **Utilisateurs et
+   autorisations** → **Ajouter un utilisateur** → l'adresse du compte de service → autorisation **Restreint**
+   (lecture seule) → **Ajouter**.
+6. Depuis le Mac, le fichier sur le serveur, lisible par l'utilisateur de l'API (uid 10001) seulement, puis effacé
+   du Mac :
+   ```bash
+   ssh ubuntu@SERVEUR 'mkdir -p /opt/leflechoir/secrets && chmod 711 /opt/leflechoir/secrets'
+   scp ~/Downloads/leflechoir-pilotage-*.json ubuntu@SERVEUR:/opt/leflechoir/secrets/gsc.json
+   ssh ubuntu@SERVEUR 'sudo chown 10001 /opt/leflechoir/secrets/gsc.json && sudo chmod 400 /opt/leflechoir/secrets/gsc.json'
+   rm ~/Downloads/leflechoir-pilotage-*.json
+   ```
+7. Dans `/opt/leflechoir/.env.production` : `SECRETS_DIR=/opt/leflechoir/secrets` et
+   `GSC_CREDENTIALS_FILE=/secrets/gsc.json`.
+
+**Bing** :
+8. bing.com/webmasters → **Paramètres** (la roue dentée) → **Accès API** → **Clé API** → **Générer** → copier.
+9. Dans `/opt/leflechoir/.env.production` : `BING_WEBMASTER_API_KEY=` suivi de la clé (éditer le fichier sur le
+   serveur, `nano`).
+
+**Mettre en service et vérifier** :
+10. Redémarrer l'API avec sa nouvelle configuration, puis relever tout de suite :
+    ```bash
+    ssh ubuntu@SERVEUR 'cd /opt/leflechoir/current && docker compose -p leflechoir -f docker-compose.prod.yml --env-file /opt/leflechoir/.env.production up -d api'
+    ssh ubuntu@SERVEUR 'cd /opt/leflechoir/current && docker compose -p leflechoir -f docker-compose.prod.yml --env-file /opt/leflechoir/.env.production exec -T -e LEXICON_LOAD=0 api flask seo sync'
+    ```
+    La dernière commande répond `google : ok` et `bing : ok`, ou dit ce qui manque. Ensuite, le minuteur relève
+    chaque jour après 6 h (UTC), et inspecte les pages du sitemap une à une : le compte des pages indexées se remplit
+    en une heure environ.
+
 ## Préparer le Mac (une fois)
 
 Dans le `.env` du dépôt (jamais versionné) :

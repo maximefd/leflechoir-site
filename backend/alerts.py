@@ -30,6 +30,7 @@ from flask import current_app
 from flask.cli import AppGroup
 from sqlalchemy.exc import IntegrityError
 
+import seo
 import stats
 import system_samples
 from extensions import db
@@ -330,6 +331,7 @@ def tick_command(last_backup):
     watched = last_backup is not None
     for label, step in (("échantillon", lambda: system_samples.take_sample(last_backup=last_backup)),
                         ("ménage", lambda: system_samples.maintain()),
+                        ("seo", lambda: seo.tick()),
                         ("alertes", lambda: run(backup_watched=watched)), ("bilan", lambda: send_weekly())):
         try:
             step()

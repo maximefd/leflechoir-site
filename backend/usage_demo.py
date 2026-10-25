@@ -26,7 +26,8 @@ import click
 from flask import current_app
 
 from extensions import db
-from models import AlertSent, ContactMessage, SystemDaily, SystemSample, UsageEvent
+from models import (AlertSent, ContactMessage, SeoDaily, SeoQueryDaily, SeoUrlCheck, SystemDaily, SystemSample,
+                    UsageEvent)
 
 DEMO_PREFIX = "demo"
 DEFAULT_DAYS = 42
@@ -315,7 +316,8 @@ def _machine(rng: random.Random, moment: datetime, now: datetime, days: int) -> 
 def seed_system(days: int, seed: int, now: datetime, site: str, lang: str) -> int:
     """Remplace les échantillons système et leurs résumés par une machine fictive ; renvoie le nombre de lignes."""
     rng = random.Random(seed + 1)
-    for model in (SystemSample, SystemDaily):
+    # Les chiffres de Google et Bing, comme les échantillons : en local, ils ne viennent que d'ici
+    for model in (SystemSample, SystemDaily, SeoDaily, SeoQueryDaily, SeoUrlCheck):
         model.query.delete(synchronize_session=False)
     AlertSent.query.filter(AlertSent.period.startswith(DEMO_PREFIX)).delete(synchronize_session=False)
     ContactMessage.query.filter(ContactMessage.request_id.startswith(DEMO_PREFIX)).delete(synchronize_session=False)
@@ -394,6 +396,46 @@ def seed_contact(now: datetime, site: str, lang: str) -> int:
     return len(CONTACT_MESSAGES)
 
 
+# Les requêtes fictives du tableau de bord SEO (ADR 0029) : quelques recherches clés et questions, des listes de mots
+DEMO_QUERIES = (
+    ("générateur de mots fléchés", 40, 14.0), ("créer des mots fléchés gratuit", 25, 18.0),
+    ("comment créer des mots fléchés", 30, 12.0), ("mots fléchés du jour", 60, 22.0),
+    ("mots fléchés à imprimer", 35, 16.0), ("mot de 5 lettres finissant par ez", 50, 6.0),
+    ("mot de 7 lettres commençant par a", 20, 9.0), ("comment faire une grille de mots fléchés", 12, 15.0),
+    ("quel site pour faire des mots fléchés", 8, 19.0), ("mots fléchés en ligne", 18, 25.0),
+)
+
+
+def seed_seo(days: int, seed: int, now: datetime, site: str, lang: str) -> None:
+    """Des chiffres de Google et Bing qui montent doucement, publiés avec trois jours de retard, comme les vrais."""
+    rng = random.Random(seed + 29)
+    today = now.date()
+    for source, share in (("google", 1.0), ("bing", 0.25)):
+        for offset in range(days + 3, 2, -1):
+            day = today - timedelta(days=offset)
+            growth = 1 + (days + 3 - offset) / days
+            rows = []
+            for query, impressions, position in DEMO_QUERIES:
+                shown = int(impressions * share * growth * rng.uniform(0.6, 1.4))
+                if shown == 0:
+                    continue
+                place = max(1.0, position - 4 * (growth - 1) + rng.uniform(-1.5, 1.5))
+                clicks = int(shown * max(0.01, 0.35 - place / 60) * rng.uniform(0.5, 1.5))
+                rows.append(SeoQueryDaily(day=day, source=source, site=site, lang=lang, search=query,
+                                          clicks=clicks, impressions=shown, position=round(place, 1)))
+            db.session.add_all(rows)
+            weight = sum(row.impressions for row in rows) or 1
+            db.session.add(SeoDaily(day=day, source=source, site=site, lang=lang,
+                                    clicks=sum(row.clicks for row in rows), impressions=weight,
+                                    position=round(sum(row.position * row.impressions for row in rows) / weight, 1),
+                                    indexed=int(190 * growth) if source == "bing" else None, updated_at=now))
+        db.session.add(SeoDaily(day=today, source=source, site=site, lang=lang, updated_at=now,
+                                indexed=281 if source == "google" else 196))
+    for index in range(309):
+        db.session.add(SeoUrlCheck(site=site, lang=lang, url=f"https://exemple.test/page-{index}", checked_at=now,
+                                   verdict="PASS" if index < 281 else "NEUTRAL"))
+
+
 def clear() -> int:
     """Efface les événements fictifs, et eux seuls ; puis les échantillons système, tous (voir en tête)."""
     _refuse_production()
@@ -415,6 +457,7 @@ def seed_demo(days: int = DEFAULT_DAYS, seed: int = DEFAULT_SEED, now: datetime 
     db.session.bulk_insert_mappings(UsageEvent, events)
     seed_system(days, seed, now, site, lang)
     seed_contact(now, site, lang)
+    seed_seo(days, seed, now, site, lang)
     db.session.commit()
     # Import tardif : system_samples lit stats, qui porte la commande de ce module
     from system_samples import maintain

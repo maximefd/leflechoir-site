@@ -200,10 +200,11 @@ export function GridPlayer({ spec, title }: { spec: MiniGridSpec; title: string 
           <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setPeekLeft(null)}>J’ai vu</Button>
         </p>
       )}
-      {/* En dessous de 64 px par case, les définitions ne se lisent plus : sur un écran étroit,
-          la grille garde cette taille et défile de côté */}
+      {/* En dessous de 64 px par case, les définitions ne se lisent plus : sur un écran étroit, la grille garde cette
+          taille et défile de côté. Les grilles de 6 colonnes (format téléphone) descendent à 56 px : elles tiennent
+          sans défiler de 375 à 430 px de large, et leurs définitions se lisent aussi en clair dessous */}
       <div className={`-mx-4 mt-3 overflow-x-auto px-4 ${peeking ? "pointer-events-none" : ""}`}>
-        <div className="relative mx-auto max-w-3xl" style={{ minWidth: mini.grid.width * 64 }}>
+        <div className="relative mx-auto max-w-3xl" style={{ minWidth: mini.grid.width * (mini.grid.width <= 6 ? 56 : 64) }}>
           <GridSvg
             grid={shown}
             variant="lettres"

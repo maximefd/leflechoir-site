@@ -160,7 +160,8 @@ export function titreDuJour(date: string): string {
   const enLettres = new Date(`${date}T12:00:00Z`).toLocaleDateString("fr-FR", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   });
-  return `Mots fléchés du ${enLettres}`;
+  // Le premier du mois s'écrit « 1er » : « Mots fléchés du 1er novembre 2026 »
+  return `Mots fléchés du ${enLettres.replace(/^1 /, "1er ")}`;
 }
 
 /** Une grille à jouer : page publique, dans le sitemap (ADR 0026). */
@@ -200,7 +201,8 @@ export function jouerJsonLd(grille: GrilleJson) {
 }
 
 function descriptionGrille({ force, response: { grid } }: GrilleJson): string {
-  return `Une grille de ${grid.width} × ${grid.height} cases, force ${force} sur 4, à jouer en ligne ou à imprimer, gratuitement. Une nouvelle grille chaque jour.`;
+  const forceAnnoncee = force ? `, force ${force} sur 4` : "";
+  return `Une grille de ${grid.width} × ${grid.height} cases${forceAnnoncee}, à jouer en ligne ou à imprimer, gratuitement. Une nouvelle grille chaque jour.`;
 }
 
 /**

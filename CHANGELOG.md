@@ -4,6 +4,40 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 
 ## [Non publié]
 
+### Sécurité
+- **Dépendances du site** (alertes publiées le 25/10/2026) : Next.js 15.5.28 (GHSA-2464-fhr4-w9xw, critique, et
+  GHSA-p3m5-59mp-jv5r ; sans effet sur un export statique, mais l'audit de la CI les arrête), DOMPurify 3.4.17 tiré par
+  jspdf (GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr), Zod 4.6.6 (GHSA-mrhx-c7xc-m3w5).
+
+### Ajouté
+- **Les grilles du jour du 1er au 14 novembre**, au format du téléphone (6 × 9, 6 × 10), sans force annoncée ; quatre à
+  mot mystère. Les titres écrivent « 1er » pour le premier du mois.
+
+### Ajouté
+- **Le tableau de bord du poste de pilotage** (demande de l'auteur du 21/10/2026, ADR 0029), en tête de `/admin` :
+  cartes d'audience (visiteurs, pages vues, venus des moteurs, venus des assistants IA) avec l'écart à la période
+  d'avant (7, 30 ou 90 jours) et leur courbe ; d'où viennent les visites ; l'usage (grilles générées, parties jouées,
+  PDF, comptes) ; le SEO de Google et Bing (impressions, clics, position moyenne, pages indexées) ; les requêtes qui
+  montent ; les recherches clés (« générateur de mots fléchés », « créer une grille de mots fléchés »…) ; les
+  questions posées dans les moteurs ; les questions de la FAQ. Le détail d'avant est replié dessous.
+  - `backend/seo.py` : relevé quotidien par le minuteur (Search Analytics, inspection d'URL, API Bing), gardé en
+    base (`seo_daily`, `seo_query_daily`, `seo_url_check`, migration 0017) ; `flask seo sync` et `flask seo status` ;
+    dépendance `cryptography` (signature du compte de service) ;
+  - accès à poser une fois par l'auteur : docs/PRODUCTION.md, « Les chiffres de Google et Bing » ; sans eux, le
+    tableau de bord dit que le SEO n'est pas branché. `make seed-demo` remplit des chiffres SEO fictifs ;
+  - la page confidentialité dit ce que sont ces statistiques (des totaux, rien de personnel).
+
+### Modifié
+- **Les grilles du jour au format du téléphone** (choix de l'auteur du 21/10/2026, ADR 0026) : à partir de novembre,
+  6 × 9 ou 6 × 10, sans force annoncée (`--force` devient facultatif dans `tools.grilles.produire`, la force ne
+  s'affiche plus quand une grille n'en a pas) ; tri des mots strict jusqu'à 81 cases (un 6 × 10 sortait sinon des mots
+  rares) ; cases à 56 px au moins pour 6 colonnes, qui tiennent sans défiler sur téléphone. Les textes ne promettent
+  plus de force.
+
+### Corrigé
+- **Déploiement du sens des mots** (ADR 0028) : `server.sh lexicon` ne transmettait que l'empreinte du lexique ; celle
+  du sens des mots se perdait, et `sens.sqlite` restait en `.nouveau` sans être mis en service.
+
 ### Ajouté
 - **La grille du jour quand le calendrier ne suit pas le stock** (choix de l'auteur du 21/10/2026, ADR 0026 révisée) :
   - le stock épuisé, `/jouer` le dit (« La grille du jour arrive bientôt ») et propose de rejouer les grilles parues,

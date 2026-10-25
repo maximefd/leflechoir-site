@@ -1,0 +1,502 @@
+{
+ "days": 7,
+ "current": {
+  "visitors": 261,
+  "views": 626,
+  "sources": {
+   "direct": 209,
+   "google": 42,
+   "bing": 10,
+   "other_search": 11,
+   "ai": 23,
+   "other": 19
+  },
+  "generations": 341,
+  "plays": 91,
+  "pdf": 70,
+  "registrations": 18
+ },
+ "previous": {
+  "visitors": 250,
+  "views": 533,
+  "sources": {
+   "direct": 210,
+   "google": 55,
+   "bing": 12,
+   "other_search": 13,
+   "ai": 11,
+   "other": 10
+  },
+  "generations": 336,
+  "plays": 101,
+  "pdf": 44,
+  "registrations": 20
+ },
+ "daily": [
+  {
+   "day": "2026-10-15",
+   "visitors": 37,
+   "views": 90,
+   "search": 9,
+   "ai": 1
+  },
+  {
+   "day": "2026-10-16",
+   "visitors": 39,
+   "views": 96,
+   "search": 9,
+   "ai": 3
+  },
+  {
+   "day": "2026-10-17",
+   "visitors": 30,
+   "views": 74,
+   "search": 8,
+   "ai": 6
+  },
+  {
+   "day": "2026-10-18",
+   "visitors": 42,
+   "views": 86,
+   "search": 11,
+   "ai": 5
+  },
+  {
+   "day": "2026-10-19",
+   "visitors": 39,
+   "views": 106,
+   "search": 8,
+   "ai": 3
+  },
+  {
+   "day": "2026-10-20",
+   "visitors": 28,
+   "views": 73,
+   "search": 5,
+   "ai": 3
+  },
+  {
+   "day": "2026-10-21",
+   "visitors": 5,
+   "views": 12,
+   "search": 0,
+   "ai": 1
+  }
+ ],
+ "seo": {
+  "sources": {
+   "google": {
+    "configured": false,
+    "last_sync": "2026-10-21T08:00Z",
+    "error": null,
+    "indexed": 281,
+    "through": "2026-10-18",
+    "clicks": 577,
+    "clicks_before": 544,
+    "impressions": 3805,
+    "impressions_before": 3540,
+    "daily": [
+     {
+      "day": "2026-10-12",
+      "clicks": 102,
+      "impressions": 574
+     },
+     {
+      "day": "2026-10-13",
+      "clicks": 77,
+      "impressions": 483
+     },
+     {
+      "day": "2026-10-14",
+      "clicks": 87,
+      "impressions": 520
+     },
+     {
+      "day": "2026-10-15",
+      "clicks": 68,
+      "impressions": 500
+     },
+     {
+      "day": "2026-10-16",
+      "clicks": 88,
+      "impressions": 565
+     },
+     {
+      "day": "2026-10-17",
+      "clicks": 69,
+      "impressions": 561
+     },
+     {
+      "day": "2026-10-18",
+      "clicks": 86,
+      "impressions": 602
+     }
+    ],
+    "position": 11.0,
+    "position_before": 12.0
+   },
+   "bing": {
+    "configured": false,
+    "last_sync": "2026-10-21T08:00Z",
+    "error": null,
+    "indexed": 196,
+    "through": "2026-10-18",
+    "clicks": 140,
+    "clicks_before": 114,
+    "impressions": 990,
+    "impressions_before": 927,
+    "daily": [
+     {
+      "day": "2026-10-12",
+      "clicks": 20,
+      "impressions": 152
+     },
+     {
+      "day": "2026-10-13",
+      "clicks": 15,
+      "impressions": 141
+     },
+     {
+      "day": "2026-10-14",
+      "clicks": 14,
+      "impressions": 136
+     },
+     {
+      "day": "2026-10-15",
+      "clicks": 17,
+      "impressions": 135
+     },
+     {
+      "day": "2026-10-16",
+      "clicks": 29,
+      "impressions": 151
+     },
+     {
+      "day": "2026-10-17",
+      "clicks": 23,
+      "impressions": 136
+     },
+     {
+      "day": "2026-10-18",
+      "clicks": 22,
+      "impressions": 139
+     }
+    ],
+    "position": 11.5,
+    "position_before": 11.6
+   }
+  },
+  "sitemap_urls": 309,
+  "rising": [
+   {
+    "query": "comment créer des mots fléchés",
+    "clicks": 115,
+    "impressions": 523,
+    "position": 8.4,
+    "clicks_before": 86,
+    "impressions_before": 440,
+    "position_before": 8.7
+   },
+   {
+    "query": "mot de 7 lettres commençant par a",
+    "clicks": 81,
+    "impressions": 342,
+    "position": 5.1,
+    "clicks_before": 64,
+    "impressions_before": 312,
+    "position_before": 6.1
+   },
+   {
+    "query": "mot de 5 lettres finissant par ez",
+    "clicks": 234,
+    "impressions": 817,
+    "position": 2.7,
+    "clicks_before": 224,
+    "impressions_before": 703,
+    "position_before": 2.8
+   },
+   {
+    "query": "mots fléchés à imprimer",
+    "clicks": 84,
+    "impressions": 606,
+    "position": 12.2,
+    "clicks_before": 74,
+    "impressions_before": 554,
+    "position_before": 12.6
+   },
+   {
+    "query": "comment faire une grille de mots fléchés",
+    "clicks": 22,
+    "impressions": 194,
+    "position": 11.3,
+    "clicks_before": 20,
+    "impressions_before": 159,
+    "position_before": 12.5
+   },
+   {
+    "query": "mots fléchés en ligne",
+    "clicks": 0,
+    "impressions": 285,
+    "position": 21.0,
+    "clicks_before": 0,
+    "impressions_before": 304,
+    "position_before": 21.6
+   },
+   {
+    "query": "quel site pour faire des mots fléchés",
+    "clicks": 4,
+    "impressions": 130,
+    "position": 15.4,
+    "clicks_before": 5,
+    "impressions_before": 106,
+    "position_before": 16.3
+   },
+   {
+    "query": "mots fléchés du jour",
+    "clicks": 32,
+    "impressions": 829,
+    "position": 18.0,
+    "clicks_before": 33,
+    "impressions_before": 858,
+    "position_before": 18.5
+   }
+  ],
+  "key_searches": [
+   {
+    "search": "créer une grille de mots fléchés",
+    "google": null,
+    "google_position_before": null,
+    "bing": null,
+    "bing_position_before": null
+   },
+   {
+    "search": "générateur de mots fléchés",
+    "google": {
+     "position": 10.2,
+     "clicks": 87,
+     "impressions": 527
+    },
+    "google_position_before": 10.7,
+    "bing": {
+     "position": 10.4,
+     "clicks": 21,
+     "impressions": 110
+    },
+    "bing_position_before": 10.8
+   },
+   {
+    "search": "comment créer des mots fléchés",
+    "google": {
+     "position": 8.4,
+     "clicks": 90,
+     "impressions": 415
+    },
+    "google_position_before": 8.7,
+    "bing": {
+     "position": 8.2,
+     "clicks": 25,
+     "impressions": 108
+    },
+    "bing_position_before": 8.8
+   },
+   {
+    "search": "créer des mots fléchés gratuit",
+    "google": {
+     "position": 14.0,
+     "clicks": 33,
+     "impressions": 356
+    },
+    "google_position_before": 14.8,
+    "bing": {
+     "position": 14.5,
+     "clicks": 4,
+     "impressions": 76
+    },
+    "bing_position_before": 14.8
+   },
+   {
+    "search": "faire des mots fléchés",
+    "google": {
+     "position": 13.0,
+     "clicks": 24,
+     "impressions": 261
+    },
+    "google_position_before": 14.1,
+    "bing": {
+     "position": 12.9,
+     "clicks": 2,
+     "impressions": 63
+    },
+    "bing_position_before": 13.6
+   },
+   {
+    "search": "mots fléchés personnalisés",
+    "google": null,
+    "google_position_before": null,
+    "bing": null,
+    "bing_position_before": null
+   },
+   {
+    "search": "mots fléchés à imprimer",
+    "google": {
+     "position": 12.3,
+     "clicks": 63,
+     "impressions": 469
+    },
+    "google_position_before": 12.6,
+    "bing": {
+     "position": 12.1,
+     "clicks": 21,
+     "impressions": 137
+    },
+    "bing_position_before": 12.5
+   },
+   {
+    "search": "logiciel mots fléchés",
+    "google": null,
+    "google_position_before": null,
+    "bing": null,
+    "bing_position_before": null
+   },
+   {
+    "search": "mots fléchés du jour",
+    "google": {
+     "position": 17.9,
+     "clicks": 27,
+     "impressions": 615
+    },
+    "google_position_before": 18.6,
+    "bing": {
+     "position": 18.3,
+     "clicks": 5,
+     "impressions": 214
+    },
+    "bing_position_before": 18.2
+   },
+   {
+    "search": "mots fléchés en ligne",
+    "google": {
+     "position": 20.9,
+     "clicks": 0,
+     "impressions": 224
+    },
+    "google_position_before": 21.4,
+    "bing": {
+     "position": 21.3,
+     "clicks": 0,
+     "impressions": 61
+    },
+    "bing_position_before": 22.3
+   },
+   {
+    "search": "mot de N lettres (les listes)",
+    "google": {
+     "position": 3.5,
+     "clicks": 253,
+     "impressions": 938
+    },
+    "google_position_before": 4.0,
+    "bing": {
+     "position": 2.7,
+     "clicks": 62,
+     "impressions": 221
+    },
+    "bing_position_before": 3.2
+   }
+  ],
+  "asked": [
+   {
+    "query": "comment créer des mots fléchés",
+    "clicks": 115,
+    "impressions": 523,
+    "position": 8.4
+   },
+   {
+    "query": "comment faire une grille de mots fléchés",
+    "clicks": 22,
+    "impressions": 194,
+    "position": 11.3
+   },
+   {
+    "query": "quel site pour faire des mots fléchés",
+    "clicks": 4,
+    "impressions": 130,
+    "position": 15.4
+   }
+  ],
+  "questions": [
+   {
+    "question": "Comment créer des mots fléchés gratuitement ?",
+    "google": {
+     "position": 14.0,
+     "clicks": 33,
+     "impressions": 356
+    },
+    "bing": {
+     "position": 14.5,
+     "clicks": 4,
+     "impressions": 76
+    }
+   },
+   {
+    "question": "Générateur de mots fléchés",
+    "google": {
+     "position": 10.2,
+     "clicks": 87,
+     "impressions": 527
+    },
+    "bing": {
+     "position": 10.4,
+     "clicks": 21,
+     "impressions": 110
+    }
+   },
+   {
+    "question": "Comment les pros construisent-ils des mots fléchés ?",
+    "google": null,
+    "bing": null
+   },
+   {
+    "question": "Quels outils pour créer des mots fléchés ?",
+    "google": null,
+    "bing": null
+   },
+   {
+    "question": "Comment créer des mots fléchés avec l'IA ?",
+    "google": null,
+    "bing": null
+   },
+   {
+    "question": "Mots fléchés à imprimer",
+    "google": {
+     "position": 12.3,
+     "clicks": 63,
+     "impressions": 469
+    },
+    "bing": {
+     "position": 12.1,
+     "clicks": 21,
+     "impressions": 137
+    }
+   },
+   {
+    "question": "Mots fléchés du jour",
+    "google": {
+     "position": 17.9,
+     "clicks": 27,
+     "impressions": 615
+    },
+    "bing": {
+     "position": 18.3,
+     "clicks": 5,
+     "impressions": 214
+    }
+   },
+   {
+    "question": "Mots fléchés ou mots croisés : quelle différence ?",
+    "google": null,
+    "bing": null
+   }
+  ]
+ }
+}

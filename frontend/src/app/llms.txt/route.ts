@@ -21,7 +21,7 @@ export function GET() {
     lien("Générer une grille", "/grid", "onze formats, du 6 × 6 au 13 × 18 ; mots obligatoires et souhaités ; PDF de la grille et de sa solution."),
     lien("Créer une grille à la main", "/grids/new", "l'éditeur : la taille de son choix, les cases définitions où l'on veut, et pour chaque emplacement les mots qui gardent les croisements valides (compte gratuit)."),
     lien("Chercher un mot", "/search", "les lettres connues et un ? par case vide : P??LE donne PERLE, POELE, PELLE…"),
-    lien("Mots fléchés du jour", "/jouer", "une nouvelle grille chaque jour, à jouer dans le navigateur, force annoncée de 1 à 4."),
+    lien("Mots fléchés du jour", "/jouer", "une nouvelle grille chaque jour, à jouer dans le navigateur, sur téléphone comme sur ordinateur."),
     "",
     "## Guide et articles",
     "",

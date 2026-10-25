@@ -430,6 +430,62 @@ def compute(now: datetime | None = None, cpu_count: int | None = None) -> dict:
     }
 
 
+def _engine(referrer: str) -> str:
+    """Le moteur d'une visite venue de la recherche : Google, Bing, ou un autre (DuckDuckGo, Qwant, Ecosia…)."""
+    host = referrer.lower().removeprefix("www.")
+    if host.startswith("google.") or ".google." in host:
+        return "google"
+    if host.startswith("bing.") or ".bing." in host:
+        return "bing"
+    return "other_search"
+
+
+def _figures(events: list[UsageEvent]) -> dict:
+    """Les chiffres d'une période pour les cartes du tableau de bord (ADR 0029)."""
+    views = [e for e in events if e.kind == "page" and e.outcome == "view"]
+    # Une visite : un visiteur, un jour, une origine — comme les sources du poste de pilotage (_audience)
+    visits = {(e.created_at.date(), e.visitor, e.data.get("referrer", "")) for e in views if e.visitor}
+    sources = Counter()
+    for _, _, referrer in visits:
+        kind = source_kind(referrer)
+        sources[_engine(referrer) if kind == "search" else kind] += 1
+    return {
+        "visitors": len({(e.created_at.date(), e.visitor) for e in views if e.visitor}),
+        "views": len(views),
+        "sources": {key: sources[key] for key in ("direct", "google", "bing", "other_search", "ai", "other")},
+        "generations": sum(1 for e in events if e.kind == "generation" and e.outcome == "grid"),
+        "plays": sum(1 for e in events if e.kind == "page" and e.outcome == "play"),
+        "pdf": sum(1 for e in events if e.kind == "page" and e.outcome == "pdf"),
+        "registrations": sum(1 for e in events if e.kind == "account" and e.outcome == "register"),
+    }
+
+
+def dashboard(days: int, now: datetime | None = None) -> dict:
+    """La période (`days` jours jusqu'à maintenant), la précédente de même longueur, et la courbe jour par jour."""
+    now = now or datetime.now(timezone.utc).replace(tzinfo=None)
+    start, previous_start = now - timedelta(days=days), now - timedelta(days=2 * days)
+    site = current_app.config["SITE"]
+    events = (UsageEvent.query.filter(UsageEvent.site == site, UsageEvent.created_at >= previous_start)
+              .filter(UsageEvent.kind.in_(("page", "generation", "account"))).all())
+    current = [e for e in events if e.created_at >= start]
+    by_day = defaultdict(list)
+    for event in current:
+        by_day[event.created_at.date()].append(event)
+    daily = []
+    for offset in range(days - 1, -1, -1):
+        day = (now - timedelta(days=offset)).date()
+        figures = _figures(by_day[day])
+        daily.append({"day": day.isoformat(), "visitors": figures["visitors"], "views": figures["views"],
+                      "search": figures["sources"]["google"] + figures["sources"]["bing"]
+                      + figures["sources"]["other_search"],
+                      "ai": figures["sources"]["ai"]})
+    return {
+        "current": _figures(current),
+        "previous": _figures([e for e in events if e.created_at < start]),
+        "daily": daily,
+    }
+
+
 def _iso(moment: datetime) -> str:
     return moment.isoformat(timespec="seconds") + "Z"
 

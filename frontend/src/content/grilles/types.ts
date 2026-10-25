@@ -11,7 +11,10 @@ import type { GeneratedGrid } from "@/lib/mini-grid";
 export type GrilleJson = {
   /** Le jour de publication (AAAA-MM-JJ) : c'est l'adresse de la page */
   date: string;
-  /** La force annoncée au joueur, de 1 (douce) à 4 (coriace) */
-  force: number;
+  /**
+   * La force annoncée au joueur, de 1 (douce) à 4 (coriace) : seulement les grilles d'octobre 2026, dont la taille
+   * faisait la force. Les grilles au format téléphone (6 × 9, 6 × 10) n'en ont pas (ADR 0026, choix du 21/10/2026).
+   */
+  force?: number;
   clues: Record<string, string>;
 } & GeneratedGrid;

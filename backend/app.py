@@ -19,6 +19,7 @@ from usage import init_usage
 from stats import init_stats_cli
 from admin import admin_bp, init_admin_cli
 from alerts import init_system_cli
+from seo import init_seo_cli
 from suggestions import init_suggestions
 from sens import sens_bp
 from audience import audience_bp
@@ -124,6 +125,13 @@ DEFAULT_SETTINGS = dict(
     ALERT_DAILY_CAP=10,
     # Adresse où l'échantillon vérifie que l'API répond ; vide : non vérifié
     MONITOR_API_URL='',
+    # Les chiffres de Google et Bing pour le poste de pilotage (seo.py, ADR 0029) : vides, rien n'est relevé.
+    # GSC_CREDENTIALS_FILE : le fichier JSON du compte de service, lecteur de la propriété Search Console ;
+    # GSC_PROPERTY : « sc-domain:leflechoir.fr » (propriété de domaine) ou l'adresse du site.
+    GSC_CREDENTIALS_FILE='',
+    GSC_PROPERTY='',
+    BING_WEBMASTER_API_KEY='',
+    BING_SITE_URL='',
     MAIL_FROM=DEFAULT_MAIL_FROM,
     SMTP_HOST='localhost',
     SMTP_PORT=25,
@@ -256,6 +264,10 @@ def _load_config_from_env() -> dict:
         # Par défaut, l'API de ce conteneur : `flask system tick` y est lancé à côté d'elle
         MONITOR_API_URL=os.environ.get(
             'MONITOR_API_URL', f"http://localhost:{os.environ.get('PORT', '5000')}/api/status").strip(),
+        GSC_CREDENTIALS_FILE=os.environ.get('GSC_CREDENTIALS_FILE', '').strip(),
+        GSC_PROPERTY=os.environ.get('GSC_PROPERTY', '').strip(),
+        BING_WEBMASTER_API_KEY=os.environ.get('BING_WEBMASTER_API_KEY', '').strip(),
+        BING_SITE_URL=os.environ.get('BING_SITE_URL', '').strip(),
     )
 
 
@@ -350,6 +362,7 @@ def create_app(test_config=None):
     init_stats_cli(app)
     init_admin_cli(app)
     init_system_cli(app)
+    init_seo_cli(app)
 
     # Le lexique n'est pas chargé en mode test (les tests fournissent un petit Trie)
     app.dela_trie = None

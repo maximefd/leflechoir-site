@@ -244,6 +244,14 @@ export default function PrivacyPage() {
           </ul>
         </Section>
 
+        <Section title="Les statistiques des moteurs de recherche">
+          <p>
+            Google et Bing donnent au site des totaux sur les recherches qui le font apparaître : combien de fois il
+            a été montré et cliqué, à quelle position, pour quelles requêtes. Ces chiffres ne disent rien de toi : ni
+            qui a cherché, ni d&apos;où. Ils servent à suivre le référencement du site, dans son poste de pilotage.
+          </p>
+        </Section>
+
         <Section title="Qui y touche">
           <p>
             L&apos;éditeur, et les prestataires ci-dessous, pour le seul fonctionnement du site. Aucun ne reçoit tes

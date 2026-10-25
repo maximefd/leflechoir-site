@@ -9,7 +9,7 @@ import { jouerJsonLd, titreDuJour } from "@/lib/seo";
 import type { GrilleJson } from "@/content/grilles/types";
 
 /**
- * La page d'une grille publiée (ADR 0026) : le titre du jour, la force annoncée, la grille à jouer en
+ * La page d'une grille publiée (ADR 0026) : le titre du jour, la force si elle en a une, la grille à jouer en
  * pleine page. Le contenu vient du JSON produit hors ligne ; les définitions y sont écrites à la main,
  * et le joueur voit les mêmes cases que sur le papier — définitions dedans, liste en clair dessous.
  */
@@ -31,7 +31,7 @@ export function JouerUneGrille({ data, children }: { data: GrilleJson; children?
 
       <h1 className="text-3xl font-bold md:text-4xl">{titre}</h1>
       <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-        <span className="rounded-full border px-2.5 py-0.5 font-medium text-foreground">Force {data.force} sur 4</span>
+        {data.force && <span className="rounded-full border px-2.5 py-0.5 font-medium text-foreground">Force {data.force} sur 4</span>}
         <span>{width} × {height} cases, {data.response.grid.words.length} définitions</span>
         {mystery && <span>mot mystère en {mystery.cells.length} lettres</span>}
       </p>

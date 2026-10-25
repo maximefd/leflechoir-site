@@ -23,6 +23,7 @@ from jwt.exceptions import PyJWTError
 from sqlalchemy import func
 
 import alerts
+import seo
 import stats
 import suggestions
 import system_samples
@@ -31,6 +32,8 @@ from models import ContactMessage, User, WordSuggestion
 from schemas import ContactReadRequest, parse_body
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
+# Les périodes du tableau de bord, en jours (`?jours=`)
+DASHBOARD_DAYS = (7, 30, 90)
 logger = logging.getLogger(__name__)
 
 
@@ -57,6 +60,18 @@ def admin_only():
 def usage_stats():
     """Les chiffres de `flask stats` : visiteurs, générations, comptes, erreurs, seuils de l'ADR 0013."""
     return jsonify(stats.as_json(stats.compute()))
+
+
+@admin_bp.get("/tableau")
+def dashboard():
+    """Le tableau de bord en tête du poste de pilotage (ADR 0029) : audience, sources, usage, SEO, questions suivies.
+
+    `?jours=` : 7 (défaut), 30 ou 90, comparés à la période d'avant de même longueur.
+    """
+    days = request.args.get("jours", default=7, type=int)
+    if days not in DASHBOARD_DAYS:
+        return jsonify({"error": "Période inconnue : 7, 30 ou 90 jours.", "reason": "unknown_period"}), 400
+    return jsonify({"days": days, **stats.dashboard(days), "seo": seo.summary(days)})
 
 
 @admin_bp.get("/system")

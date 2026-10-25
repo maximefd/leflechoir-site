@@ -11,7 +11,7 @@ import { titreDuJour } from "@/lib/seo";
  * (les moteurs y trouvent l'archive, ADR 0026), puis le navigateur la remet au jour : les grilles parues depuis le
  * build s'y ajoutent sans redéployer.
  */
-export function GrillesParues({ initiales }: { initiales: { date: string; force: number }[] }) {
+export function GrillesParues({ initiales }: { initiales: { date: string; force?: number }[] }) {
   const [liste, setListe] = useState(initiales);
   useEffect(() => setListe(parues(aujourdhui())), []);
   if (!liste.length) return null;
@@ -23,7 +23,7 @@ export function GrillesParues({ initiales }: { initiales: { date: string; force:
         {liste.map(({ date, force }) => (
           <li key={date}>
             <Link href={`/jouer/${date}`} className={linkClass}>{titreDuJour(date)}</Link>
-            <span className="text-muted-foreground"> · force {force} sur 4</span>
+            {force && <span className="text-muted-foreground"> · force {force} sur 4</span>}
           </li>
         ))}
       </ul>

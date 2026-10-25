@@ -8,8 +8,11 @@ la sienne.
 
 Usage (Python 3.9 de la machine, aucun paquet à installer) :
 
-    python -m tools.grilles.produire 2026-10-07 --force 2 --size 9x9
-    python -m tools.grilles.produire 2026-10-09 --force 3 --size 10x11 --mystery OCTOBRE
+    python -m tools.grilles.produire 2026-11-01 --size 6x9
+    python -m tools.grilles.produire 2026-11-02 --size 6x10 --mystery AUTOMNE
+
+Depuis novembre 2026, les grilles du jour se font au format du téléphone, 6 × 9 ou 6 × 10, sans force annoncée
+(ADR 0026) ; `--force` ne sert plus qu'à refaire une grille d'octobre.
 
 La seed naît de la date (la même date redonne la même première tentative) ; chaque relance en essaie
 une autre : une grille sans solution, ou un mot mystère dont une lettre manque, ne coûte que du temps.
@@ -21,6 +24,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Optional
 
 RACINE = Path(__file__).resolve().parents[2]
 CONTENU = RACINE / "frontend" / "src" / "content" / "grilles"
@@ -59,11 +63,13 @@ def generer(api: str, corps: dict) -> tuple[int, dict]:
         return erreur.code, json.loads(erreur.read().decode("utf-8") or "{}")
 
 
-def produire(api: str, date: str, force: int, largeur: int, hauteur: int, mystere: str, souhaits: list, seed: int) -> dict:
+def produire(api: str, date: str, force: Optional[int], largeur: int, hauteur: int, mystere: str, souhaits: list, seed: int) -> dict:
     """Cherche une grille pour ce jour : chaque essais change de seed jusqu'à une qui sort, avec son mystère."""
     # Les mots les plus courants d'abord ; sur les grandes grilles, le tri exact les fait trop échouer
     # (mesures dans backend/benchmarks/README.md) : on descend d'un cran
-    tri = "exact" if max(largeur, hauteur) <= 9 else "known"
+    # (mesures dans backend/benchmarks/README.md) : on descend d'un cran. Compté en cases : un 6 × 10 (60 cases) garde
+    # le tri exact, qui lui donne des mots courants là où le tri large sortait LEVRAUDEE ou ALESASSE (21/10/2026)
+    tri = "exact" if largeur * hauteur <= 81 else "known"
     for essai in range(ESSAIS):
         corps = {
             "size": {"width": largeur, "height": hauteur},
@@ -87,15 +93,16 @@ def produire(api: str, date: str, force: int, largeur: int, hauteur: int, myster
             continue
         if not reponse.get("grid", {}).get("words"):
             raise SystemExit(f"Essai {essai + 1} : réponse sans grille — {reponse}")
-        return {"date": date, "force": force, "request": corps, "response": reponse, "clues": {}}
+        grille = {"date": date, "request": corps, "response": reponse, "clues": {}}
+        return {"date": date, "force": force, **grille} if force else grille
     raise SystemExit(f"Pas de grille pour {date} en {ESSAIS} essais : relance, ou change de mot mystère.")
 
 
 def main() -> None:
     analyse = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     analyse.add_argument("date", help="Le jour de publication, AAAA-MM-JJ (l'adresse de la page : /jouer/<date>)")
-    analyse.add_argument("--force", type=int, choices=(1, 2, 3, 4), required=True,
-                         help="La force annoncée au joueur, de 1 (douce) à 4 (coriace)")
+    analyse.add_argument("--force", type=int, choices=(1, 2, 3, 4), default=None,
+                         help="La force annoncée, de 1 à 4 : seulement pour refaire une grille d'octobre 2026")
     analyse.add_argument("--size", required=True, help="Le format, largeurxhauteur (ex. 9x9)")
     analyse.add_argument("--mystery", help="Un mot mystère, dont les lettres se numéroteront dans la grille")
     analyse.add_argument("--wish", default="", dest="souhaits",
@@ -136,14 +143,16 @@ def main() -> None:
 
     mots = [mot["text"] for mot in grille["response"]["grid"]["words"]]
     mystere = grille["response"]["grid"].get("mystery")
-    print(f"{date} — force {args.force} sur 4, {largeur} × {hauteur}, {len(mots)} mots"
+    annonce = f"force {args.force} sur 4, " if args.force else ""
+    print(f"{date} — {annonce}{largeur} × {hauteur}, {len(mots)} mots"
           + (f", mot mystère {mystere['word']} en {len(mystere['cells'])} lettres" if mystere else ""))
     print(f"Écrit : {fichier.relative_to(RACINE)}")
     print(f"Écrit : {page.relative_to(RACINE)}")
     print("Reste à faire :")
     print(f"  1. écrire les {len(mots)} définitions dans « clues » du JSON (style de l'auteur) :")
     print("     " + ", ".join(mots))
-    print(f"  2. ajouter {{ date: \"{date}\", force: {args.force} }} et le chargeur dans src/content/grilles/index.ts")
+    ligne = f'{{ date: "{date}", force: {args.force} }}' if args.force else f'{{ date: "{date}" }}'
+    print(f"  2. ajouter {ligne} et le chargeur dans src/content/grilles/index.ts")
 
 
 if __name__ == "__main__":

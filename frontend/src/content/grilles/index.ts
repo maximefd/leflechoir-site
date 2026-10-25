@@ -7,7 +7,22 @@ import type { GrilleJson } from "@/content/grilles/types";
  */
 
 /** Les grilles publiées, de la plus récente à la plus ancienne. La première est l'horizon du stock. */
-export const GRILLES: { date: string; force: number }[] = [
+export const GRILLES: { date: string; force?: number }[] = [
+  // Novembre 2026 : le format du téléphone (6 × 9, 6 × 10), sans force annoncée (ADR 0026)
+  { date: "2026-11-14" },
+  { date: "2026-11-13" },
+  { date: "2026-11-12" },
+  { date: "2026-11-11" },
+  { date: "2026-11-10" },
+  { date: "2026-11-09" },
+  { date: "2026-11-08" },
+  { date: "2026-11-07" },
+  { date: "2026-11-06" },
+  { date: "2026-11-05" },
+  { date: "2026-11-04" },
+  { date: "2026-11-03" },
+  { date: "2026-11-02" },
+  { date: "2026-11-01" },
   { date: "2026-10-31", force: 4 },
   { date: "2026-10-30", force: 3 },
   { date: "2026-10-29", force: 1 },
@@ -34,6 +49,20 @@ export const GRILLES: { date: string; force: number }[] = [
 
 /** Le chargement d'une grille, à la demande : la page du jour ne paie pas pour toute la bibliothèque. */
 export const LOADERS: Record<string, () => Promise<{ default: GrilleJson }>> = {
+  "2026-11-14": () => import("./2026-11-14.json"),
+  "2026-11-13": () => import("./2026-11-13.json"),
+  "2026-11-12": () => import("./2026-11-12.json"),
+  "2026-11-11": () => import("./2026-11-11.json"),
+  "2026-11-10": () => import("./2026-11-10.json"),
+  "2026-11-09": () => import("./2026-11-09.json"),
+  "2026-11-08": () => import("./2026-11-08.json"),
+  "2026-11-07": () => import("./2026-11-07.json"),
+  "2026-11-06": () => import("./2026-11-06.json"),
+  "2026-11-05": () => import("./2026-11-05.json"),
+  "2026-11-04": () => import("./2026-11-04.json"),
+  "2026-11-03": () => import("./2026-11-03.json"),
+  "2026-11-02": () => import("./2026-11-02.json"),
+  "2026-11-01": () => import("./2026-11-01.json"),
   "2026-10-31": () => import("./2026-10-31.json"),
   "2026-10-30": () => import("./2026-10-30.json"),
   "2026-10-29": () => import("./2026-10-29.json"),
@@ -64,7 +93,7 @@ export function aujourdhui(): string {
 }
 
 /** La plus récente grille déjà parue (celle du jour si elle existe) : la date du sitemap pour `/jouer`. */
-export function grilleDuJour(jour: string): { date: string; force: number } | null {
+export function grilleDuJour(jour: string): { date: string; force?: number } | null {
   return GRILLES.find((grille) => grille.date <= jour) ?? null;
 }
 
@@ -72,7 +101,7 @@ export function grilleDuJour(jour: string): { date: string; force: number } | nu
 export const NOMBRE_PARUES = 14;
 
 /** Les grilles parues au jour donné (heure de Paris), les plus récentes d’abord */
-export function parues(jour: string): { date: string; force: number }[] {
+export function parues(jour: string): { date: string; force?: number }[] {
   return GRILLES.filter((grille) => grille.date <= jour).slice(0, NOMBRE_PARUES);
 }
 
@@ -86,7 +115,7 @@ export function verifierStock(jour: string): void {
   const reste = horizon ? Math.round((Date.parse(horizon) - Date.parse(jour)) / 86_400_000) : -1;
   if (reste >= 7) return;
   const message = `Stock de grilles : ${reste} jour(s) devant nous (ADR 0026 : au moins sept). Produis-en d'autres :`
-    + " python -m tools.grilles.produire AAAA-MM-JJ --force N --size WxH --wish …";
+    + " python -m tools.grilles.produire AAAA-MM-JJ --size 6x9 --wish …";
   if (process.env.NODE_ENV === "production") throw new Error(message);
   console.warn(message);
 }

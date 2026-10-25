@@ -38,6 +38,8 @@ test("la page n'est liée nulle part sur l'accueil", async ({ page }) => {
 const stats = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-stats.json"), "utf-8"));
 // De même pour `GET /api/admin/system` (`backend/tests/test_system_samples.py`)
 const system = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-system.json"), "utf-8"));
+// Et pour `GET /api/admin/tableau` (`backend/tests/test_seo.py`), tiré du même jeu fictif
+const tableau = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-tableau.json"), "utf-8"));
 // Et pour `GET /api/admin/contact` (`backend/tests/test_contact.py`)
 const inbox = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-contact.json"), "utf-8"));
 const suggestions = {
@@ -60,15 +62,47 @@ async function asAdmin(page: Page, baseURL: string | undefined, server: unknown 
   await page.route("**/api/admin/suggestions", (route) => route.fulfill({ json: suggestions }));
   await page.route("**/api/admin/system", (route) => route.fulfill({ json: server }));
   await page.route("**/api/admin/contact", (route) => route.fulfill({ json: inbox }));
+  await page.route("**/api/admin/tableau?*", (route) => {
+    const days = Number(new URL(route.request().url()).searchParams.get("jours"));
+    return route.fulfill({ json: { ...tableau, days } });
+  });
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "Poste de pilotage" })).toBeVisible();
+  // Le détail d'avant le tableau de bord est replié : les parcours qui le lisent l'ouvrent
+  await page.getByText(/^Tout le détail/).click();
 }
+
+test("le tableau de bord, en tête : audience, sources, usage, SEO, recherches clés et questions posées", async ({ page, baseURL }) => {
+  await asAdmin(page, baseURL);
+  const board = page.getByRole("region", { name: "Tableau de bord" });
+
+  await expect(board.getByText("Les 7 derniers jours, comparés aux 7 d’avant.")).toBeVisible();
+  for (const name of ["Audience", "SEO · Google et Bing", "Recherches clés", "Questions posées", "Les questions de notre FAQ"]) {
+    await expect(board.getByRole("heading", { name, exact: true })).toBeVisible();
+  }
+  await expect(board.getByText("Visiteurs", { exact: true })).toBeVisible();
+  await expect(board.getByText(String(tableau.current.visitors), { exact: true })).toBeVisible();
+  // Une recherche clé où l'on apparaît, une autre non
+  const key = board.getByRole("region", { name: "Recherches clés" });
+  await expect(key.getByRole("row", { name: /générateur de mots fléchés/ })).toBeVisible();
+  await expect(key.getByText("n’apparaît pas").first()).toBeVisible();
+  await expect(board.getByRole("region", { name: "Questions posées" }).getByText("comment créer des mots fléchés")).toBeVisible();
+
+  // Changer de période redemande les chiffres
+  const asked = page.waitForRequest((request) => request.url().includes("/api/admin/tableau?jours=30"));
+  await board.getByRole("button", { name: "30 jours" }).click();
+  await asked;
+  await expect(board.getByRole("button", { name: "30 jours" })).toHaveAttribute("aria-pressed", "true");
+  await expect(board.getByText("Les 30 derniers jours, comparés aux 30 d’avant.")).toBeVisible();
+});
 
 test("l'administrateur lit l'usage, les générations et les erreurs", async ({ page, baseURL }) => {
   await asAdmin(page, baseURL);
 
+  // Dans le détail, sous le tableau de bord (qui a sa propre rubrique « Audience »)
+  const detail = page.locator("details");
   for (const name of ["Usage", "Audience", "Générations", "Erreurs et refus"]) {
-    await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+    await expect(detail.getByRole("heading", { name, exact: true })).toBeVisible();
   }
   // Les seuils de l'ADR 0013, en toutes lettres : jamais la couleur seule
   await expect(page.getByLabel("Seuils de l'ADR 0013").getByText("Dans le seuil").first()).toBeVisible();

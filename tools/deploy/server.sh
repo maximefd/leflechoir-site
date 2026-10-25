@@ -193,7 +193,7 @@ case "${1:-}" in
     suggestions-export) suggestions export ;;
     suggestions-apply) suggestions apply ;;
     rollback) rollback ;;
-    lexicon) lexicon "${2:-}" ;;
+    lexicon) lexicon "${2:-}" "${3:-}" ;;
     status) status ;;
     *) die "Usage : server.sh deploy VERSION | rollback | lexicon SHA256 | status | suggestions-export | suggestions-apply" ;;
 esac

@@ -1,0 +1,1012 @@
+{
+  "date": "2026-11-06",
+  "request": {
+    "size": {
+      "width": 6,
+      "height": 10
+    },
+    "seed": 103,
+    "quality": "best",
+    "geometry": "sur_mesure",
+    "frequency_mode": "exact"
+  },
+  "response": {
+    "grid": {
+      "cells": [
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 0
+        },
+        {
+          "char": "F",
+          "is_black": false,
+          "x": 3,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 0
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 5,
+          "y": 0
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 1
+        },
+        {
+          "char": "F",
+          "is_black": false,
+          "x": 2,
+          "y": 1
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "char": "G",
+          "is_black": false,
+          "x": 4,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "char": "V",
+          "is_black": false,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 3,
+          "y": 2
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 4,
+          "y": 2
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 2
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 0,
+          "y": 3
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 1,
+          "y": 3
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 2,
+          "y": 3
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 3,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 5,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 1,
+          "y": 4
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 4
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 3,
+          "y": 4
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 5,
+          "y": 4
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 0,
+          "y": 5
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 1,
+          "y": 5
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 2,
+          "y": 5
+        },
+        {
+          "char": "F",
+          "is_black": false,
+          "x": 3,
+          "y": 5
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 4,
+          "y": 5
+        },
+        {
+          "char": "C",
+          "is_black": false,
+          "x": 5,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 6
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 1,
+          "y": 6
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 2,
+          "y": 6
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 3,
+          "y": 6
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 6
+        },
+        {
+          "char": "H",
+          "is_black": false,
+          "x": 5,
+          "y": 6
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 0,
+          "y": 7
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 1,
+          "y": 7
+        },
+        {
+          "char": "C",
+          "is_black": false,
+          "x": 2,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 7
+        },
+        {
+          "char": "C",
+          "is_black": false,
+          "x": 4,
+          "y": 7
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 8
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 1,
+          "y": 8
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 2,
+          "y": 8
+        },
+        {
+          "char": "J",
+          "is_black": false,
+          "x": 3,
+          "y": 8
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 8
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 5,
+          "y": 8
+        },
+        {
+          "char": "G",
+          "is_black": false,
+          "x": 0,
+          "y": 9
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 9
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 2,
+          "y": 9
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 9
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 4,
+          "y": 9
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 9
+        }
+      ],
+      "clues": [
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 6,
+          "slot_id": 0,
+          "text": "REVOIR",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 7,
+          "slot_id": 1,
+          "text": "FURTIFS",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 2,
+          "text": "LES",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 3,
+          "text": "REFUGE",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 4,
+          "text": "FIN",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 5,
+          "text": "GUERI",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 6,
+          "text": "VIRUS",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 7,
+          "text": "MONTE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 2,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 8,
+          "text": "IRA",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 5,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 9,
+          "text": "ACHETE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 10,
+          "text": "TRAFIC",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 4,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 11,
+          "text": "AUCUN",
+          "x": 2,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 1,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 12,
+          "text": "US",
+          "x": 2,
+          "y": 6
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 13,
+          "text": "TOC",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 1,
+          "cell_y": 6,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 14,
+          "text": "OSE",
+          "x": 1,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 7,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 15,
+          "text": "CE",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 6,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 16,
+          "text": "CES",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 17,
+          "text": "SUJET",
+          "x": 1,
+          "y": 8
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 3,
+          "cell_y": 7,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 2,
+          "slot_id": 18,
+          "text": "JE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 19,
+          "text": "GENESE",
+          "x": 0,
+          "y": 9
+        }
+      ],
+      "fill_ratio": 1.0,
+      "geometry": "sur_mesure",
+      "height": 10,
+      "layout": "sur-mesure",
+      "must_words": [],
+      "seed": 103,
+      "statistics": {
+        "attempts": 1,
+        "cache_stats": {
+          "hits": 0,
+          "misses": 0
+        },
+        "metrics": {
+          "backtracks": 14,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "candidates_tested": 72,
+          "fc_checks": 71,
+          "fc_skips": 37,
+          "recursive_calls": 41,
+          "repairs": 6
+        },
+        "placement_history": [
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 1,
+            "score": 27,
+            "slot_id": 2,
+            "word": "LES"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 2,
+            "score": 36,
+            "slot_id": 7,
+            "word": "MONTE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 3,
+            "score": 16,
+            "slot_id": 4,
+            "word": "FIN"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 4,
+            "score": 45,
+            "slot_id": 0,
+            "word": "REVOIR"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 5,
+            "score": 32,
+            "slot_id": 6,
+            "word": "VIRUS"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 6,
+            "score": 42,
+            "slot_id": 3,
+            "word": "REFUGE"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 7,
+            "score": 36,
+            "slot_id": 5,
+            "word": "GUERI"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 8,
+            "score": 25,
+            "slot_id": 8,
+            "word": "IRA"
+          },
+          {
+            "direction": "down",
+            "length": 7,
+            "order": 9,
+            "score": 39,
+            "slot_id": 1,
+            "word": "FURTIFS"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 10,
+            "score": 14,
+            "slot_id": 12,
+            "word": "US"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 11,
+            "score": 15,
+            "slot_id": 13,
+            "word": "TOC"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 12,
+            "score": 35,
+            "slot_id": 10,
+            "word": "TRAFIC"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 13,
+            "score": 30,
+            "slot_id": 11,
+            "word": "AUCUN"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 14,
+            "score": 55,
+            "slot_id": 19,
+            "word": "GENESE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 15,
+            "score": 23,
+            "slot_id": 16,
+            "word": "CES"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 16,
+            "score": 45,
+            "slot_id": 9,
+            "word": "ACHETE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 17,
+            "score": 27,
+            "slot_id": 14,
+            "word": "OSE"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 18,
+            "score": 35,
+            "slot_id": 17,
+            "word": "SUJET"
+          },
+          {
+            "direction": "down",
+            "length": 2,
+            "order": 19,
+            "score": 14,
+            "slot_id": 18,
+            "word": "JE"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 20,
+            "score": 15,
+            "slot_id": 15,
+            "word": "CE"
+          }
+        ]
+      },
+      "width": 6,
+      "wish_ratio": 0.0,
+      "words": [
+        {
+          "direction": "down",
+          "id": 0,
+          "score": 45,
+          "source": "common",
+          "text": "REVOIR",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 1,
+          "score": 39,
+          "source": "common",
+          "text": "FURTIFS",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 2,
+          "score": 27,
+          "source": "common",
+          "text": "LES",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "direction": "across",
+          "id": 3,
+          "score": 42,
+          "source": "common",
+          "text": "REFUGE",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 4,
+          "score": 16,
+          "source": "common",
+          "text": "FIN",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 5,
+          "score": 36,
+          "source": "common",
+          "text": "GUERI",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 6,
+          "score": 32,
+          "source": "common",
+          "text": "VIRUS",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "direction": "across",
+          "id": 7,
+          "score": 36,
+          "source": "common",
+          "text": "MONTE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 8,
+          "score": 25,
+          "source": "common",
+          "text": "IRA",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 9,
+          "score": 45,
+          "source": "common",
+          "text": "ACHETE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 10,
+          "score": 35,
+          "source": "common",
+          "text": "TRAFIC",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "direction": "down",
+          "id": 11,
+          "score": 30,
+          "source": "common",
+          "text": "AUCUN",
+          "x": 2,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 12,
+          "score": 14,
+          "source": "common",
+          "text": "US",
+          "x": 2,
+          "y": 6
+        },
+        {
+          "direction": "across",
+          "id": 13,
+          "score": 15,
+          "source": "common",
+          "text": "TOC",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "direction": "down",
+          "id": 14,
+          "score": 27,
+          "source": "common",
+          "text": "OSE",
+          "x": 1,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 15,
+          "score": 15,
+          "source": "common",
+          "text": "CE",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "direction": "down",
+          "id": 16,
+          "score": 23,
+          "source": "common",
+          "text": "CES",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 17,
+          "score": 35,
+          "source": "common",
+          "text": "SUJET",
+          "x": 1,
+          "y": 8
+        },
+        {
+          "direction": "down",
+          "id": 18,
+          "score": 14,
+          "source": "common",
+          "text": "JE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "direction": "across",
+          "id": 19,
+          "score": 55,
+          "source": "common",
+          "text": "GENESE",
+          "x": 0,
+          "y": 9
+        }
+      ]
+    }
+  },
+  "clues": {
+    "ACHETE": "Acquis contre argent",
+    "AUCUN": "Pas un seul",
+    "CE": "Démonstratif court",
+    "CES": "Démonstratif pluriel",
+    "FIN": "Elle arrive en dernier",
+    "FURTIFS": "Discrets",
+    "GENESE": "Premier livre biblique",
+    "GUERI": "Remis sur pied",
+    "IRA": "Se rendra",
+    "JE": "Pronom égocentrique",
+    "LES": "Article pluriel",
+    "MONTE": "Grimpe",
+    "OSE": "Se lance",
+    "REFUGE": "Abri de montagne",
+    "REVOIR": "Adieu, avec au",
+    "SUJET": "Thème de dissertation",
+    "TOC": "Faux bijou",
+    "TRAFIC": "Il bouche le périph",
+    "US": "Coutumes",
+    "VIRUS": "Il infecte"
+  }
+}
