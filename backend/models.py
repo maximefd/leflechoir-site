@@ -458,3 +458,25 @@ class SeoUrlCheck(db.Model):
     coverage = db.Column(db.String(120), nullable=True)
 
     __table_args__ = (db.UniqueConstraint('site', 'url', name='uq_seo_url_check_site_url'),)
+
+
+class GridSuccess(db.Model):
+    """Une grille du jour réussie par un compte (J3, demande de l'auteur du 26/10/2026) : la coche du calendrier et la
+    série, retrouvées sur tous les appareils. Sans compte, la même note reste dans le navigateur. Une grille réussie
+    l'est sans que sa solution ait été dévoilée ; le meilleur temps est gardé. Les réussites partent avec le compte.
+    """
+    __tablename__ = 'grid_success'
+    __table_args__ = (db.UniqueConstraint('user_id', 'lang', 'grid_date', name='uq_grid_success_user_lang_date'),)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    lang = db.Column(db.String(5), nullable=False)
+    # La date de la grille (AAAA-MM-JJ), qui est aussi son adresse : /jouer/<date>
+    grid_date = db.Column(db.Date, nullable=False)
+    # Le meilleur temps, en millisecondes (vide si l'horloge n'a pas tourné)
+    best_ms = db.Column(db.Integer, nullable=True)
+    # Le jour de la première réussite (heure de Paris, celle du joueur)
+    first_day = db.Column(db.Date, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow(), onupdate=lambda: _utcnow())
+
+    def to_json(self):
+        return {"ms": self.best_ms, "le": self.first_day.isoformat()}

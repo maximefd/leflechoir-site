@@ -7,6 +7,7 @@ invalide est rejetée avec une erreur 400 et un message en français, sans jamai
 renvoyer la valeur reçue (pour ne pas refléter de mot de passe ou de contenu hostile).
 """
 
+from datetime import date as date_type
 from typing import Annotated, Literal, TypeVar
 
 from email_validator import EmailNotValidError, validate_email
@@ -111,6 +112,19 @@ class SuggestionRequest(ApiModel):
     kind: Literal["remove", "add"]
     word: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=30, pattern=WORD_PATTERN)]
     source: Literal["search", "search_empty", "grid", "editor", "editor_unknown", "mots"]
+
+
+class Reussite(ApiModel):
+    """Une grille du jour réussie : sa date, le meilleur temps, le jour de la première réussite (J3)."""
+    date: date_type
+    ms: Annotated[int, Field(ge=0, le=86_400_000)] | None = None
+    le: date_type
+
+
+class ReussitesRequest(ApiModel):
+    """Les réussites à garder avec le compte : une seule à la fin d'une partie, toutes celles du navigateur à la
+    connexion. Le plafond couvre plus d'un an de grilles du jour."""
+    reussites: Annotated[list[Reussite], Field(min_length=1, max_length=500)]
 
 
 class ContactRequest(ApiModel):

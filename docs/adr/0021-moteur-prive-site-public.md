@@ -28,5 +28,16 @@
 - Sur GitHub Free, le dépôt privé perd la protection de branche obligatoire et le signalement privé des failles, et la CI passe à **2 000 minutes par mois**. Compensations :
   - les fusions restent soumises à une CI verte et à l'accord de l'auteur ;
   - la CI est allégée : runs remplacés annulés, documentation seule sans CI, parcours de bout en bout sur les PR seulement ;
+  - **révision du 26/10/2026** (alerte des 90 % : 1 806 minutes au 25 du mois, dont 1 336 pour nos PR, 469 pour
+    Dependabot et 256 pour les fusions sur `main`) :
+    - la CI ne tourne plus que sur les PR : le commit fusionné y est déjà passé, et `main` ne se déploie que par
+      `make livrer` ;
+    - un job « tri » ne lance que ce que la PR touche : les tests Python pour `backend/`, `tools/`, `data/` et les
+      fichiers du site qu'ils lisent ; le site et ses parcours pour `frontend/` et `backend/` ;
+    - les parcours ne visent plus que l'export publié (le serveur de développement l'est en local), et les contrôles du
+      site (audit, lint, types) partagent son installation et son build ;
+    - Dependabot passe au mois, une PR groupée par écosystème ;
+    - un budget de 0 $ pour Actions, réglé par l'auteur : au-delà du forfait, la CI s'arrête au lieu d'être facturée ;
+    - puis, le même jour, la CI passe sur le Mac ([ADR 0030](0030-ci-locale.md)) : Actions ne sert plus qu'en secours.
   - le `security.txt` du site (déjà en place), pour le signalement des failles (#122).
 - Toute nouvelle partie liée au moteur ou au lexique doit être ajoutée à `tools/public/prive.txt` ; le script vérifie qu'aucun chemin listé ne subsiste dans l'export.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Eye, Loader2, Printer, Share2 } from "lucide-react";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ const chrono = (ms: number) => {
   const seconds = Math.floor(ms / 1000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 };
-const inWords = (ms: number) => {
+export const inWords = (ms: number) => {
   const seconds = Math.round(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   return minutes ? `${minutes} min ${String(seconds % 60).padStart(2, "0")} s` : `${seconds} s`;
@@ -42,7 +42,14 @@ const PEEK_SECONDS = 3;
  * de cause. La partie compte (une seule fois par page) dès la première lettre écrite : mesure sans cookie
  * (ADR 0016).
  */
-export function GridPlayer({ spec, title }: { spec: MiniGridSpec; title: string }) {
+export function GridPlayer({ spec, title, onSolved, fin }: {
+  spec: MiniGridSpec;
+  title: string;
+  /** Une grille juste sans la solution montrée, avec son temps (les grilles du jour la notent : lib/reussites.ts) */
+  onSolved?: (ms: number | null) => void;
+  /** Ce qui s'ajoute au panneau de fin (la série en cours) */
+  fin?: ReactNode;
+}) {
   const {
     mini, entries, cursor, wrong, message, solved, revealed, current, definition, inputRef,
     selectCell, goTo, ecrire, effacer, onKeyDown, check, reveal, restart,
@@ -86,6 +93,18 @@ export function GridPlayer({ spec, title }: { spec: MiniGridSpec; title: string 
       setRunning(false);
     }
   }, [solved, revealed, running]);
+
+  // La réussite part une fois l'horloge arrêtée, pour en donner le temps ; une seule fois par partie. Le coup d'œil
+  // et le joker sont des aides : la grille finie juste compte ; seule la solution dévoilée l'empêche (l'auteur, 26/10)
+  const reported = useRef(false);
+  useEffect(() => {
+    if (!solved) reported.current = false;
+    else if (!revealed && !running && !reported.current) {
+      reported.current = true;
+      onSolved?.(elapsed);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solved, revealed, running, elapsed]);
 
   // La grille complète et juste se termine d'elle-même : le « Bravo » n'attend pas un clic sur le joker,
   // qui reste le geste pour souligner les erreurs en cours de route. L'effet ne regarde que le basculement
@@ -173,6 +192,14 @@ export function GridPlayer({ spec, title }: { spec: MiniGridSpec; title: string 
   };
   const mystery = mini.grid.mystery;
   const finished = solved || revealed;
+  // La partie finie, le panneau de fin vient à l'écran (demande de l'auteur du 26/10/2026) : le clavier du téléphone
+  // se ferme, et la page descend jusqu'à lui, d'un coup
+  const endRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!finished) return;
+    inputRef.current?.blur();
+    endRef.current?.scrollIntoView({ block: "center" });
+  }, [finished, inputRef]);
   // Le sens des mots (ADR 0028) : seulement la partie finie, jamais pendant (pas même demandé à l'API avant)
   const sens = useSensDesMots(mini.words.map((word) => word.text), finished);
   const clock = running ? Date.now() - startedAt.current : elapsed;
@@ -230,7 +257,7 @@ export function GridPlayer({ spec, title }: { spec: MiniGridSpec; title: string 
         </div>
       </div>
       {finished && (
-        <div className="mt-4 rounded-lg border bg-secondary/30 p-4 text-center" data-testid="grid-end">
+        <div ref={endRef} className="mt-4 scroll-mt-24 rounded-lg border bg-secondary/30 p-4 text-center" data-testid="grid-end">
           <p className="text-lg font-semibold text-foreground">
             {solved ? "Bravo, la grille est juste !" : "Voici la solution."}
           </p>
@@ -242,6 +269,7 @@ export function GridPlayer({ spec, title }: { spec: MiniGridSpec; title: string 
               Le mot mystère était {mystery.word}.
             </p>
           )}
+          {fin}
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             <Button asChild size="sm">
               <Link href="/grid">Crée la tienne</Link>
@@ -338,6 +366,7 @@ export function GridPlayer({ spec, title }: { spec: MiniGridSpec; title: string 
             <DialogDescription>
               Un coup d’œil de trois secondes, le temps de débloquer une case — ou la grille dévoilée pour
               de bon, et la partie s’arrête là.
+              {onSolved && " Dévoilée, la grille ne comptera pas parmi tes réussites ; le coup d’œil, lui, ne l’empêche pas."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

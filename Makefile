@@ -6,7 +6,7 @@ BACKEND_RUN := docker run --rm -v "$(CURDIR)/backend":/app -w /app -e PYTHONDONT
 # Outils (tools/) : dépôt complet monté, commandes lancées depuis sa racine
 TOOLS_RUN := docker run --rm -v "$(CURDIR)":/repo -w /repo -e PYTHONDONTWRITEBYTECODE=1 $(PY_IMAGE) sh -c
 
-.PHONY: help setup dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report \
+.PHONY: help setup dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report livrer verifier \
 	deploy deploy-api deploy-front deploy-lexicon rollback deploy-status suggestions-pull \
 	lexicon-download lexicon-build lexicon-export lexicon-sens lexicon-stats listes \
 	curator curator-bg curator-stop curator-logs curator-check curator-urls \
@@ -132,6 +132,12 @@ bench-load: ## Profil de charge : RAM, CPU par génération, concurrence (2 CPU,
 
 db-backup: ## Sauvegarde PostgreSQL dans backups/ (chiffrée si BACKUP_AGE_RECIPIENT, rotation à 30 jours)
 	tools/db/backup.sh
+
+verifier: ## CI sur le Mac (ADR 0030), affichée sur la PR : PR=250, ou REF=branche (défaut : HEAD) ; TOUT=1 pour tout vérifier
+	tools/ci/verifier.sh $(or $(PR),$(REF),HEAD)
+
+livrer: ## Livre une PR validée : attend sa CI, la fusionne, déploie main et vérifie (PR=244 [CIBLE=all|api|front|rien])
+	tools/deploy/livrer.sh $(PR) $(or $(CIBLE),all)
 
 deploy: ## Déploie le commit en cours : l'API sur le serveur, le site sur Cloudflare Pages (ADR 0019), puis le dépôt public (ADR 0021)
 	tools/deploy/deploy.sh all

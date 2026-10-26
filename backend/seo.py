@@ -49,6 +49,8 @@ INSPECT_PER_TICK = 8
 INSPECT_EVERY = timedelta(days=7)
 QUERY_ROWS = 5000
 TIMEOUT_S = 30
+# Cloudflare refuse la signature par défaut de Python (« Python-urllib ») : le relevé dit qui il est
+USER_AGENT = "LeFlechoir-pilotage/1.0 (+https://leflechoir.fr/a-propos)"
 
 # Les questions suivies : celles de la FAQ de l'accueil (frontend/src/content/faq-accueil.ts) et les requêtes visées
 # (docs/VISIBILITE-IA.md). Une requête compte pour une question si chacun de ses groupes y a un mot ; un mot finissant
@@ -110,7 +112,7 @@ def _utcnow() -> datetime:
 
 
 def _http(url: str, *, data: bytes | None = None, headers: dict | None = None) -> dict | list:
-    request = urllib.request.Request(url, data=data, headers=headers or {})
+    request = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT, **(headers or {})})
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT_S) as response:
             return json.loads(response.read().decode("utf-8") or "{}")
@@ -289,7 +291,7 @@ def sync_bing(today: date, config=None) -> None:
 
 def sitemap_urls(config) -> list[str]:
     site = (config.get("FRONTEND_URL") or "").rstrip("/")
-    request = urllib.request.Request(f"{site}/sitemap.xml")
+    request = urllib.request.Request(f"{site}/sitemap.xml", headers={"User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT_S) as response:
             body = response.read().decode("utf-8")
@@ -344,6 +346,7 @@ def sync(now: datetime | None = None, force: bool = False, config=None) -> dict[
         error = None
         try:
             step(now.date(), config)
+            db.session.commit()  # les chiffres relevés restent, même si la liste des adresses échoue ensuite
             if source == "google":
                 refresh_urls(config)
         except Exception as failure:  # un réglage faux (clé mal formée, propriété inconnue) se lit au tableau de bord

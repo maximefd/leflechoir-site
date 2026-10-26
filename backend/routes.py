@@ -49,7 +49,7 @@ from schemas import (
 from monitoring import report_exception
 from security import HTTP_ERROR_MESSAGES, client_ip
 import usage
-from models import ContactMessage, LayoutProposal, UsageEvent, WordSuggestion
+from models import ContactMessage, GridSuccess, LayoutProposal, UsageEvent, WordSuggestion
 from suggestions import record_replaced_words
 
 # On crée un nouveau Blueprint pour les routes principales
@@ -1045,6 +1045,7 @@ def get_self():
         "dictionaries": len(user.dictionaries),
         "words": words,
         "grids": len(user.grids),
+        "reussites": GridSuccess.query.filter_by(user_id=user.id).count(),
     }), 200
 
 
@@ -1070,6 +1071,7 @@ def delete_self():
     ContactMessage.query.filter_by(user_id=user.id).delete()
     # Les mises en page proposées avant le retrait de la proposition (#221) restent en base : elles partent avec le compte
     LayoutProposal.query.filter_by(user_id=user.id).delete()
+    GridSuccess.query.filter_by(user_id=user.id).delete()
     db.session.delete(user)
     db.session.commit()
     usage.describe("account", "delete")

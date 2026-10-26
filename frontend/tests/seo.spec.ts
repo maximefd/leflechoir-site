@@ -40,7 +40,7 @@ const PUBLIC_PAGES = [
     title: "Comment créer des mots fléchés : de l’idée à la grille | Le Fléchoir",
     canonical: `${SITE_URL}/creer-des-mots-fleches`,
   },
-  { path: "/jouer", title: "Mots fléchés du jour | Le Fléchoir", canonical: `${SITE_URL}/jouer` },
+  { path: "/jouer", title: "Mots fléchés du jour, gratuits et en ligne | Le Fléchoir", canonical: `${SITE_URL}/jouer` },
   { path: "/articles", title: "Articles sur les mots fléchés | Le Fléchoir", canonical: `${SITE_URL}/articles` },
   { path: "/mots", title: "Listes de mots pour les mots fléchés | Le Fléchoir", canonical: `${SITE_URL}/mots` },
   ...[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => ({

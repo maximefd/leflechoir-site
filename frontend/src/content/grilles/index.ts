@@ -97,14 +97,6 @@ export function grilleDuJour(jour: string): { date: string; force?: number } | n
   return GRILLES.find((grille) => grille.date <= jour) ?? null;
 }
 
-/** Combien de grilles récentes `/jouer` montre : de quoi rejouer la semaine passée et un peu plus */
-export const NOMBRE_PARUES = 14;
-
-/** Les grilles parues au jour donné (heure de Paris), les plus récentes d’abord */
-export function parues(jour: string): { date: string; force?: number }[] {
-  return GRILLES.filter((grille) => grille.date <= jour).slice(0, NOMBRE_PARUES);
-}
-
 /**
  * La garde du stock (ADR 0026) : au moins sept jours de grilles devant le jour du build, sinon il casse —
  * le site ne publierait plus rien dans une semaine sans que rien ne le dise. En développement, la page joue

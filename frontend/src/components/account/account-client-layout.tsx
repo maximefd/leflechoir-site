@@ -22,7 +22,9 @@ import { apiFetch } from "@/lib/api-client";
 import { site } from "@/config/site";
 import { MySuggestions } from "@/components/suggestions/my-suggestions";
 
-type Account = { email: string; email_verified: boolean; dictionaries: number; words: number; grids: number };
+type Account = {
+  email: string; email_verified: boolean; dictionaries: number; words: number; grids: number; reussites?: number;
+};
 
 function count(value: number, singular: string, plural: string) {
   return `${value} ${value > 1 ? plural : singular}`;
@@ -34,6 +36,8 @@ function contents(account: Account) {
     count(account.dictionaries, "dictionnaire", "dictionnaires"),
     count(account.words, "mot", "mots"),
     count(account.grids, "grille conservée", "grilles conservées"),
+    // Les grilles du jour réussies, quand il y en a (lib/reussites.ts)
+    ...(account.reussites ? [count(account.reussites, "grille du jour réussie", "grilles du jour réussies")] : []),
   ];
   return `${parts.slice(0, -1).join(", ")} et ${parts.at(-1)}`;
 }

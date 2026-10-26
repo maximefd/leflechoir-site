@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch, forgetLegacyTokens, hasSession, SESSION_EXPIRED_EVENT } from "@/lib/api-client";
 import { forgetLastGrid } from "@/lib/last-grid";
+import { oublierReussites } from "@/lib/reussites";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -64,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
     queryClient.clear();
     forgetLastGrid();
+    oublierReussites();
   };
 
   return (

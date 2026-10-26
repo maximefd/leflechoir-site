@@ -235,6 +235,9 @@ test("sans violation d'accessibilité, sur ordinateur et sur téléphone, avec s
     await page.setViewportSize({ width: largeur, height: hauteur });
     await page.goto(EZ);
     await expect(page.locator("main section#la-liste")).toBeVisible();
+    // « Resserrer la liste » apparaît en fondu : mesuré pendant le fondu, son contraste serait faux
+    await page.waitForFunction(() =>
+      document.getAnimations().every((a) => a.playState !== "running" || a.effect?.getComputedTiming().iterations === Infinity));
 
     const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).exclude("nextjs-portal").analyze();
     expect(violations.map((v) => ({ règle: v.id, éléments: v.nodes.map((n) => n.target.join(" ")) }))).toEqual([]);

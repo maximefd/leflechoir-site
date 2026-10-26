@@ -76,7 +76,7 @@ Le contrôle d'accessibilité (`tests/accessibility.spec.ts`) passe **axe** sur 
 Il ne juge que ce qui se vérifie par le code — contraste, intitulés, rôles, ordre des titres. Un écran qui
 y passe peut rester incompréhensible : c'est le rôle de la [revue UX](docs/AUDIT-UX.md).
 
-Parcours sur **l'export statique**, le site tel qu'il est publié (#121) : construire l'export dans une copie du dépôt (jamais dans `frontend/` pendant que le serveur de dev tourne), puis `PLAYWRIGHT_STATIC=1 PLAYWRIGHT_BASE_URL=http://localhost:3098 pnpm exec playwright test` depuis son `frontend/`. Playwright sert `out/` comme Cloudflare Pages (`pnpm serve:static`, avec `_headers`), et `csp.spec.ts` y tourne, alors qu'il est sauté sur le serveur de dev. La CI le fait à chaque PR.
+Parcours sur **l'export statique**, le site tel qu'il est publié (#121) : construire l'export dans une copie du dépôt (jamais dans `frontend/` pendant que le serveur de dev tourne), puis `PLAYWRIGHT_STATIC=1 PLAYWRIGHT_BASE_URL=http://localhost:3098 pnpm exec playwright test` depuis son `frontend/`. Playwright sert `out/` comme Cloudflare Pages (`pnpm serve:static`, avec `_headers`), et `csp.spec.ts` y tourne, alors qu'il est sauté sur le serveur de dev. `make verifier` le fait pour chaque PR.
 
 Captures d'écran du README (API et frontend démarrés) : `cd frontend && pnpm exec playwright test tests/screenshots.spec.ts`. Playwright utilise le **Google Chrome installé** sur la machine (`channel: 'chrome'` dans `playwright.config.ts`) : inutile de lancer `playwright install chromium`, dont le téléchargement se fige sur la machine de l'auteur.
 
@@ -96,7 +96,7 @@ Captures d'écran du README (API et frontend démarrés) : `cd frontend && pnpm 
    ```
    Types : `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`, `ci`. Portées courantes : `backend`, `frontend`, `engine`, `config`, `bench`.
 3. Ouvrir une **PR vers `main`** en remplissant le modèle (quoi, pourquoi, comment tester).
-4. La **CI doit être verte** avant la fusion.
+4. La **CI doit être verte** avant la fusion : `make verifier PR=N` la passe sur le Mac et l'affiche sur la PR (contrôle « ci-locale », [ADR 0030](docs/adr/0030-ci-locale.md)). GitHub Actions ne sert plus qu'en secours, lancé à la main.
 5. Fusion par **merge commit**, pour garder l'historique détaillé et permettre les PR empilées.
 
 Chaque PR est rattachée à un milestone (une phase de la [roadmap](docs/ROADMAP.md)) quand c'est pertinent.

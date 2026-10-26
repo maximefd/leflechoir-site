@@ -9,7 +9,8 @@ Terminator : outil personnel de création de mots fléchés (recherche par motif
 - Benchmark moteur : `make bench` (à comparer à `backend/benchmarks/baseline.json`) ; profil de charge (RAM, CPU, concurrence) : `make bench-load`
 - Outils / lexique : `make test-tools`, `make lexicon-build`, `make lexicon-stats`, `make lexicon-export` ([docs/LEXICON.md](docs/LEXICON.md)) ; ne jamais réécrire `data/lexicon/decisions.csv` (ajout seul)
 - Dev : `make dev-api` (API :5001 + Postgres) et `make dev-front` (:3000)
-- Déploiement ([ADR 0019](docs/adr/0019-deploiement.md), [docs/PRODUCTION.md](docs/PRODUCTION.md)) : `make deploy` (API puis site), `make rollback` ; migrations additives seulement
+- CI ([ADR 0030](docs/adr/0030-ci-locale.md)) : `make verifier PR=N` sur le Mac, affichée sur la PR (contrôle « ci-locale ») ; à lancer en tâche de fond dès qu'une PR est prête. GitHub Actions n'est plus qu'un secours manuel (minutes comptées)
+- Déploiement ([ADR 0019](docs/adr/0019-deploiement.md), [docs/PRODUCTION.md](docs/PRODUCTION.md)) : `make livrer PR=N` pour une PR validée (passe la CI locale si besoin, fusionne, déploie, vérifie : à lancer en tâche de fond, sa fin réveille Claude), `make deploy` (API puis site), `make rollback` ; migrations additives seulement
 - Mesure d'usage : `make stats` (`flask stats` dans le conteneur de l'API, sans charger le lexique) ; `make seed-demo` la remplit d'événements fictifs en local, pour le poste de pilotage (refusé en production)
 - Système et alertes ([ADR 0022](docs/adr/0022-echantillons-systeme-et-alertes.md)) : `make system-tick`, `make test-alert`, `make weekly-report` en local (Mailpit) ; sur le serveur, c'est cron qui lance `tools/monitor/tick.sh`, installé par l'auteur
 - Base : `make db-backup` (dans `backups/`, ignoré par git) et `make db-restore-check FILE=…` (restaure dans une base jetable, jamais dans la base en service)
@@ -34,6 +35,6 @@ Terminator : outil personnel de création de mots fléchés (recherche par motif
 - **Frontend** : appels via `apiFetch`, textes en français, raccourcis compatibles AZERTY (flèches, Tab, Entrée, Retour arrière).
 - **Ne jamais lancer `next build` dans `frontend/`** pendant que le serveur de dev tourne (il écrase `.next`) : construire dans une copie. Le build est un **export statique** (`out/`, avec `out/_headers`) : pas de route dynamique ni de code serveur Next (identifiants en paramètre, `?id=`).
 - **Ne pas utiliser `npx`** pour les outils du projet : utiliser `frontend/node_modules/.bin/…` ou `pnpm exec`.
-- Git : branche par sujet, Conventional Commits, PR vers `main`, CI verte, merge commit.
+- Git : branche par sujet, Conventional Commits, PR vers `main`, contrôle « ci-locale » vert, merge commit.
 - Docs en français ; une ADR pour chaque décision structurante ; mettre à jour le CHANGELOG.
 - **Dépôt privé, site public** ([ADR 0021](docs/adr/0021-moteur-prive-site-public.md)) : ce dépôt est privé ; `make deploy` publie le site et l'API dans `maximefd/leflechoir-site`, sans les chemins de `tools/public/prive.txt` (moteur, lexique). Tout nouveau fichier du moteur ou du lexique s'y ajoute.

@@ -4,6 +4,31 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 
 ## [Non publié]
 
+### Modifié
+- **La CI sur le Mac** (alerte GitHub des 90 % de minutes, 26/10/2026 ; ADR 0030) : `make verifier PR=N` passe les
+  contrôles de GitHub (gitleaks, Python, site, parcours sur l'export) sur le commit de la PR fusionné avec main, dans
+  une copie propre et une pile Docker jetable, et affiche le résultat sur la PR (contrôle « ci-locale »). `make
+  livrer` la lance d'office si besoin. GitHub Actions ne sert plus qu'en secours, à la main ; Dependabot passe au
+  mois, groupé.
+
+### Ajouté
+- **Les pages Jouer dans les résultats de recherche** (demande de l'auteur du 26/10/2026) : « gratuits » et « en ligne »
+  au titre, le mot que l'on tape ; la description d'une grille datée s'ouvre sur l'une de ses définitions et la
+  longueur de sa réponse (« Place du pilote », en 9 lettres ?), puis ce qui fait jouer, en 155 caractères au plus ; la
+  date de parution dans les données structurées.
+- **L'onglet Jouer en calendrier, avec la progression du joueur** (demandes de l'auteur des 25 et 26/10/2026, J3 : « la
+  liste des réussites ») : sous chaque grille, et sur `/jouer`, un calendrier centré des grilles parues, mois par mois,
+  ouvert sur le mois de la grille. Les grilles réussies y sont cochées, et la série en cours se lit au-dessus et en fin
+  de partie. La veille et le lendemain paru se rejoignent dès le haut de la page. Une grille est réussie si elle est
+  finie juste sans avoir dévoilé la solution (le joker et le coup d'œil restent des aides). Sans compte, les réussites
+  restent dans le navigateur, et le site invite à en créer un ; avec un compte, elles sont gardées avec lui
+  (`/api/reussites`, table `grid_success`, migration 0018) et suivent la personne d'un appareil à l'autre. La page
+  confidentialité le décrit.
+
+### Corrigé
+- **Relevé SEO** (ADR 0029) : Cloudflare refusait le sitemap au serveur (403 sur la signature « Python-urllib ») ; le
+  relevé dit maintenant qui il est. Un échec sur le sitemap n'annule plus les chiffres de Google déjà relevés.
+
 ### Sécurité
 - **Dépendances du site** (alertes publiées le 25/10/2026) : Next.js 15.5.28 (GHSA-2464-fhr4-w9xw, critique, et
   GHSA-p3m5-59mp-jv5r ; sans effet sur un export statique, mais l'audit de la CI les arrête), DOMPurify 3.4.17 tiré par

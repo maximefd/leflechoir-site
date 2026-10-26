@@ -21,6 +21,7 @@ from admin import admin_bp, init_admin_cli
 from alerts import init_system_cli
 from seo import init_seo_cli
 from suggestions import init_suggestions
+from reussites import reussites_bp
 from sens import sens_bp
 from audience import audience_bp
 from contact import contact_bp
@@ -356,6 +357,7 @@ def create_app(test_config=None):
     app.register_blueprint(articles_bp)
     app.register_blueprint(texte_bp)
     app.register_blueprint(sens_bp)
+    app.register_blueprint(reussites_bp)
     init_suggestions(app)
     init_rate_limiting(app)
     init_usage(app)

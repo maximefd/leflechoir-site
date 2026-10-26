@@ -146,6 +146,41 @@ def test_a_failed_sync_is_noted_for_the_dashboard_and_not_retried_every_minute(t
     assert state["configured"] is True
 
 
+def test_a_sitemap_failure_keeps_the_google_figures_already_fetched(test_app, monkeypatch):
+    yesterday = (TODAY - timedelta(days=1)).isoformat()
+    google_on(test_app, monkeypatch, FakeEngines(google_days=[{"keys": [yesterday], "clicks": 3, "impressions": 50,
+                                                               "position": 7.0}]))
+
+    def refused(config):
+        raise seo.SeoError("sitemap illisible : HTTP Error 403: Forbidden")
+
+    monkeypatch.setattr(seo, "sitemap_urls", refused)
+    assert seo.sync(NOW)["google"].startswith("sitemap illisible")
+    assert SeoDaily.query.filter_by(source="google", day=TODAY - timedelta(days=1)).one().clicks == 3
+
+
+def test_requests_say_who_they_are(monkeypatch):
+    seen = {}
+
+    class Answer:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return b"{}"
+
+    def urlopen(request, timeout):
+        seen["agent"] = request.get_header("User-agent")
+        return Answer()
+
+    monkeypatch.setattr(seo.urllib.request, "urlopen", urlopen)
+    seo._http("https://ssl.bing.com/webmaster/api.svc/json/GetCrawlStats")
+    assert seen["agent"] == seo.USER_AGENT  # Cloudflare refuse « Python-urllib »
+
+
 def test_url_inspection_counts_indexed_pages(test_app, monkeypatch):
     google_on(test_app, monkeypatch, FakeEngines())
     seo.sync(NOW)

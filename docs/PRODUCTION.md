@@ -245,6 +245,20 @@ NEXT_PUBLIC_SENTRY_DSN=
 
 ## Déployer
 
+**Une PR validée** se livre d'une seule commande, sans surveillance :
+
+```bash
+make livrer PR=244            # CIBLE=api, front, ou rien (fusion seule) ; défaut : l'API puis le site
+```
+
+Elle passe la CI de la PR sur le Mac si elle n'y est pas encore passée (`make verifier`, [ADR 0030](adr/0030-ci-locale.md)),
+attend la fin des contrôles (et s'arrête si l'un échoue, en disant lequel), la fusionne (merge
+commit), déploie `origin/main` depuis une copie propre (un worktree temporaire : le dossier de travail et son serveur
+de dev ne sont pas touchés), puis vérifie le site et l'API de l'extérieur et résume. Claude la lance en tâche de fond
+dès que l'auteur a validé : sa fin le réveille, et il rend compte sans qu'on ait à le relancer.
+
+**Un commit déjà dans `main`** :
+
 ```bash
 git checkout main && git pull
 make deploy            # l'API, puis le site ; make deploy-api ou make deploy-front pour l'un des deux

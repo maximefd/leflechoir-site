@@ -37,7 +37,7 @@ export default function PrivacyPage() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <h1 className="text-3xl font-bold">Confidentialité</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 6 octobre 2026</p>
+      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 26 octobre 2026</p>
 
       <div className="mt-8 space-y-8 text-muted-foreground">
         <p className="rounded-lg border bg-secondary/20 p-4 text-foreground">
@@ -67,6 +67,10 @@ export default function PrivacyPage() {
               <strong className="text-foreground">Tes grilles conservées</strong> : leurs cases, leurs définitions,
               leur mot mystère s&apos;il y en a un (souvent un prénom) et tes notes. Le mot mystère tapé à la
               génération n&apos;est enregistré que si tu conserves la grille.
+            </li>
+            <li>
+              <strong className="text-foreground">Tes grilles du jour réussies</strong> : leur date, ton meilleur
+              temps et le jour de la première réussite (voir plus bas).
             </li>
             <li>
               <strong className="text-foreground">La date de ton inscription et celle de ta dernière
@@ -114,6 +118,26 @@ export default function PrivacyPage() {
             conservées : la taille et la place des cases définitions, jamais tes mots ni tes définitions, rattachées
             à ton compte (intérêt légitime, RGPD art. 6.1.f). Elles disparaissent avec ton compte.
           </p>
+        </Section>
+
+        <Section title="Les grilles du jour réussies" id="reussites">
+          <p>
+            Quand tu réussis une grille du jour (juste, sans avoir dévoilé la solution), sont notés : sa date, ton
+            meilleur temps et le jour où tu l&apos;as réussie. Ils servent à cocher la grille dans le calendrier et à
+            compter ta série.
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              <strong className="text-foreground">Sans compte</strong>, cette note reste dans ton navigateur (son
+              stockage local) : elle n&apos;est jamais envoyée au site, et disparaît quand tu effaces ses données.
+            </li>
+            <li>
+              <strong className="text-foreground">Avec un compte</strong>, elle est gardée avec lui, pour que tu
+              retrouves ta progression sur tous tes appareils ; à la connexion, les réussites notées dans le navigateur
+              le rejoignent. Elle sert seulement à te l&apos;afficher (RGPD, art. 6.1.b), disparaît avec ton compte, et
+              le navigateur l&apos;oublie quand tu te déconnectes.
+            </li>
+          </ul>
         </Section>
 
         <Section title="Ce qui passe sans être conservé longtemps">

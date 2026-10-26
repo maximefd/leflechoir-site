@@ -164,9 +164,14 @@ export function titreDuJour(date: string): string {
   return `Mots fléchés du ${enLettres.replace(/^1 /, "1er ")}`;
 }
 
-/** Une grille à jouer : page publique, dans le sitemap (ADR 0026). */
+/**
+ * Une grille à jouer : page publique, dans le sitemap (ADR 0026). Le titre de la page reste « Mots fléchés du 24
+ * octobre 2026 » ; celui des résultats de recherche ajoute « gratuits », le mot que l'on tape (57 caractères au plus
+ * avec le nom du site, sous la coupe de Google).
+ */
 export function jouerPage(grille: GrilleJson): Metadata {
-  return publicPage({ path: `/jouer/${grille.date}`, title: titreDuJour(grille.date), description: descriptionGrille(grille) });
+  const titre = titreDuJour(grille.date).replace("Mots fléchés du ", "Mots fléchés gratuits du ");
+  return publicPage({ path: `/jouer/${grille.date}`, title: titre, description: descriptionGrille(grille) });
 }
 
 /** Données structurées d'une grille à jouer : le jeu lui-même et son fil d'Ariane. */
@@ -184,6 +189,8 @@ export function jouerJsonLd(grille: GrilleJson) {
         mainEntityOfPage: url,
         image: `${site.url}${OG_IMAGE.url}`,
         isAccessibleForFree: true,
+        // Le jour de parution (la grille paraît à minuit, heure de Paris)
+        datePublished: grille.date,
         // Comme les articles : l'auteur ne publie pas son identité (docs/RGPD.md)
         author: { "@type": "Organization", name: site.name, url: site.url },
         publisher: { "@type": "Organization", name: site.name, url: site.url },
@@ -200,9 +207,21 @@ export function jouerJsonLd(grille: GrilleJson) {
   };
 }
 
-function descriptionGrille({ force, response: { grid } }: GrilleJson): string {
-  const forceAnnoncee = force ? `, force ${force} sur 4` : "";
-  return `Une grille de ${grid.width} × ${grid.height} cases${forceAnnoncee}, à jouer en ligne ou à imprimer, gratuitement. Une nouvelle grille chaque jour.`;
+/**
+ * La description qu'affichent Google et Bing sous le titre : une définition de la grille pour piquer la curiosité
+ * (jamais sa réponse, seulement sa longueur), puis ce qui fait jouer. La définition est la première de plus de deux
+ * mots, dans l'ordre du JSON : la même à chaque build. 155 caractères au plus (mesuré sur le stock du 26/10/2026),
+ * sous la coupe des moteurs.
+ */
+export function descriptionGrille({ force, clues, response: { grid } }: GrilleJson): string {
+  const accroche = Object.entries(clues ?? {}).find(([, definition]) => definition.trim().split(/\s+/).length > 2);
+  const question = accroche ? `« ${accroche[1].trim()} », en ${accroche[0].length} lettres ? ` : "";
+  const details = [
+    `${grid.words.length} définitions malignes`,
+    grid.mystery ? "un mot mystère" : "",
+    force ? `force ${force} sur 4` : "",
+  ].filter(Boolean).join(", ");
+  return `${question}${details}. Gratuit, sans inscription, sur écran ou papier.`;
 }
 
 /**

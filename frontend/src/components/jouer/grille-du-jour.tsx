@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { CalendrierDesGrilles } from "@/components/jouer/calendrier-des-grilles";
 import { JouerUneGrille } from "@/components/jouer/jouer-une-grille";
 import { GRILLES, LOADERS, aujourdhui } from "@/content/grilles";
 import type { GrilleJson } from "@/content/grilles/types";
@@ -22,9 +23,10 @@ type Etat =
  * site est un export figé au build, le jour, lui, avance. Un jour sans grille (le stock s'est épuisé), la page le
  * dit franchement et propose de rejouer une grille parue, plutôt que de faire passer une ancienne pour celle du
  * jour. Une grille à venir n'y paraît jamais en avance. `children` : ce que la page écrit au build sous la grille
- * (présentation de la rubrique, grilles parues), quel que soit le cas.
+ * (présentation de la rubrique), quel que soit le cas, suivi du calendrier des grilles parues ; `jourDuBuild` : le
+ * jour où la page a été écrite, celui des liens du calendrier avant que le navigateur remette le jour à l'heure.
  */
-export function GrilleDuJour({ children }: { children?: ReactNode }) {
+export function GrilleDuJour({ children, jourDuBuild }: { children?: ReactNode; jourDuBuild: string }) {
   const [etat, setEtat] = useState<Etat>({ cas: "attente" });
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export function GrilleDuJour({ children }: { children?: ReactNode }) {
         </p>
       )}
       {children}
+      <CalendrierDesGrilles jusqua={jourDuBuild} />
     </main>
   );
 }
