@@ -58,3 +58,7 @@ docs/STYLE-DEFINITIONS.md
 docs/adr/0026-la-grille-du-jour.md
 # Listes de mots publiées (pages /mots) : lisibles sur le site page par page, jamais téléchargeables d'un bloc
 frontend/src/content/mots/listes
+docs/ETUDE-INTERNATIONAL.md
+# Le cap du 26/10/2026 : reprise de l'international et API ouverte (conception du moteur, de la file et des quotas)
+docs/adr/0031-reprise-de-l-international.md
+docs/adr/0032-api-ouverte.md

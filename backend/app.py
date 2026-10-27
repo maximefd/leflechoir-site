@@ -12,6 +12,8 @@ from routes import MAX_QUALITY_BUDGET_S, main_bp
 from extensions import jwt, migrate
 from security import init_rate_limiting, register_error_handlers, register_jwt_callbacks, register_security_headers
 from lexicon_loader import LexiconManager
+from engine.langues import langue
+from normalization import definir_langue
 from logging_setup import LOG_FORMATS, configure_logging, register_request_id
 from mailer import MAIL_BACKENDS
 from monitoring import init_sentry
@@ -143,8 +145,9 @@ DEFAULT_SETTINGS = dict(
     FRONTEND_URL=DEFAULT_CORS_ORIGINS,
     # Journaux (logging_setup.py) : texte en développement, JSON en production
     LOG_FORMAT='text',
-    # Applique les migrations en attente au démarrage. Pratique en local ; à couper le jour où un
-    # déploiement les jouera lui-même, avant de lancer l'application (Phase 6).
+    # Applique les migrations en attente au démarrage, en production comme en local : sous gunicorn, l'application
+    # est créée une fois dans le maître avant les workers (preload_app), elles ne se jouent donc qu'une fois.
+    # Une étape de déploiement dédiée a été écartée (docs/ROADMAP.md, Phase 6) ; à revoir avec plusieurs serveurs.
     AUTO_MIGRATE=True,
 )
 
@@ -314,6 +317,10 @@ def create_app(test_config=None):
 
     configure_logging(app.config['LOG_FORMAT'])
     register_request_id(app)
+    # Un site = une langue = une API (ADR 0031) : une langue inconnue arrête le démarrage, et la normalisation des
+    # mots suit celle du site (Ä → AE en allemand)
+    langue(app.config['SITE_LANG'])
+    definir_langue(app.config['SITE_LANG'])
 
     if init_sentry(app):
         logging.info("Suivi des erreurs actif (Sentry, environnement %s).", app.config.get('APP_ENV'))

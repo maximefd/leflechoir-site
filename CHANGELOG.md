@@ -4,6 +4,27 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 
 ## [Non publié]
 
+### Ajouté
+- **Le socle « moteur et API » de l'international** (cap du 26/10/2026, étape 1 ; ADR 0031) :
+  - un code `reason` stable sur **toutes** les erreurs de l'API (validation, erreurs HTTP, jetons, routes), gardé par
+    un test qui lit le code ;
+  - la langue dans le moteur (`engine/langues.py` : alphabet, valeur des lettres, lettres rares, tables de difficulté
+    mesurées ou non), passée au générateur, au solveur, aux géométries autour des mots, à l'éditeur et à l'estimation
+    de difficulté ; le français garde ses valeurs (benchmark sur 20 seeds) ;
+  - la normalisation par langue (`normalization.py`, recopiée dans les outils du lexique) : en allemand Ä → AE,
+    Ö → OE, Ü → UE, ß → SS ; la capitale ẞ devient SS partout ;
+  - la langue et le site dans les réponses (`lang`, `site`, en-tête `Content-Language`) ; une langue inconnue arrête
+    le démarrage de l'API.
+- **Un site de plus, sans réécrire le code** (demande de l'auteur du 27/10/2026 ; ADR 0033, `docs/NOUVEAU-SITE.md`) :
+  un profil de déploiement par site (`deploy/sites/<site>.env`), un projet Compose par site sur le serveur, `SITE` en
+  paramètre de `make deploy`, `make livrer` et `make deploy-config` (français par défaut) ; le nom public du site
+  n'est plus écrit en dur dans le code du site ni dans le relevé SEO, et un test y veille.
+
+### Sécurité
+- **Dépendances de l'API** (Dependabot, #256) : SQLAlchemy 2.1.6, sentry-sdk 2.73.0, pydantic 2.14.1, et le pilote
+  PostgreSQL passe de psycopg2 à **psycopg 3** (3.3.6). SQLAlchemy 2.1 le prend par défaut pour `postgresql://` :
+  monté seul, il empêchait l'API de démarrer (attrapé par la CI locale le 27/10/2026).
+
 ### Modifié
 - **La CI sur le Mac** (alerte GitHub des 90 % de minutes, 26/10/2026 ; ADR 0030) : `make verifier PR=N` passe les
   contrôles de GitHub (gitleaks, Python, site, parcours sur l'export) sur le commit de la PR fusionné avec main, dans
@@ -12,6 +33,23 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   mois, groupé.
 
 ### Ajouté
+- **Cap du 26/10/2026** (décisions de l'auteur ; documentation seule) : une section de la roadmap, l'[ADR 0031](docs/adr/0031-reprise-de-l-international.md)
+  (reprise de l'international : socle « moteur et API », puis texte du site, puis allemand ; deuxième langue à choisir ;
+  multilingue prévu partout ; comptes séparés par site ; amende l'ADR 0023) et l'[ADR 0032](docs/adr/0032-api-ouverte.md)
+  (API ouverte aux assistants IA : génération de grilles seulement, clés, le site d'abord sans attente dans les workers,
+  sécurité, licence permissive). Connexions Google et Microsoft, C3 « Premier contact », C4
+  « Partager pour jouer en ligne » et la fin de la curation sont prioritaires ; ChatGPT, C2, C5, C6, C8 et le moteur en
+  Rust sont gardés en réserve.
+- **Les listes de mots de 9 et 10 lettres** (demande de l'auteur du 25/10/2026), au même format que de 2 à 8 : l'outil,
+  puis une page par initiale et par terminaison avec la liste complète (13 536 et 12 891 mots validés). À ces
+  longueurs, les mots validés sont surtout des formes conjuguées : terminaisons de 7 et 8 lettres, plus IEZ, IONS,
+  AIENT, ERAIT, ERONT et EMENT, chacune avec son conseil. Les boutons qui remplissaient les cases à 9 et 10 lettres
+  laissent la place à ces pages. Les cases du mot restent sur une seule rangée, comme dans la grille (avant, au-delà de 8
+  lettres, elles passaient sur deux et le mot semblait coupé en deux) ; seuls les mots de plus de 10 lettres passent
+  sur deux rangées, et sur téléphone seulement.
+- **`make livrer PR=N`** (demande de l'auteur du 25/10/2026) : une PR validée se livre d'une seule commande, qui
+  attend sa CI, la fusionne, déploie `main` depuis une copie propre et vérifie le site et l'API. Lancée en tâche de
+  fond par Claude dès le « validé » de l'auteur, elle le réveille en finissant : plus besoin de le relancer.
 - **Les pages Jouer dans les résultats de recherche** (demande de l'auteur du 26/10/2026) : « gratuits » et « en ligne »
   au titre, le mot que l'on tape ; la description d'une grille datée s'ouvre sur l'une de ses définitions et la
   longueur de sa réponse (« Place du pilote », en 9 lettres ?), puis ce qui fait jouer, en 155 caractères au plus ; la
@@ -26,6 +64,18 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   confidentialité le décrit.
 
 ### Corrigé
+- **Déploiement de l'API** : la vérification de l'extérieur réessaie pendant deux minutes. Le 27/10/2026, elle a conclu
+  à l'échec quelques secondes trop tôt, pendant que le tunnel se reconnectait (nouvelle image de cloudflared), alors que
+  la nouvelle version était en service. Le message de `make livrer` ne laisse plus croire à un retour en arrière.
+- **IndexNow après un déploiement** : le signalement attend que Cloudflare serve le nouveau sitemap (cinq minutes au
+  plus), puis envoie celui du build. Parti trop tôt, il signalait l'ancien : 304 adresses au lieu de 418 le 26/10/2026.
+- **Documentation qui contredisait le code** : le schéma d'[ARCHITECTURE](docs/ARCHITECTURE.md) montrait
+  encore un jeton `Bearer` entre le frontend et l'API, alors que la session voyage en cookies depuis
+  l'[ADR 0015](docs/adr/0015-session-en-cookies.md) ; ARCHITECTURE et le README du frontend donnaient
+  `http://localhost:5001` comme repli de `getApiBaseUrl()`, qui renvoie une chaîne vide (même origine, que
+  `next dev` relaie vers l'API) ; [SECURITY](docs/SECURITY.md) disait CORS « sans credentials ». Enfin, le
+  commentaire d'`AUTO_MIGRATE` (`backend/app.py`) prévoyait encore des migrations jouées au déploiement,
+  écartées par la [roadmap](docs/ROADMAP.md) (Phase 6). Aucun changement de comportement.
 - **Relevé SEO** (ADR 0029) : Cloudflare refusait le sitemap au serveur (403 sur la signature « Python-urllib ») ; le
   relevé dit maintenant qui il est. Un échec sur le sitemap n'annule plus les chiffres de Google déjà relevés.
 

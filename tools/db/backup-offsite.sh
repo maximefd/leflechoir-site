@@ -16,7 +16,9 @@
 # La rotation sur R2 (30 jours) est une règle de cycle de vie du seau : ce script ne supprime rien là-bas.
 set -eu
 
-BASE="${LEFLECHOIR_BASE:-/opt/leflechoir}"
+# Une sauvegarde par site (ADR 0033) : PROJET=<projet> dans la ligne de cron du site (défaut : leflechoir)
+PROJET="${PROJET:-leflechoir}"
+BASE="${LEFLECHOIR_BASE:-/opt/$PROJET}"
 ENV_FILE="${ENV_FILE:-$BASE/.env.production}"
 BACKUPS="$BASE/backups"
 MARKER="$BACKUPS/derniere-sauvegarde"
@@ -35,7 +37,7 @@ die() { printf 'ERREUR : %s\n' "$*" >&2; exit 1; }
 command -v rclone >/dev/null || die "rclone introuvable : sudo apt install rclone"
 
 # 1. Le dump, chiffré pour la clé publique : le serveur ne peut pas relire ses propres sauvegardes
-ENV_FILE="$ENV_FILE" DB_CONTAINER="${DB_CONTAINER:-leflechoir-db-1}" BACKUP_AGE_RECIPIENT="$BACKUP_AGE_RECIPIENT" \
+ENV_FILE="$ENV_FILE" DB_CONTAINER="${DB_CONTAINER:-$PROJET-db-1}" BACKUP_AGE_RECIPIENT="$BACKUP_AGE_RECIPIENT" \
     sh "$(dirname "$0")/backup.sh" "$BACKUPS"
 FILE="$(ls -1t "$BACKUPS"/terminator-*.dump.age | head -n 1)"
 NAME="$(basename "$FILE")"

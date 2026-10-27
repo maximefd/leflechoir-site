@@ -72,7 +72,7 @@ services:
 
   # Boîte de réception locale : capture tous les e-mails de l'API (interface sur http://localhost:8025)
   mail:
-    image: axllent/mailpit:v1.31.2
+    image: axllent/mailpit:v1.32.0
     container_name: terminator_mail
     ports:
       - "8025:8025"

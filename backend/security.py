@@ -35,6 +35,20 @@ HTTP_ERROR_MESSAGES = {
     500: "Erreur interne du serveur.",
 }
 
+# Le code stable de chaque erreur HTTP générique : les clients (le site, l'API publique, les assistants IA) lisent
+# `reason`, jamais le message, qui changera de langue avec le site (ADR 0031)
+HTTP_ERROR_REASONS = {
+    400: "bad_request",
+    401: "auth_required",
+    403: "forbidden",
+    404: "not_found",
+    405: "method_not_allowed",
+    413: "payload_too_large",
+    415: "unsupported_media_type",
+    429: "rate_limited",
+    500: "internal_error",
+}
+
 # L'API ne sert que du JSON : politique la plus stricte possible
 API_SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -71,14 +85,15 @@ RATE_LIMITED_ENDPOINTS = {
 def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(RequestValidationError)
     def handle_validation_error(error: RequestValidationError):
-        return jsonify({"error": error.message, "details": error.details}), 400
+        return jsonify({"error": error.message, "reason": "invalid_request", "details": error.details}), 400
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(error: HTTPException):
         # On garde la réponse d'origine (en-têtes Allow, Retry-After...) avec un corps JSON en français
         response = error.get_response()
         code = error.code or 500
-        response.set_data(json.dumps({"error": HTTP_ERROR_MESSAGES.get(code, error.name)}))
+        response.set_data(json.dumps({"error": HTTP_ERROR_MESSAGES.get(code, error.name),
+                                       "reason": HTTP_ERROR_REASONS.get(code, "http_error")}))
         response.content_type = "application/json"
         return response
 
@@ -87,7 +102,7 @@ def register_error_handlers(app: Flask) -> None:
         # Le détail part dans les logs serveur (et à Sentry s'il est actif), jamais dans la réponse
         logging.exception("Erreur non gérée sur %s %s", request.method, request.path)
         report_exception(error)
-        return jsonify({"error": HTTP_ERROR_MESSAGES[500]}), 500
+        return jsonify({"error": HTTP_ERROR_MESSAGES[500], "reason": "internal_error"}), 500
 
 
 def register_security_headers(app: Flask) -> None:
@@ -95,6 +110,8 @@ def register_security_headers(app: Flask) -> None:
     def set_security_headers(response):
         for name, value in API_SECURITY_HEADERS.items():
             response.headers.setdefault(name, value)
+        # La langue des réponses, celle du site (ADR 0031)
+        response.headers.setdefault("Content-Language", app.config.get("SITE_LANG", "fr"))
         if app.config.get("APP_ENV") == "production":
             response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         return response
@@ -111,19 +128,19 @@ def register_jwt_callbacks(jwt: JWTManager) -> None:
 
     @jwt.user_lookup_error_loader
     def user_not_found(_jwt_header, _jwt_data):
-        return jsonify({"error": "Compte introuvable. Reconnecte-toi."}), 401
+        return jsonify({"error": "Compte introuvable. Reconnecte-toi.", "reason": "account_not_found"}), 401
 
     @jwt.unauthorized_loader
     def missing_token(_reason):
-        return jsonify({"error": HTTP_ERROR_MESSAGES[401]}), 401
+        return jsonify({"error": HTTP_ERROR_MESSAGES[401], "reason": "auth_required"}), 401
 
     @jwt.invalid_token_loader
     def invalid_token(_reason):
-        return jsonify({"error": "Jeton d'authentification invalide."}), 401
+        return jsonify({"error": "Jeton d'authentification invalide.", "reason": "invalid_token"}), 401
 
     @jwt.expired_token_loader
     def expired_token(_jwt_header, _jwt_data):
-        return jsonify({"error": "Session expirée. Reconnecte-toi.", "code": "token_expired"}), 401
+        return jsonify({"error": "Session expirée. Reconnecte-toi.", "reason": "token_expired", "code": "token_expired"}), 401
 
     @jwt.token_in_blocklist_loader
     def is_revoked(_jwt_header, jwt_data) -> bool:
@@ -140,7 +157,7 @@ def register_jwt_callbacks(jwt: JWTManager) -> None:
 
     @jwt.revoked_token_loader
     def revoked_token(_jwt_header, _jwt_data):
-        return jsonify({"error": "Session fermée. Reconnecte-toi."}), 401
+        return jsonify({"error": "Session fermée. Reconnecte-toi.", "reason": "session_closed"}), 401
 
 
 def client_ip() -> str:

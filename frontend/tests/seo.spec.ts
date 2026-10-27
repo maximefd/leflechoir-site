@@ -130,7 +130,7 @@ test("le sitemap liste les pages publiques, et elles seules", async ({ request }
   // Les pages, puis les articles publiés (les brouillons restent dehors), puis les grilles à jouer
   // (les pages « commençant par » et « finissant par » suivent l'outil de leur longueur)
   const attendues = PUBLIC_PAGES.flatMap(({ canonical }) => {
-    const slug = canonical.match(/\/mots\/((?:deux|trois|quatre|cinq|six|sept|huit)-lettres)$/)?.[1];
+    const slug = canonical.match(/\/mots\/((?:deux|trois|quatre|cinq|six|sept|huit|neuf|dix)-lettres)$/)?.[1];
     return slug ? [canonical, ...combinaisons(slug)] : [canonical];
   });
   expect(urls).toEqual([

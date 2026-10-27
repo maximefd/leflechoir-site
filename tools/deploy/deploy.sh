@@ -12,21 +12,30 @@
 #           Cloudflare Pages.
 # « all » fait l'API puis le site : un site ne part jamais avant l'API qu'il appelle.
 #
-# Variables (lues aussi dans .env) :
+# Un site par langue (ADR 0017, ADR 0033) : SITE (défaut : fr) choisit son profil, deploy/sites/$SITE.env (versionné,
+# sans secret) : NEXT_PUBLIC_SITE, PROJET (le projet Compose et le dossier /opt/$PROJET du serveur), DEPLOY_SITE_URL,
+# DEPLOY_API_URL, PAGES_PROJECT, LEXIQUE_DIR (le lexique curé de la langue, sur ce Mac). Une variable d'environnement passe avant le profil.
+#
+# Variables lues dans .env, communes aux sites :
 #   DEPLOY_HOST              la connexion SSH au serveur (ex. ubuntu@203.0.113.10)
-#   DEPLOY_API_URL           l'API vue de l'extérieur (défaut : https://api.leflechoir.fr)
-#   PAGES_PROJECT            le projet Cloudflare Pages (défaut : leflechoir)
 #   NEXT_PUBLIC_SENTRY_DSN   suivi des erreurs du site (facultatif)
 set -eu
 
 cd "$(dirname "$0")/../.."
-from_env_file() { [ -f .env ] && grep -E "^$1=" .env | tail -n 1 | cut -d= -f2- || true; }
-for var in DEPLOY_HOST DEPLOY_API_URL PAGES_PROJECT NEXT_PUBLIC_SENTRY_DSN; do
-    eval "[ -n \"\${$var:-}\" ] || $var=\"\$(from_env_file $var)\""
+SITE="${SITE:-fr}"
+PROFILE="deploy/sites/$SITE.env"
+[ -f "$PROFILE" ] || { printf 'ERREUR : site inconnu « %s » : %s introuvable (ADR 0033)\n' "$SITE" "$PROFILE" >&2; exit 1; }
+from_file() { grep -E "^$2=" "$1" 2>/dev/null | tail -n 1 | cut -d= -f2- || true; }
+for var in NEXT_PUBLIC_SITE PROJET DEPLOY_SITE_URL DEPLOY_API_URL PAGES_PROJECT LEXIQUE_DIR; do
+    eval "[ -n \"\${$var:-}\" ] || $var=\"\$(from_file \"$PROFILE\" $var)\""
+    eval "[ -n \"\${$var}\" ]" || { printf 'ERREUR : %s manque dans %s\n' "$var" "$PROFILE" >&2; exit 1; }
 done
-DEPLOY_API_URL="${DEPLOY_API_URL:-https://api.leflechoir.fr}"
-PAGES_PROJECT="${PAGES_PROJECT:-leflechoir}"
-REMOTE_BASE=/opt/leflechoir
+for var in DEPLOY_HOST NEXT_PUBLIC_SENTRY_DSN; do
+    eval "[ -n \"\${$var:-}\" ] || $var=\"\$(from_file .env $var)\""
+done
+REMOTE_BASE="/opt/$PROJET"
+# Ce que server.sh doit savoir du site, sur le serveur
+REMOTE_ENV="LEFLECHOIR_BASE=$REMOTE_BASE PROJET=$PROJET"
 # Version figée : l'outil de Cloudflare n'est pas une dépendance du projet (il pèserait sur chaque CI).
 # pnpm (depuis la 11) refuse les dépendances dont le script d'installation n'est pas autorisé
 # (ERR_PNPM_IGNORED_BUILDS) : esbuild et workerd, les binaires natifs de wrangler, le sont ici.
@@ -61,10 +70,16 @@ deploy_api() {
     say "API : envoi du code sur ${DEPLOY_HOST}…"
     git archive --format=tar HEAD \
         | ssh_server "mkdir -p $REMOTE_BASE/releases/$VERSION && tar -x -C $REMOTE_BASE/releases/$VERSION"
-    ssh_server "sh $REMOTE_BASE/releases/$VERSION/tools/deploy/server.sh deploy $VERSION"
+    ssh_server "$REMOTE_ENV sh $REMOTE_BASE/releases/$VERSION/tools/deploy/server.sh deploy $VERSION"
     say "API : vérification de l'extérieur, par le tunnel ($DEPLOY_API_URL)…"
-    curl -fsS --max-time 20 "$DEPLOY_API_URL/api/status" >/dev/null \
-        || die "l'API tourne sur le serveur mais ne répond pas par $DEPLOY_API_URL : voir le tunnel (docs/PRODUCTION.md)"
+    # Le tunnel se reconnecte quand son conteneur redémarre (nouvelle image de cloudflared) : quelques secondes de 530
+    # chez Cloudflare juste après le déploiement (27/10/2026). On laisse deux minutes avant de conclure.
+    tries=0
+    until curl -fsS --max-time 20 "$DEPLOY_API_URL/api/status" >/dev/null 2>&1; do
+        tries=$((tries + 1))
+        [ "$tries" -le 12 ] || die "l'API tourne sur le serveur mais ne répond pas par $DEPLOY_API_URL depuis deux minutes : voir le tunnel (docs/PRODUCTION.md)"
+        sleep 10
+    done
     say "API : $VERSION en service."
 }
 
@@ -79,13 +94,15 @@ deploy_front() {
     (
         cd "$work/frontend"
         pnpm install --frozen-lockfile --silent
-        NEXT_PUBLIC_SITE=fr \
+        NEXT_PUBLIC_SITE="$NEXT_PUBLIC_SITE" \
             NEXT_PUBLIC_API_BASE_URL="$DEPLOY_API_URL" \
             NEXT_PUBLIC_SENTRY_DSN="${NEXT_PUBLIC_SENTRY_DSN:-}" \
             pnpm build
         say "Site : envoi à Cloudflare Pages (projet $PAGES_PROJECT)…"
         wrangler pages deploy out --project-name "$PAGES_PROJECT" --branch main \
             --commit-hash "$VERSION" --commit-message "$MESSAGE"
+        # Le sitemap tel qu'il vient d'être construit : IndexNow attendra que le site en ligne serve le même
+        cp out/sitemap.xml "$SITEMAP_DU_BUILD"
     )
     say "Site : $VERSION en ligne."
 }
@@ -96,7 +113,7 @@ sha256() { if command -v sha256sum >/dev/null; then sha256sum "$1"; else shasum 
 # colonne des définitions, qui restent sur le Mac. Le sens des mots (ADR 0028) part à côté, dans son propre
 # fichier, affiché avec sa licence (CC BY-SA). Le serveur vérifie l'empreinte, redémarre l'API, et reprend le précédent si elle échoue.
 deploy_lexicon() {
-    source_file="data/lexicon/build/lexique_cure.csv"
+    source_file="$LEXIQUE_DIR/lexique_cure.csv"
     [ -s "$source_file" ] || die "$source_file absent : le curateur l'écrit tous les 500 mots triés (ou make lexicon-export)"
     command -v python3 >/dev/null || die "python3 introuvable"
     work="$(mktemp -d)"
@@ -123,7 +140,7 @@ PY
     ssh_server "mkdir -p $REMOTE_BASE/lexicon && cat > $REMOTE_BASE/lexicon/lexique_cure.csv.nouveau" < "$work/lexique_cure.csv"
     # Le sens des mots (ADR 0028) : envoyé seulement s'il a changé (environ 40 Mo). Il vient lui aussi du
     # Wiktionnaire, mais le site l'affiche avec sa licence ; make lexicon-sens le reconstruit.
-    sens_file="data/lexicon/build/sens.sqlite"
+    sens_file="$LEXIQUE_DIR/sens.sqlite"
     sens_sha=""
     if [ -s "$sens_file" ]; then
         local_sha="$(sha256 "$sens_file")"
@@ -136,7 +153,7 @@ PY
     else
         say "Sens des mots : $sens_file absent (make lexicon-sens) ; le site s'en passe."
     fi
-    ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh lexicon $(sha256 "$work/lexique_cure.csv") $sens_sha"
+    ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh lexicon $(sha256 "$work/lexique_cure.csv") $sens_sha"
     curl -fsS --max-time 20 "$DEPLOY_API_URL/api/status" >/dev/null \
         || die "l'API ne répond pas par $DEPLOY_API_URL : voir docs/PRODUCTION.md"
     say "Lexique en service."
@@ -157,11 +174,11 @@ with open(sys.argv[1], encoding="utf-8", newline="") as f:
         latest[(row["type"], row["mot"])] = row["decision"]
 json.dump({"decisions": [{"kind": kind, "word": word, "decision": decision}
                          for (kind, word), decision in latest.items()]}, sys.stdout)' "$SUGGESTION_DECISIONS" \
-        | ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh suggestions-apply"
+        | ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh suggestions-apply"
 }
 
 pull_suggestions() {
-    ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh suggestions-export" > "$SUGGESTIONS_FILE.tmp" \
+    ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh suggestions-export" > "$SUGGESTIONS_FILE.tmp" \
         || { rm -f "$SUGGESTIONS_FILE.tmp"; die "les suggestions n'ont pas pu être récupérées"; }
     mv "$SUGGESTIONS_FILE.tmp" "$SUGGESTIONS_FILE"
     count="$(python3 -c 'import json, sys; print(len(json.load(open(sys.argv[1]))["suggestions"]))' "$SUGGESTIONS_FILE")"
@@ -172,9 +189,24 @@ pull_suggestions() {
 # partagent IndexNow (Bing, donc Copilot, Yandex, Seznam…). La clé est publique par nature : elle est servie à la
 # racine du site (frontend/public/6be994b4f3e1887c18c53b2a6c0a4ddb.txt). Un échec n'arrête pas le déploiement ; `make indexnow` le relance.
 INDEXNOW_KEY="6be994b4f3e1887c18c53b2a6c0a4ddb"
+# Après un déploiement, Cloudflare met une à deux minutes à servir la nouvelle version partout : signalé trop tôt,
+# le sitemap lu en ligne est encore l'ancien, et les pages nouvelles ne partent pas (304 adresses au lieu de 418 le
+# 26/10/2026). On attend donc que le site serve le sitemap du build (cinq minutes au plus), puis on signale celui-ci.
+SITEMAP_DU_BUILD="$(mktemp)"
 ping_indexnow() {
-    site="${DEPLOY_SITE_URL:-https://leflechoir.fr}"
-    sitemap="$(curl -fsS "$site/sitemap.xml")" || { say "IndexNow : sitemap illisible, rien n'est envoyé."; return 0; }
+    site="$DEPLOY_SITE_URL"
+    if [ -s "$SITEMAP_DU_BUILD" ]; then
+        tries=0
+        until curl -fsS "$site/sitemap.xml?v=$(date +%s)" 2>/dev/null | cmp -s - "$SITEMAP_DU_BUILD"; do
+            tries=$((tries + 1))
+            [ "$tries" -le 30 ] || { say "IndexNow : la nouvelle version tarde à paraître, on signale quand même celle du build."; break; }
+            sleep 10
+        done
+        sitemap="$(cat "$SITEMAP_DU_BUILD")"
+        rm -f "$SITEMAP_DU_BUILD"
+    else
+        sitemap="$(curl -fsS "$site/sitemap.xml")" || { say "IndexNow : sitemap illisible, rien n'est envoyé."; return 0; }
+    fi
     payload="$(printf '%s' "$sitemap" | python3 -c '
 import json, re, sys
 from urllib.parse import urlparse
@@ -197,8 +229,13 @@ case "${1:-all}" in
     front) check_commit; deploy_front; ping_indexnow ;;
     indexnow) ping_indexnow ;;
     lexicon) deploy_lexicon ;;
-    rollback) ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh rollback" ;;
+    rollback) ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh rollback" ;;
     suggestions-pull) pull_suggestions ;;
-    status) ssh_server "sh $REMOTE_BASE/current/tools/deploy/server.sh status" ;;
-    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|indexnow|suggestions-pull]" ;;
+    status) ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh status" ;;
+    config)
+        say "Site $SITE ($PROFILE) : build NEXT_PUBLIC_SITE=$NEXT_PUBLIC_SITE, projet Pages $PAGES_PROJECT"
+        say "  site $DEPLOY_SITE_URL, API $DEPLOY_API_URL"
+        say "  serveur ${DEPLOY_HOST:-(DEPLOY_HOST manquant)} : projet Compose $PROJET, dossier $REMOTE_BASE"
+        say "  lexique curé : $LEXIQUE_DIR" ;;
+    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|config|indexnow|suggestions-pull]" ;;
 esac

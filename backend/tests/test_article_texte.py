@@ -73,10 +73,10 @@ def test_en_production_404_meme_avec_un_dossier(client, dossier_textes, monkeypa
 def test_sans_dossier_monte_edition_indisponible(client, admin_headers):
     response = send(client, "get", f"/api/articles/{SLUG_ESSAI}/texte", headers=admin_headers)
     assert response.status_code == 404
-    assert response.get_json()["error"] == "edition_indisponible"
+    assert response.get_json()["reason"] == "edition_unavailable"
     response = send(client, "put", f"/api/articles/{SLUG_ESSAI}/texte", TEXTE_ESSAI, headers=admin_headers)
     assert response.status_code == 404
-    assert response.get_json()["error"] == "edition_indisponible"
+    assert response.get_json()["reason"] == "edition_unavailable"
 
 
 # --- Lecture ---------------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ def test_admin_lit_le_texte(client, dossier_textes, admin_headers):
 def test_slug_inconnu(client, dossier_textes, admin_headers):
     response = send(client, "get", "/api/articles/n-article-de-ce-nom/texte", headers=admin_headers)
     assert response.status_code == 404
-    assert response.get_json()["error"] == "unknown_article"
+    assert response.get_json()["reason"] == "unknown_article"
 
 
 def test_pas_de_traversee_de_chemin(client, dossier_textes, admin_headers):
@@ -104,7 +104,7 @@ def test_pas_de_traversee_de_chemin(client, dossier_textes, admin_headers):
     # Un slug qui ne colle pas au motif atteint le blueprint, qui le traite en article inconnu
     response = send(client, "get", "/api/articles/Article-En-Majuscules/texte", headers=admin_headers)
     assert response.status_code == 404
-    assert response.get_json()["error"] == "unknown_article"
+    assert response.get_json()["reason"] == "unknown_article"
 
 
 # --- Écriture --------------------------------------------------------------------------------------
@@ -129,7 +129,7 @@ def test_admin_reecrit_le_texte(client, dossier_textes, admin_headers):
 def test_ecriture_sur_slug_inconnu_refusee(client, dossier_textes, admin_headers):
     response = send(client, "put", "/api/articles/n-article-de-ce-nom/texte", TEXTE_ESSAI, headers=admin_headers)
     assert response.status_code == 404
-    assert response.get_json()["error"] == "unknown_article"
+    assert response.get_json()["reason"] == "unknown_article"
     assert list(dossier_textes.iterdir()) == [dossier_textes / f"{SLUG_ESSAI}.json"]
 
 
@@ -199,14 +199,14 @@ def test_cle_de_note_inattendue_refusee(client, dossier_textes, dossier_notes):
 def test_notes_sur_slug_inconnu_refusees(client, dossier_textes, dossier_notes):
     response = send(client, "put", "/api/articles/n-article-de-ce-nom/notes", {"notes": {"_article": "x"}})
     assert response.status_code == 404
-    assert response.get_json()["error"] == "unknown_article"
+    assert response.get_json()["reason"] == "unknown_article"
     assert list(dossier_notes.iterdir()) == []
 
 
 def test_sans_dossier_de_notes_edition_indisponible(client, dossier_textes):
     response = send(client, "get", f"/api/articles/{SLUG_ESSAI}/notes")
     assert response.status_code == 404
-    assert response.get_json()["error"] == "edition_indisponible"
+    assert response.get_json()["reason"] == "edition_unavailable"
     response = send(client, "put", f"/api/articles/{SLUG_ESSAI}/notes", {"notes": {"_article": "x"}})
     assert response.status_code == 404
-    assert response.get_json()["error"] == "edition_indisponible"
+    assert response.get_json()["reason"] == "edition_unavailable"

@@ -28,10 +28,13 @@ Chaque décision structurante du projet est consignée dans un court document : 
 | [0022](0022-echantillons-systeme-et-alertes.md) | Échantillons système et alertes : un minuteur du serveur, des envois plafonnés | Proposée |
 | [0023](0023-cap-sur-la-premiere-place.md) | Cap sur la première place (document privé) | Acceptée |
 | [0024](0024-source-des-definitions.md) | Source des définitions proposées automatiquement | Proposée |
-| [0025](0025-moteur-v2.md) | Moteur v2 : la meilleure de plusieurs grilles, et des grilles « Sur mesure » à côté du catalogue (document privé) | Proposée |
+| [0025](0025-moteur-v2.md) | Moteur v2 : la meilleure de plusieurs grilles, et des grilles « Sur mesure » à côté du catalogue (document privé) | Acceptée |
 | [0028](0028-sens-des-mots-wiktionnaire.md) | Le sens des mots, tiré du Wiktionnaire, à côté des grilles (jamais dans les cases) | Acceptée |
 | [0029](0029-tableau-de-bord-et-donnees-seo.md) | Le tableau de bord du poste de pilotage, et les chiffres de Google et Bing relevés par leurs API | Acceptée |
 | [0030](0030-ci-locale.md) | La CI sur le Mac (`make verifier`), affichée sur la PR ; GitHub Actions en secours seulement | Proposée |
+| [0031](0031-reprise-de-l-international.md) | Reprise de l'international : le socle d'abord, puis l'allemand (document privé) | Proposée |
+| [0032](0032-api-ouverte.md) | Une API ouverte aux assistants IA : génération de grilles, clés, priorité au site, sécurité | Proposée |
+| [0033](0033-un-site-de-plus.md) | Un site de plus : profils de déploiement, un projet Compose par site, le nom écrit une seule fois | Proposée |
 
 ## Modèle
 

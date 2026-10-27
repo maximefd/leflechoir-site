@@ -171,7 +171,7 @@ export function Landing({ children }: { children?: ReactNode }) {
       <section className="mt-16">
         <h2 className="text-xl font-semibold">Pour t&apos;accompagner à chaque étape</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Le Fléchoir ne fait pas que générer : il t&apos;aide aussi sur ce qui reste à faire à la main.
+          {site.name} ne fait pas que générer : il t&apos;aide aussi sur ce qui reste à faire à la main.
         </p>
         <div className="mt-4 grid gap-6 md:grid-cols-2">
           <Link

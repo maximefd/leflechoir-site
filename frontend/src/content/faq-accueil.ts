@@ -68,7 +68,7 @@ export const QUESTIONS_ACCUEIL: QuestionFaq[] = [
     question: "Comment trouver un mot quand il manque des lettres ?",
     reponse:
       `Dans la recherche, tape les lettres que tu connais et un point d’interrogation par case vide : P??LE donne PERLE, POELE, PELLE… ` +
-      `Les listes de mots de 2 à 8 lettres, par première et par dernière lettres, servent aussi quand tu bloques sur une grille.`,
+      `Les listes de mots de 2 à 10 lettres, par première et par dernière lettres, servent aussi quand tu bloques sur une grille.`,
     liens: [
       { texte: "Chercher un mot", href: "/search" },
       { texte: "Les listes de mots", href: "/mots" },

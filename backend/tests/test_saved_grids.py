@@ -658,8 +658,8 @@ def test_the_migration_adds_an_empty_mystery_column_to_existing_grids():
 
 @pytest.mark.parametrize("body, reason", [
     ({"mystery_word": "Lo"}, "mystery_word_length"),
-    ({"mystery_word": "L3S"}, None),
-    ({"mystery_word": "SEL", "mystery_seed": -1}, None),
+    ({"mystery_word": "L3S"}, "invalid_request"),
+    ({"mystery_word": "SEL", "mystery_seed": -1}, "invalid_request"),
 ])
 def test_the_mystery_word_of_the_editor_is_validated(grid_app, client, body, reason):
     headers = auth_headers(client)

@@ -59,6 +59,12 @@ const CONSEIL_TERMINAISON: Record<string, string> = {
   ETTE: "ETTE donne souvent un petit quelque chose : un diminutif, au féminin.",
   EUSE: "EUSE termine des noms de métiers et des adjectifs au féminin : une définition qui dit « celle qui… » mène souvent ici.",
   ISME: "ISME termine des noms de doctrines, de mouvements et de comportements.",
+  IEZ: "IEZ, c’est « vous » à l’imparfait, au conditionnel ou au subjonctif (vous chantiez, vous chanteriez) : une définition qui s’adresse à plusieurs mène ici.",
+  IONS: "IONS, c’est « nous » à l’imparfait, au conditionnel ou au subjonctif (nous chantions), mais aussi le pluriel des noms en -ion (les passions).",
+  AIENT: "AIENT, c’est « ils » à l’imparfait ou au conditionnel (ils chantaient, ils chanteraient) : une définition au pluriel et au passé mène ici.",
+  ERAIT: "ERAIT, c’est le conditionnel à la troisième personne (il chanterait) : une définition qui dit « si… » ou « pourrait » mène souvent ici.",
+  ERONT: "ERONT, c’est le futur à la troisième personne du pluriel (ils chanteront) : une définition au futur et au pluriel mène ici.",
+  EMENT: "EMENT termine des adverbes (lentement, vraiment) et des noms d’action (changement) : une définition qui dit « de façon… » mène souvent ici.",
 };
 
 function conseilInitiale(cle: string): string {

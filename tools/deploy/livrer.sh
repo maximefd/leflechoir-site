@@ -80,14 +80,14 @@ say "Déploiement ($target) de $(git -C "$work" log -1 --format='%h — %s')…"
 log="$work/.livraison.log"
 if ! make -C "$work" "$target" >"$log" 2>&1; then
     tail -n 30 "$log" >&2
-    die "le déploiement a échoué (journal ci-dessus) ; deploy.sh revient de lui-même à la version précédente de l'API"
+    die "le déploiement a échoué (journal ci-dessus). Si la nouvelle API n'a pas démarré sur le serveur, server.sh est revenu de lui-même à la version précédente ; sinon, elle est en service : make deploy-status le dit"
 fi
 grep -E "^Version|en service|en ligne|IndexNow|Dépôt public" "$log" | sed 's/^/  /'
 
-# 4. La vérification, de l'extérieur
-site="${DEPLOY_SITE_URL:-https://leflechoir.fr}"
-api="$(grep -E '^DEPLOY_API_URL=' "$REPO/.env" 2>/dev/null | tail -n 1 | cut -d= -f2-)"
-api="${api:-https://api.leflechoir.fr}"
+# 4. La vérification, de l'extérieur, aux adresses du site livré (deploy/sites/$SITE.env, ADR 0033)
+profil="$REPO/deploy/sites/${SITE:-fr}.env"
+site="${DEPLOY_SITE_URL:-$(grep -E '^DEPLOY_SITE_URL=' "$profil" | tail -n 1 | cut -d= -f2-)}"
+api="${DEPLOY_API_URL:-$(grep -E '^DEPLOY_API_URL=' "$profil" | tail -n 1 | cut -d= -f2-)}"
 code_site="$(curl -s -o /dev/null -w '%{http_code}' "$site/")"
 code_api="$(curl -s -o /dev/null -w '%{http_code}' "$api/api/status")"
 say "Vérification : site $code_site, API $code_api."

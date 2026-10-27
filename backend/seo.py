@@ -26,7 +26,7 @@ from datetime import date, datetime, timedelta, timezone
 
 import click
 import jwt
-from flask import current_app
+from flask import current_app, has_app_context
 from flask.cli import AppGroup
 
 from extensions import db
@@ -49,8 +49,14 @@ INSPECT_PER_TICK = 8
 INSPECT_EVERY = timedelta(days=7)
 QUERY_ROWS = 5000
 TIMEOUT_S = 30
-# Cloudflare refuse la signature par défaut de Python (« Python-urllib ») : le relevé dit qui il est
-USER_AGENT = "LeFlechoir-pilotage/1.0 (+https://leflechoir.fr/a-propos)"
+# Cloudflare refuse la signature par défaut de Python (« Python-urllib ») : le relevé dit qui il est, et pour quel
+# site (ADR 0033 : chaque site a son relevé)
+USER_AGENT = "Pilotage/1.0 (+{site}/a-propos)"
+
+
+def _user_agent() -> str:
+    site = (current_app.config.get("FRONTEND_URL") or "").rstrip("/") if has_app_context() else ""
+    return USER_AGENT.format(site=site or "https://leflechoir.fr")
 
 # Les questions suivies : celles de la FAQ de l'accueil (frontend/src/content/faq-accueil.ts) et les requêtes visées
 # (docs/VISIBILITE-IA.md). Une requête compte pour une question si chacun de ses groupes y a un mot ; un mot finissant
@@ -112,7 +118,7 @@ def _utcnow() -> datetime:
 
 
 def _http(url: str, *, data: bytes | None = None, headers: dict | None = None) -> dict | list:
-    request = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT, **(headers or {})})
+    request = urllib.request.Request(url, data=data, headers={"User-Agent": _user_agent(), **(headers or {})})
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT_S) as response:
             return json.loads(response.read().decode("utf-8") or "{}")
@@ -291,7 +297,7 @@ def sync_bing(today: date, config=None) -> None:
 
 def sitemap_urls(config) -> list[str]:
     site = (config.get("FRONTEND_URL") or "").rstrip("/")
-    request = urllib.request.Request(f"{site}/sitemap.xml", headers={"User-Agent": USER_AGENT})
+    request = urllib.request.Request(f"{site}/sitemap.xml", headers={"User-Agent": _user_agent()})
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT_S) as response:
             body = response.read().decode("utf-8")

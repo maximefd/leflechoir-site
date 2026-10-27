@@ -177,7 +177,7 @@ export default function GuidePage() {
         <section aria-labelledby="si-tu-veux-aller-plus-vite" className="space-y-4">
           <h2 id="si-tu-veux-aller-plus-vite" className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">Si tu veux aller plus vite</h2>
           <p>
-            Tout ce qui précède se fait avec un crayon. Si le remplissage te décourage, le <Link href="/grid" className={linkClass}>générateur du Fléchoir</Link> remplit une grille automatiquement, et la <Link href="/search" className={linkClass}>recherche par motif</Link> trouve les mots qui correspondent à un motif comme S????N??. Les définitions, en revanche, restent entièrement à toi.
+            Tout ce qui précède se fait avec un crayon. Si le remplissage te décourage, le <Link href="/grid" className={linkClass}>générateur {site.nameAfterDe}</Link> remplit une grille automatiquement, et la <Link href="/search" className={linkClass}>recherche par motif</Link> trouve les mots qui correspondent à un motif comme S????N??. Les définitions, en revanche, restent entièrement à toi.
           </p>
         </section>
       </article>

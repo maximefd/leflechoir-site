@@ -76,12 +76,12 @@ def _dossier() -> Path | None:
 def _fichier(slug: str) -> tuple[Path | None, tuple | None]:
     """Le fichier texte d'un slug, ou la réponse d'erreur : édition fermée, slug inconnu ou malveillant."""
     if _dossier() is None:
-        return None, (jsonify({"error": "edition_indisponible"}), 404)
+        return None, (jsonify({"error": "La modification des textes n'est pas disponible ici.", "reason": "edition_unavailable"}), 404)
     if not SLUG.fullmatch(slug) or len(slug) > 80:
-        return None, (jsonify({"error": "unknown_article"}), 404)
+        return None, (jsonify({"error": "Article inconnu.", "reason": "unknown_article"}), 404)
     chemin = _dossier() / f"{slug}.json"
     if not chemin.is_file():
-        return None, (jsonify({"error": "unknown_article"}), 404)
+        return None, (jsonify({"error": "Article inconnu.", "reason": "unknown_article"}), 404)
     return chemin, None
 
 
@@ -91,13 +91,13 @@ def _fichier_notes(slug: str) -> tuple[Path | None, tuple | None]:
     L'article doit exister côté textes (`TEXTES_DIR`) ; les notes s'écrivent de leur côté (`NOTES_DIR`).
     """
     if _dossier() is None:
-        return None, (jsonify({"error": "edition_indisponible"}), 404)
+        return None, (jsonify({"error": "La modification des textes n'est pas disponible ici.", "reason": "edition_unavailable"}), 404)
     brut = current_app.config.get("NOTES_DIR")
     dossier_notes = Path(brut) if brut else None
     if dossier_notes is None or not dossier_notes.is_dir():
-        return None, (jsonify({"error": "edition_indisponible"}), 404)
+        return None, (jsonify({"error": "La modification des textes n'est pas disponible ici.", "reason": "edition_unavailable"}), 404)
     if not SLUG.fullmatch(slug) or len(slug) > 80 or not (_dossier() / f"{slug}.json").is_file():
-        return None, (jsonify({"error": "unknown_article"}), 404)
+        return None, (jsonify({"error": "Article inconnu.", "reason": "unknown_article"}), 404)
     return dossier_notes / f"{slug}.json", None
 
 

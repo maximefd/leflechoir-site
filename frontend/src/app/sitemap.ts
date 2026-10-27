@@ -12,7 +12,7 @@ const MAIN_PATHS: readonly string[] = ["/search", "/grid", "/creer-des-mots-flec
 
 /**
  * La date de génération des listes de mots (`make listes` ; elle ne change que quand la liste change) : celle de la
- * liste de la page, ou la plus récente pour l'index `/mots`. Les outils sans liste (4, 7 à 10 lettres) n'en ont pas.
+ * liste de la page, ou la plus récente pour l'index `/mots`. Un outil sans liste n'en aurait pas (toutes les longueurs de 2 à 10 en ont une depuis le 25/10/2026).
  */
 function generationDesListes(path: string): string | undefined {
   if (path === "/mots") return CATALOGUE.map((entree) => entree.genere).sort().at(-1);

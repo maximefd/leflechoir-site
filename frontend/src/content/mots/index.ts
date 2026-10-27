@@ -1,6 +1,8 @@
 import cinqLettres from "@/content/mots/listes/cinq-lettres.json";
 import deuxLettres from "@/content/mots/listes/deux-lettres.json";
+import dixLettres from "@/content/mots/listes/dix-lettres.json";
 import huitLettres from "@/content/mots/listes/huit-lettres.json";
+import neufLettres from "@/content/mots/listes/neuf-lettres.json";
 import quatreLettres from "@/content/mots/listes/quatre-lettres.json";
 import septLettres from "@/content/mots/listes/sept-lettres.json";
 import sixLettres from "@/content/mots/listes/six-lettres.json";
@@ -32,6 +34,8 @@ const LISTES: Record<string, ListeMots> = {
   "six-lettres": sixLettres,
   "sept-lettres": septLettres,
   "huit-lettres": huitLettres,
+  "neuf-lettres": neufLettres,
+  "dix-lettres": dixLettres,
 };
 
 export function listeDeMots(slug: string): ListeMots {

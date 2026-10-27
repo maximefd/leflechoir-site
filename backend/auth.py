@@ -91,7 +91,7 @@ def register():
     payload = parse_body(RegisterRequest)
 
     if _find_user_by_email(payload.email):
-        return jsonify({"error": "Cet email est déjà utilisé."}), 409
+        return jsonify({"error": "Cet email est déjà utilisé.", "reason": "email_taken"}), 409
 
     hashed_password = hash_password(payload.password)
 
@@ -119,7 +119,7 @@ def login():
         usage.describe("account", "login", user=user)
         return _session_response(user, "Connecté.", 200)
 
-    return jsonify({"error": "Identifiants invalides."}), 401
+    return jsonify({"error": "Identifiants invalides.", "reason": "invalid_credentials"}), 401
 
 
 @auth_bp.route('/refresh', methods=['POST'])
@@ -226,7 +226,7 @@ def reset_password():
     payload = parse_body(ResetPasswordRequest)
     user = user_from_reset(payload.token)
     if not user:
-        return jsonify({"error": INVALID_LINK}), 400
+        return jsonify({"error": INVALID_LINK, "reason": "invalid_link"}), 400
 
     user.password = hash_password(payload.password)
     # Qui a changé le mot de passe veut aussi fermer les sessions ouvertes avec l'ancien (ADR 0015)
@@ -242,7 +242,7 @@ def verify_email():
     payload = parse_body(EmailLinkRequest)
     user = user_from_verification(payload.token)
     if not user:
-        return jsonify({"error": INVALID_LINK}), 400
+        return jsonify({"error": INVALID_LINK, "reason": "invalid_link"}), 400
 
     _mark_verified(user)
     db.session.commit()
@@ -257,5 +257,5 @@ def resend_verification():
     if user.email_verified_at is not None:
         return jsonify({"message": "Ton adresse est déjà confirmée."}), 200
     if not send_verification_email(user):
-        return jsonify({"error": "L'e-mail n'a pas pu partir. Réessaie dans quelques minutes."}), 503
+        return jsonify({"error": "L'e-mail n'a pas pu partir. Réessaie dans quelques minutes.", "reason": "email_unavailable"}), 503
     return jsonify({"message": f"E-mail envoyé à {user.email}."}), 200

@@ -4,10 +4,11 @@
  * renvoie pour le motif ; la page elle-même est vide tant qu'on ne cherche pas.
  *
  * Deux sortes de pages :
- * - avec `combinaisons` (2 à 8 lettres) : en plus, une page statique par initiale et par terminaison
+ * - avec `combinaisons` (2 à 10 lettres, toutes depuis le 25/10/2026) : en plus, une page statique par initiale et par terminaison
  *   (`/mots/cinq-lettres/commencant-par-a`, `…/finissant-par-ez`), dont la liste complète est dans le HTML. Les
  *   combinaisons viennent de `catalogue.json` (écrit par `make listes`, `tools/lexicon/listes.py`) ;
- * - sans (9 et 10 lettres) : l'outil et ses raccourcis (boutons), sans liste de mots.
+ * - sans : l'outil et ses raccourcis (boutons), sans liste de mots. Plus aucune longueur publiée n'est dans ce cas ;
+ *   le sélecteur de longueur au-delà de 10 lettres change la rangée sur place.
  *
  * Une nouvelle longueur : une entrée ici et un dossier `src/app/mots/<slug>/page.tsx` avec son texte (voir
  * `cinq-lettres`). Le sitemap, l'index `/mots`, le sélecteur de longueur et le fil d'Ariane suivent tout seuls.
@@ -97,12 +98,12 @@ export const PAGES_LONGUEUR: readonly PageLongueur[] = [
   pageLongueur(
     9,
     "Un grand mot de 9 lettres barre ta grille ? Tape celles que tes mots croisés t’ont livrées : les mots possibles s’affichent aussitôt.",
-    { finales: ["E", "S", "R", "T", "ER", "ES", "NT", "ION"] },
+    { combinaisons: true },
   ),
   pageLongueur(
     10,
     "Un mot de 10 lettres, c’est long, mais chaque lettre connue écarte beaucoup de mots. Place-les, et la recherche te montre ce qui reste possible.",
-    { finales: ["E", "S", "R", "T", "ER", "ES", "NT", "ION"], metaTitle: "Mot de 10 lettres commençant ou finissant par" },
+    { combinaisons: true, metaTitle: "Mot de 10 lettres commençant ou finissant par" },
   ),
 ];
 

@@ -9,14 +9,20 @@
 #         server.sh suggestions-export   les suggestions de mots en attente, en JSON (make suggestions-pull)
 #         server.sh suggestions-apply    les décisions de l'auteur, lues sur l'entrée standard (make deploy-lexicon)
 #
-# Disposition sur le serveur (LEFLECHOIR_BASE, défaut /opt/leflechoir) :
+# Un projet Compose par site (ADR 0033) : PROJET (défaut : leflechoir, le site français), passé par deploy.sh
+# d'après deploy/sites/<site>.env ; conteneurs $PROJET-api-1, $PROJET-db-1, image $PROJET-api:VERSION.
+#
+# Disposition sur le serveur (LEFLECHOIR_BASE, défaut /opt/$PROJET) :
 #   .env.production        la configuration (modèle : .env.production.example), jamais dans une version
 #   releases/VERSION/      le code d'un commit ; current et previous pointent vers deux d'entre elles
 #   backups/               sauvegardes de la base, dont celle faite avant chaque déploiement
 #   lexicon/               le lexique curé (LEXICON_DIR), partagé par les versions
 set -eu
 
-BASE="${LEFLECHOIR_BASE:-/opt/leflechoir}"
+PROJET="${PROJET:-leflechoir}"
+BASE="${LEFLECHOIR_BASE:-/opt/$PROJET}"
+DB_CONTAINER="$PROJET-db-1"
+export PROJET
 ENV_FILE="$BASE/.env.production"
 # Versions gardées pour revenir en arrière, en plus de celle en service
 KEEP=4
@@ -29,17 +35,17 @@ die() { printf 'ERREUR : %s\n' "$*" >&2; exit 1; }
 
 compose() {
     release="$1"; shift
-    RELEASE="$release" docker compose -p leflechoir -f "$BASE/releases/$release/docker-compose.prod.yml" \
+    RELEASE="$release" docker compose -p "$PROJET" -f "$BASE/releases/$release/docker-compose.prod.yml" \
         --env-file "$ENV_FILE" "$@"
 }
 
 release_of() { [ -L "$BASE/$1" ] && basename "$(readlink "$BASE/$1")" || true; }
 
-db_running() { [ -n "$(docker ps -q --filter name='^leflechoir-db-1$' --filter status=running)" ]; }
+db_running() { [ -n "$(docker ps -q --filter name="^$DB_CONTAINER\$" --filter status=running)" ]; }
 
 schema_version() {
     db_running || return 0
-    docker exec leflechoir-db-1 sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "SELECT version_num FROM alembic_version"' \
+    docker exec "$DB_CONTAINER" sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "SELECT version_num FROM alembic_version"' \
         2>/dev/null || true
 }
 
@@ -73,7 +79,7 @@ prune() {
     ls -1t "$BASE/releases" | tail -n +"$((KEEP + 1))" | while read -r old; do
         [ "$old" = "$keep_current" ] || [ "$old" = "$keep_previous" ] && continue
         rm -rf "${BASE:?}/releases/$old"
-        docker image rm "leflechoir-api:$old" >/dev/null 2>&1 || true
+        docker image rm "$PROJET-api:$old" >/dev/null 2>&1 || true
         say "Ancienne version supprimée : $old"
     done
 }
@@ -87,7 +93,7 @@ deploy() {
     # Une sauvegarde juste avant : une migration ratée se répare à partir d'elle
     if db_running; then
         say "Sauvegarde de la base avant déploiement…"
-        ENV_FILE="$ENV_FILE" DB_CONTAINER=leflechoir-db-1 sh "$BASE/releases/$new/tools/db/backup.sh" "$BASE/backups"
+        ENV_FILE="$ENV_FILE" DB_CONTAINER="$DB_CONTAINER" sh "$BASE/releases/$new/tools/db/backup.sh" "$BASE/backups"
     fi
     schema_before="$(schema_version)"
 

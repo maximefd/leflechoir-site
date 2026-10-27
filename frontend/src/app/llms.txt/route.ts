@@ -30,7 +30,7 @@ export function GET() {
     "",
     "## Listes de mots",
     "",
-    lien("Listes de mots", "/mots", "les mots de 2 à 10 lettres pour les mots fléchés ; de 2 à 8, des listes par première et par dernière lettres."),
+    lien("Listes de mots", "/mots", "les mots de 2 à 10 lettres pour les mots fléchés, en listes complètes par première et par dernière lettres."),
     ...PAGES_LONGUEUR.map((page) => lien(page.title, `/mots/${page.slug}`, page.chapo)),
     "",
     "## Questions fréquentes",

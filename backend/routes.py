@@ -12,6 +12,7 @@ from flask import Blueprint, Response, abort, jsonify, current_app, request, str
 from flask_jwt_extended import jwt_required, get_current_user, unset_jwt_cookies
 
 # On importe depuis nos modules centraux
+from langue_site import du_site, langue_du_site
 from normalization import normalize_pattern, normalize_phrase, normalize_word
 from sens import lookup_for_app as lookup_sens
 from models import db, Dictionary, PersonalWord, SavedGrid
@@ -138,8 +139,8 @@ def status_check():
         db.session.rollback()
         logging.exception("Base de données injoignable")
         database = "unavailable"
-    body = {"status": "ok" if database == "ok" else "degraded", "database": database,
-            "trie_loaded": dela_trie is not None, "word_count": word_count, "lexicon": lexicon}
+    body = du_site({"status": "ok" if database == "ok" else "degraded", "database": database,
+                    "trie_loaded": dela_trie is not None, "word_count": word_count, "lexicon": lexicon})
     if database != "ok":
         body.update(error="La base de données est injoignable.", reason="database_unavailable")
         return jsonify(body), 503
@@ -168,9 +169,9 @@ def create_dictionary():
 
     max_dictionaries = current_app.config['MAX_DICTIONARIES_PER_USER']
     if len(user.dictionaries) >= max_dictionaries:
-        return jsonify({'error': f"Limite atteinte : {max_dictionaries} dictionnaires maximum."}), 400
+        return jsonify({'error': f"Limite atteinte : {max_dictionaries} dictionnaires maximum.", 'reason': "dictionary_limit"}), 400
     if Dictionary.query.filter_by(user_id=user.id, name=payload.name).first():
-        return jsonify({'error': f"Un dictionnaire nommé '{payload.name}' existe déjà."}), 409
+        return jsonify({'error': f"Un dictionnaire nommé '{payload.name}' existe déjà.", 'reason': "dictionary_exists"}), 409
 
     Dictionary.query.filter_by(user_id=user.id).update({'is_active': False})
 
@@ -188,7 +189,7 @@ def update_dictionary(dict_id):
 
     if payload.name is not None and payload.name != dictionary.name:
         if Dictionary.query.filter_by(user_id=user.id, name=payload.name).first():
-            return jsonify({'error': f"Un dictionnaire nommé '{payload.name}' existe déjà."}), 409
+            return jsonify({'error': f"Un dictionnaire nommé '{payload.name}' existe déjà.", 'reason': "dictionary_exists"}), 409
         dictionary.name = payload.name
 
     if payload.is_active is True:
@@ -221,11 +222,11 @@ def add_word_to_dictionary(dict_id):
 
     max_words = current_app.config['MAX_WORDS_PER_DICTIONARY']
     if PersonalWord.query.filter_by(dictionary_id=dictionary.id).count() >= max_words:
-        return jsonify({'error': f"Limite atteinte : {max_words} mots maximum par dictionnaire."}), 400
+        return jsonify({'error': f"Limite atteinte : {max_words} mots maximum par dictionnaire.", 'reason': "word_limit"}), 400
 
     mot_upper = normalize_word(payload.mot)
     if PersonalWord.query.filter_by(dictionary_id=dictionary.id, mot=mot_upper).first():
-        return jsonify({'error': f"Le mot '{payload.mot}' existe déjà."}), 409
+        return jsonify({'error': f"Le mot '{payload.mot}' existe déjà.", 'reason': "word_exists"}), 409
     new_word = PersonalWord(mot=mot_upper, mot_affiche=payload.mot, definition=payload.definition or '', dictionary_id=dictionary.id)
     db.session.add(new_word)
     db.session.commit()
@@ -262,7 +263,7 @@ def search_words():
             )
             personal_results_json = [w.to_json() for w in personal_words]
 
-    if not dela_trie: return jsonify({"error": "Dictionnaire principal non disponible."}), 503
+    if not dela_trie: return jsonify({"error": "Dictionnaire principal non disponible.", "reason": "lexicon_unavailable"}), 503
 
     # Le parcours du Trie s'arrête dès que la limite est atteinte (masques très larges comme « ?????? »)
     dela_results_raw = dela_trie.search_pattern(cleaned_mask, limit=payload.limit + len(personal_results_json))
@@ -281,7 +282,7 @@ def search_words():
         result["sens"] = senses.get(normalize_word(result["mot"]))
     usage.add_details(pattern_length=len(cleaned_mask), wildcards=cleaned_mask.count('?'),
                       results=len(results), logged_in=user is not None)
-    return jsonify({"results": results}), 200
+    return jsonify(du_site({"results": results})), 200
 
 @main_bp.route('/grids/formats', methods=['GET'])
 def list_grid_formats():
@@ -309,7 +310,7 @@ def grid_difficulty():
     if payload.size:
         slots = format_slot_count(payload.size.width, payload.size.height,
                                   current_app.config.get('LAYOUTS_DIR'))
-    estimate = request_difficulty(words, slots)
+    estimate = request_difficulty(words, slots, langue_du_site())
     estimate["impossible"], estimate["fitting_formats"], estimate["better_format"] = [], [], None
     if payload.size and words:
         fits = fit_by_format(words, current_app.config.get('LAYOUTS_DIR'))
@@ -345,7 +346,8 @@ def generated_difficulty(words: list[str], size) -> dict:
     dela_trie = current_app.dela_trie
     known = dela_trie.words if dela_trie else set()
     impossible = generated_must_word_problems(size.width, size.height, words) if size else []
-    estimate = sur_mesure_difficulty(words, size.width if size else None, size.height if size else None)
+    estimate = sur_mesure_difficulty(words, size.width if size else None, size.height if size else None,
+                                     langue_du_site())
     if impossible:
         estimate.update(success_rate=0.0, level="très difficile")
     return {
@@ -371,7 +373,7 @@ def better_format(words, fits: dict[str, dict], current_rate: float) -> dict | N
     for name, fit in fits.items():
         if fit["problems"]:
             continue
-        rate = request_difficulty(words, fit["slots"])["success_rate"]
+        rate = request_difficulty(words, fit["slots"], langue_du_site())["success_rate"]
         width, height = fit["width"], fit["height"]
         candidates.append((-rate, width * height, width, name, rate))
     if not candidates:
@@ -388,7 +390,7 @@ def better_format(words, fits: dict[str, dict], current_rate: float) -> dict | N
 def generate_grid():
     user = get_current_user()
     dela_trie = current_app.dela_trie
-    if not dela_trie: return jsonify({"error": "Dictionnaire principal non disponible."}), 503
+    if not dela_trie: return jsonify({"error": "Dictionnaire principal non disponible.", "reason": "lexicon_unavailable"}), 503
 
     payload = parse_body(GenerateRequest)
     width, height = payload.size.width, payload.size.height
@@ -489,7 +491,7 @@ def generate_grid():
             return stream_generation(generator, held, user_words=len(set(wish_words) | set(must_words)),
                                      mystery=(mystery_word, payload.seed))
         body, status = generation_outcome(generator, generator.generate())
-        return jsonify(add_mystery(body, mystery_word, payload.seed) if status == 200 else body), status
+        return jsonify(du_site(add_mystery(body, mystery_word, payload.seed)) if status == 200 else body), status
     finally:
         if not handed_over:
             held.close()
@@ -515,6 +517,7 @@ def prepare_generation(width, height, common_words, dela_trie, payload, wish_wor
             frequency_mode=payload.frequency_mode,
             orchestrate=orchestrate,
             geometry=geometry,
+            langue=langue_du_site(),
         )
     except LayoutNotFoundError:
         formats = available_formats(layouts_dir)
@@ -654,7 +657,7 @@ def stream_generation(generator, held: contextlib.ExitStack, user_words: int, my
                                            "expected_s": expected_end(budget, patience, improved_s)})
                     last_progress = now
             body, status = generation_outcome(generator, generator.succeeded)
-            yield sse("done", add_mystery(body, *mystery)) if status == 200 else sse("error", {**body, "status": status})
+            yield sse("done", du_site(add_mystery(body, *mystery))) if status == 200 else sse("error", {**body, "status": status})
         except GeneratorExit:
             if sent_best is not None:
                 status, body = 200, {"kept": True}
@@ -689,7 +692,7 @@ def save_grid():
     maximum = current_app.config['MAX_GRIDS_PER_USER']
     if SavedGrid.query.filter_by(user_id=user.id).count() >= maximum:
         accord = "s" if maximum > 1 else ""
-        return jsonify({'error': f"Limite atteinte : {maximum} grille{accord} conservée{accord} au maximum."}), 400
+        return jsonify({'error': f"Limite atteinte : {maximum} grille{accord} conservée{accord} au maximum.", 'reason': "grid_limit"}), 400
 
     grid = payload.grid
     # Sans nom choisi, un repère vaut mieux qu'« Grille 37 » : le format et le jour
@@ -734,7 +737,7 @@ def create_blank_grid():
     maximum = current_app.config['MAX_GRIDS_PER_USER']
     if SavedGrid.query.filter_by(user_id=user.id).count() >= maximum:
         accord = "s" if maximum > 1 else ""
-        return jsonify({'error': f"Limite atteinte : {maximum} grille{accord} conservée{accord} au maximum."}), 400
+        return jsonify({'error': f"Limite atteinte : {maximum} grille{accord} conservée{accord} au maximum.", 'reason': "grid_limit"}), 400
 
     if payload.layout:
         entry = next((e for e in catalog_entries(current_app.config.get('LAYOUTS_DIR'))
@@ -908,14 +911,14 @@ def grid_suggestions(grid_id):
     payload = parse_body(SlotRef)
     dela_trie = current_app.dela_trie
     if not dela_trie:
-        return jsonify({"error": "Dictionnaire principal non disponible."}), 503
+        return jsonify({"error": "Dictionnaire principal non disponible.", "reason": "lexicon_unavailable"}), 503
 
     cells = (grid.payload or {}).get("cells", [])
     slot = slot_at(cells, payload.x, payload.y, payload.direction)
     if slot is None:
-        return jsonify({"error": "Aucun mot ne passe par cette case dans ce sens."}), 404
+        return jsonify({"error": "Aucun mot ne passe par cette case dans ce sens.", "reason": "no_slot"}), 404
 
-    allowed = allowed_letters(cells, slot, lambda word: word in dela_trie.words)
+    allowed = allowed_letters(cells, slot, lambda word: word in dela_trie.words, langue_du_site().alphabet)
     # Par défaut on **comble les trous** : les lettres déjà posées restent, seules les cases vides
     # sont à remplir. C'est le geste de l'auteur qui efface deux lettres pour retravailler une zone.
     # `keep_letters: false` propose au contraire de remplacer le mot entier.
@@ -977,7 +980,7 @@ def update_grid(grid_id):
         if not problemes:
             cells, problemes = apply_letters(cells, [edit.model_dump() for edit in payload.cells or []])
         if problemes:
-            return jsonify({"error": "Modification refusée.", "details": problemes}), 400
+            return jsonify({"error": "Modification refusée.", "reason": "edit_refused", "details": problemes}), 400
         if payload.preview:
             return jsonify({"layout_warnings": layout_warnings(cells)}), 200
         contenu["cells"] = cells
@@ -1062,7 +1065,7 @@ def delete_self():
     user = get_current_user()
     payload = parse_body(AccountDeletionRequest)
     if not password_matches(user.password, payload.password):
-        return jsonify({"error": "Mot de passe incorrect."}), 403
+        return jsonify({"error": "Mot de passe incorrect.", "reason": "wrong_password"}), 403
     # Suppression via l'ORM : la cascade User -> Dictionary -> PersonalWord efface aussi
     # dictionnaires et mots (une suppression SQL en masse laissait les mots orphelins).
     # Les événements d'usage liés au compte partent avec lui (ADR 0016).

@@ -178,7 +178,8 @@ def test_requests_say_who_they_are(monkeypatch):
 
     monkeypatch.setattr(seo.urllib.request, "urlopen", urlopen)
     seo._http("https://ssl.bing.com/webmaster/api.svc/json/GetCrawlStats")
-    assert seen["agent"] == seo.USER_AGENT  # Cloudflare refuse « Python-urllib »
+    # Cloudflare refuse « Python-urllib » : le relevé dit qui il est, et pour quel site
+    assert seen["agent"].startswith("Pilotage/1.0 (+") and seen["agent"].endswith("/a-propos)")
 
 
 def test_url_inspection_counts_indexed_pages(test_app, monkeypatch):

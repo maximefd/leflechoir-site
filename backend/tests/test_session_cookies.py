@@ -84,7 +84,7 @@ def test_logging_out_revokes_the_tokens_not_just_the_cookies(client):
     replayed_refresh = client.post("/api/auth/refresh", headers={"Authorization": f"Bearer {stolen_refresh}"})
     replayed_access = client.get("/api/users/me", headers={"Authorization": f"Bearer {stolen_access}"})
     assert replayed_refresh.status_code == replayed_access.status_code == 401
-    assert replayed_access.get_json() == {"error": "Session fermée. Reconnecte-toi."}
+    assert replayed_access.get_json() == {"error": "Session fermée. Reconnecte-toi.", "reason": "session_closed"}
 
 
 def test_logging_out_always_succeeds(client):

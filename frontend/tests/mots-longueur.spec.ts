@@ -204,36 +204,21 @@ test("hub de 5 lettres : des liens vers les pages « commençant par » et « fi
 });
 
 // Depuis le 20/10/2026, 2 à 8 lettres ont leurs pages par initiale et terminaison ; 9 et 10 gardent les boutons
-test("hub de 9 lettres : des boutons « commençant par » qui remplissent les cases et affichent les mots", async ({ page }) => {
+test("hub de 9 lettres : ses pages « commençant par » et « finissant par », avec leur liste complète", async ({ page }) => {
+  // Depuis le 25/10/2026, 9 et 10 lettres ont leurs pages comme 2 à 8 : plus de boutons qui remplissent les cases
   await page.goto("/mots/neuf-lettres");
   const main = page.getByRole("main");
-  await expect(main.getByRole("button", { name: /^Mots de 9 lettres commençant par / })).toHaveCount(26);
+  await expect(main.getByRole("button", { name: /^Mots de 9 lettres commençant par / })).toHaveCount(0);
 
-  await main.getByRole("button", { name: "Mots de 9 lettres commençant par C" }).click();
+  await main.getByRole("link", { name: "Mots de 9 lettres commençant par C", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/mots\/neuf-lettres\/commencant-par-c$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mots de 9 lettres commençant par C");
 
-  await expect(page.getByLabel("Lettre 1 sur 9", { exact: true })).toHaveValue("C");
-  for (const i of [2, 5, 9]) await expect(page.getByLabel(`Lettre ${i} sur 9`, { exact: true })).toHaveValue("");
-  await expect(page).toHaveURL(/\/mots\/neuf-lettres\?motif=C(%3F){8}$/);
-  const liste = page.getByRole("list", { name: "Mots de 9 lettres pour C????????" });
-  await expect(liste).toBeVisible({ timeout: 20_000 });
-  const mots = await liste.getByRole("listitem").allTextContents();
-  expect(mots.length).toBeGreaterThan(0);
-  for (const mot of mots) expect(mot).toMatch(/^C[A-Z]{8}$/);
-});
-
-test("hub de 9 lettres : un bouton « finissant par » remplit les dernières cases et affiche les mots", async ({ page }) => {
   await page.goto("/mots/neuf-lettres");
-
-  await page.getByRole("button", { name: "Mots de 9 lettres finissant par ER", exact: true }).click();
-
-  await expect(page.getByLabel("Lettre 8 sur 9", { exact: true })).toHaveValue("E");
-  await expect(page.getByLabel("Lettre 9 sur 9", { exact: true })).toHaveValue("R");
-  await expect(page.getByLabel("Lettre 1 sur 9", { exact: true })).toHaveValue("");
-  const liste = page.getByRole("list", { name: "Mots de 9 lettres pour ???????ER" });
-  await expect(liste).toBeVisible({ timeout: 20_000 });
-  const mots = await liste.getByRole("listitem").allTextContents();
-  expect(mots.length).toBeGreaterThan(0);
-  for (const mot of mots) expect(mot).toMatch(/^[A-Z]{7}ER$/);
+  await main.getByRole("link", { name: "Mots de 9 lettres finissant par AIENT", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/mots\/neuf-lettres\/finissant-par-aient$/);
+  const mots = await page.getByRole("main").getByText(/^[A-Z]{4}AIENT$/).allTextContents();
+  expect(mots.length).toBeGreaterThan(10);
 });
 
 test("une adresse avec ?motif= remplit les cases et affiche les mots au chargement", async ({ page }) => {
@@ -500,4 +485,18 @@ test("sur téléphone, la rangée tient dans l'écran, sans défilement horizont
   expect((derniere?.x ?? 0) + (derniere?.width ?? 0)).toBeLessThanOrEqual(360);
   const hauteurs = await Promise.all([1, 2, 3, 4, 5].map(async (i) => (await page.getByLabel(`Lettre ${i} sur 5`, { exact: true }).boundingBox())?.y));
   expect(new Set(hauteurs).size).toBe(1);
+});
+
+test("le mot n'est jamais coupé en deux : 9 et 10 lettres sur une seule rangée, sur ordinateur comme sur téléphone", async ({ page }) => {
+  for (const [chemin, longueur] of [["/mots/neuf-lettres", 9], ["/mots/dix-lettres", 10]] as const) {
+    for (const largeur of [1280, 360]) {
+      await page.setViewportSize({ width: largeur, height: 800 });
+      await page.goto(chemin);
+      const cases = page.getByLabel(new RegExp(`^Lettre \\d+ sur ${longueur}$`));
+      await expect(cases).toHaveCount(longueur);
+      const hauteurs = await cases.evaluateAll((elements) => elements.map((element) => Math.round(element.getBoundingClientRect().top)));
+      expect(new Set(hauteurs).size, `${chemin} à ${largeur} px`).toBe(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(largeur);
+    }
+  }
 });

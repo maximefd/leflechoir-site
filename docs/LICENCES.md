@@ -34,7 +34,7 @@ Décision de l'auteur : la provenance des layouts n'est pas suivie. Ce sont des 
 Relevé du 23/09/2026 (`pnpm licenses list --prod`, `pip-licenses`) :
 
 - **Frontend** : 83 paquets en production, MIT pour l'essentiel, puis Apache-2.0, ISC, BSD, 0BSD. `caniuse-lite` est en CC BY 4.0 : ce sont des données utilisées au build, sans obligation pour l'application servie.
-- **Backend** : MIT, BSD, Apache-2.0, PSF, et `email-validator` sous Unlicense. `psycopg2-binary` est en **LGPL** : utilisée comme bibliothèque, sans modification, elle n'impose rien au code de Terminator.
+- **Backend** : MIT, BSD, Apache-2.0, PSF, et `email-validator` sous Unlicense. `psycopg` (version 3, avec `psycopg-binary`) est en **LGPL** : utilisée comme bibliothèque, sans modification, elle n'impose rien au code de Terminator.
 
 Aucune licence contaminante (GPL, AGPL) : le code de Terminator peut rester fermé s'il le faut.
 

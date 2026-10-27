@@ -389,8 +389,8 @@ def test_a_missing_letter_comes_back_with_the_grid_and_the_advice_to_start_again
 @pytest.mark.parametrize("word, reason", [
     ("Lo", "mystery_word_length"),
     ("Abcdefghijklmnopqrstu", "mystery_word_length"),
-    ("M4rie", None),
-    ("Marie!", None),
+    ("M4rie", "invalid_request"),
+    ("Marie!", "invalid_request"),
 ])
 def test_the_mystery_word_is_validated_before_generating(grid_app, client, spy_on_generator, word, reason):
     response = post_generate(client, {"size": {"width": 5, "height": 5}, "seed": 42, "mystery_word": word})

@@ -45,14 +45,14 @@ def test_unknown_route_returns_french_json_404(client):
     response = client.get("/api/inexistant")
 
     assert response.status_code == 404
-    assert response.get_json() == {"error": "Ressource introuvable."}
+    assert response.get_json() == {"error": "Ressource introuvable.", "reason": "not_found"}
 
 
 def test_wrong_method_returns_json_405_with_allow_header(client):
     response = client.put("/api/status")
 
     assert response.status_code == 405
-    assert response.get_json() == {"error": "Méthode non autorisée."}
+    assert response.get_json() == {"error": "Méthode non autorisée.", "reason": "method_not_allowed"}
     assert "GET" in response.headers["Allow"]
 
 
@@ -66,7 +66,7 @@ def test_unexpected_errors_do_not_leak_details():
     response = app.test_client().get("/api/boom")
 
     assert response.status_code == 500
-    assert response.get_json() == {"error": "Erreur interne du serveur."}
+    assert response.get_json() == {"error": "Erreur interne du serveur.", "reason": "internal_error"}
     assert "confidentiel" not in response.get_data(as_text=True)
 
 
@@ -149,7 +149,7 @@ def test_invalid_token_returns_french_401(client):
     response = client.get("/api/dictionaries", headers={"Authorization": "Bearer pas-un-jeton"})
 
     assert response.status_code == 401
-    assert response.get_json() == {"error": "Jeton d'authentification invalide."}
+    assert response.get_json() == {"error": "Jeton d'authentification invalide.", "reason": "invalid_token"}
 
 
 def test_expired_token_is_flagged_for_refresh(client, test_app):
@@ -194,7 +194,7 @@ def test_login_is_rate_limited():
 
     assert statuses == [401, 401, 401, 429]
     blocked = send(client, "post", "/api/auth/login", body)
-    assert blocked.get_json() == {"error": "Trop de requêtes. Réessaie dans quelques instants."}
+    assert blocked.get_json() == {"error": "Trop de requêtes. Réessaie dans quelques instants.", "reason": "rate_limited"}
 
 
 def login_statuses(client, visitors):
@@ -306,7 +306,7 @@ def test_account_deletion_requires_the_password(client):
 
     # 403 et non 401 : le frontend lit un 401 comme une session expirée et déconnecterait
     assert wrong.status_code == 403
-    assert wrong.get_json() == {"error": "Mot de passe incorrect."}
+    assert wrong.get_json() == {"error": "Mot de passe incorrect.", "reason": "wrong_password"}
     assert missing.status_code == 400
     assert User.query.filter_by(email=email).count() == 1
 

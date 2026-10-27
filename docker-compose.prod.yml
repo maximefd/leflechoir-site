@@ -32,7 +32,8 @@ services:
 
   api:
     build: ./backend
-    image: leflechoir-api:${RELEASE:-local}
+    # Une image par site (ADR 0033) : PROJET vient de server.sh, d'après deploy/sites/<site>.env
+    image: ${PROJET:-leflechoir}-api:${RELEASE:-local}
     restart: unless-stopped
     # Réglages lus dans .env.production (modèle : .env.production.example), un par un : le jeton du tunnel
     # n'entre pas dans l'environnement de l'API
@@ -97,7 +98,7 @@ services:
     logging: *logging
 
   cloudflared:
-    image: cloudflare/cloudflared:2026.9.3
+    image: cloudflare/cloudflared:2026.10.3
     restart: unless-stopped
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:

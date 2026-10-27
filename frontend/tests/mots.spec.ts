@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Les listes de mots (`/mots`) : de 2 à 8 lettres, toutes au même format depuis le 20/10/2026 (un outil par longueur,
- * une page par initiale et par terminaison, avec la liste complète dans le HTML) ; 9 et 10 lettres, l'outil seul.
+ * Les listes de mots (`/mots`) : de 2 à 10 lettres, toutes au même format (2 à 8 depuis le 20/10/2026, 9 et 10 depuis
+ * le 25/10) : un outil par longueur, une page par initiale et par terminaison, avec la liste complète dans le HTML.
  * La recherche lit le motif de l'adresse (`?motif=`).
  */
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://leflechoir.fr").replace(/\/+$/, "");
@@ -40,7 +40,7 @@ test("la recherche sans motif dans l'adresse reste vide", async ({ page }) => {
   await expect(page.getByLabel("Motif à rechercher")).toHaveValue("");
 });
 
-test("/mots présente les outils de 2 à 10 lettres, et les pages par initiale et terminaison de 2 à 8", async ({ page }) => {
+test("/mots présente les outils de 2 à 10 lettres, et leurs pages par initiale et terminaison", async ({ page }) => {
   await page.goto("/mots");
 
   const titres = await page.getByRole("main").locator("h3 a").evaluateAll((a) => a.map((l) => l.getAttribute("href")));
@@ -104,6 +104,6 @@ test("le sitemap date les listes de mots (lastmod : la date de génération des 
   for (const chemin of ["/mots", "/mots/cinq-lettres", "/mots/cinq-lettres/finissant-par-ez", "/mots/six-lettres/commencant-par-a", "/mots/deux-lettres", "/mots/huit-lettres"]) {
     expect(entrees.get(`${SITE_URL}${chemin}`), chemin).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}/);
   }
-  // Un outil sans liste n'a pas de date inventée
-  expect(entrees.get(`${SITE_URL}/mots/neuf-lettres`)).not.toContain("<lastmod>");
+  // 9 et 10 lettres ont désormais leur liste, donc leur date
+  expect(entrees.get(`${SITE_URL}/mots/neuf-lettres`)).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}/);
 });

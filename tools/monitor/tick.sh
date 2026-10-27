@@ -14,13 +14,16 @@
 # surveillance externe (UptimeRobot) qui prévient.
 set -eu
 
-BASE="${LEFLECHOIR_BASE:-/opt/leflechoir}"
+# Un minuteur par site (ADR 0033) : PROJET=<projet> dans la ligne de cron du site (défaut : leflechoir)
+PROJET="${PROJET:-leflechoir}"
+export PROJET
+BASE="${LEFLECHOIR_BASE:-/opt/$PROJET}"
 ENV_FILE="${ENV_FILE:-$BASE/.env.production}"
-API_CONTAINER="${API_CONTAINER:-leflechoir-api-1}"
+API_CONTAINER="${API_CONTAINER:-$PROJET-api-1}"
 MARKER="$BASE/backups/derniere-sauvegarde"
 
 # Un seul passage à la fois : si le précédent attend encore (envoi d'e-mail, base lente), celui-ci s'efface
-exec 9>"${TMPDIR:-/tmp}/leflechoir-minuteur.lock"
+exec 9>"${TMPDIR:-/tmp}/$PROJET-minuteur.lock"
 flock -n 9 || exit 0
 
 [ -n "$(docker ps -q --filter "name=^${API_CONTAINER}\$" --filter status=running)" ] || exit 0
@@ -28,7 +31,7 @@ flock -n 9 || exit 0
 # Vide si la trace manque : `flask system tick` sait alors qu'aucune sauvegarde n'a été copiée, et alerte
 trace="$(head -n 1 "$MARKER" 2>/dev/null || true)"
 
-if ! output="$(docker compose -p leflechoir -f "$BASE/current/docker-compose.prod.yml" --env-file "$ENV_FILE" \
+if ! output="$(docker compose -p "$PROJET" -f "$BASE/current/docker-compose.prod.yml" --env-file "$ENV_FILE" \
         exec -T -e LEXICON_LOAD=0 api flask system tick --last-backup "$trace" 2>&1)"; then
     printf '%s\n' "$output" >&2
     exit 1

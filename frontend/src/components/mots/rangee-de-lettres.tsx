@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
+import { useRef, useState, type CSSProperties, type ClipboardEvent, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { boutonOcre, cadre, enTeteSection, texteDoux } from "@/components/mots/style";
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,9 @@ export function lettreDe(caractere: string): string | null {
  * parent (`lettres`, `onLettres`) : les raccourcis de la page peuvent ainsi remplir les cases. `onEffacer` est
  * appelé par le deuxième bouton (`libelleEffacer`). Passage automatique à la case suivante, Retour arrière qui
  * revient en arrière, flèches, collage d'un mot entier. `avant` : ce qui précède les cases (le choix de la longueur).
- * Jusqu'à 8 cases, une seule rangée ; au-delà, deux rangées égales, pour que les cases restent assez larges.
+ * Une seule rangée, comme le mot dans la grille (deux rangées donnaient l'impression d'un mot coupé en deux, l'auteur,
+ * 26/10/2026) : au-delà de 8 cases, elles se resserrent sur téléphone et gardent leur taille sur ordinateur. Seuls les
+ * mots de plus de 10 lettres passent sur deux rangées, et sur téléphone seulement : une case y ferait moins de 20 px.
  */
 export function RangeeDeLettres({
   longueur,
@@ -116,7 +118,8 @@ export function RangeeDeLettres({
     aller(0);
   };
 
-  const colonnes = longueur <= 8 ? longueur : Math.ceil(longueur / 2);
+  const serre = longueur > 8;
+  const colonnesTelephone = longueur <= 10 ? longueur : Math.ceil(longueur / 2);
 
   return (
     <form onSubmit={chercher} className={`${cadre} p-4 md:p-6`} aria-labelledby="rangee-titre">
@@ -133,8 +136,8 @@ export function RangeeDeLettres({
         role="group"
         aria-labelledby="rangee-titre"
         aria-describedby="rangee-aide"
-        className="mx-auto mt-5 grid gap-1.5 sm:gap-2"
-        style={{ gridTemplateColumns: `repeat(${colonnes}, minmax(0, 1fr))`, maxWidth: `${colonnes * 72}px` }}
+        className={`mx-auto mt-5 grid grid-cols-[repeat(var(--cases-telephone),minmax(0,1fr))] sm:grid-cols-[repeat(var(--cases),minmax(0,1fr))] sm:gap-2 ${serre ? "gap-1" : "gap-1.5"}`}
+        style={{ "--cases": longueur, "--cases-telephone": colonnesTelephone, maxWidth: `${longueur * 72}px` } as CSSProperties}
       >
         {lettres.map((lettre, index) => (
           <input
@@ -155,7 +158,7 @@ export function RangeeDeLettres({
             onKeyDown={(event) => toucher(index, event)}
             onPaste={(event) => coller(index, event)}
             onFocus={(event) => event.target.select()}
-            className={`h-16 w-full min-w-0 rounded-md border-2 border-input transition-[border-color,box-shadow,transform] duration-150 focus:scale-[1.04] focus:border-amber-500 text-center text-3xl uppercase text-foreground caret-transparent outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 sm:h-20 sm:text-4xl ${lettre ? "border-amber-400 bg-amber-50" : "bg-background"}`}
+            className={`w-full min-w-0 rounded-md border-2 border-input transition-[border-color,box-shadow,transform] duration-150 focus:scale-[1.04] focus:border-amber-500 text-center uppercase text-foreground caret-transparent outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 sm:h-20 sm:text-4xl ${serre ? "h-12 px-0 text-xl" : "h-16 text-3xl"} ${lettre ? "border-amber-400 bg-amber-50" : "bg-background"}`}
           />
         ))}
       </div>

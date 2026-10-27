@@ -15,7 +15,7 @@ import { breadcrumbJsonLd, publicPage } from "@/lib/seo";
  */
 const TITLE = "Listes de mots pour les mots fléchés";
 const DESCRIPTION =
-  "Un mot te manque dans une grille ? Trouve-le d’après sa longueur et ses lettres, de 2 à 15 lettres. Listes complètes des mots de 2 à 8 lettres, par initiale et par terminaison.";
+  "Un mot te manque dans une grille ? Trouve-le d’après sa longueur et ses lettres, de 2 à 15 lettres. Listes complètes des mots de 2 à 10 lettres, par initiale et par terminaison.";
 
 export const metadata: Metadata = publicPage({ path: "/mots", title: TITLE, description: DESCRIPTION });
 
@@ -36,7 +36,7 @@ export default function MotsPage() {
       <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
         Quand une grille coince, on connaît souvent la longueur du mot et quelques-unes de ses lettres. Commence par
         là : choisis le nombre de lettres, tape ce que tu sais, la recherche trouve le reste. Pour les mots de deux à
-        huit lettres, tu trouves aussi la liste complète de chaque initiale et de chaque terminaison.
+        dix lettres, tu trouves aussi la liste complète de chaque initiale et de chaque terminaison.
       </p>
       <p className="mt-4 text-sm text-muted-foreground">{BYLINE}</p>
 
