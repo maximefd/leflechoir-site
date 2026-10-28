@@ -27,6 +27,9 @@ backend/tests/test_word_repository.py
 backend/tests/test_geometry.py
 backend/tests/test_skeleton.py
 backend/tests/test_generation_geometry.py
+# L'API ouverte (ADR 0032) : le processus de génération et ses tests calculent les grilles
+backend/generation_runner.py
+backend/tests/test_generation_runner.py
 data/lexicon
 # Annotations de relecture de l'auteur sur les articles (ADR 0027) : du travail privé, pas du contenu
 data/annotations
@@ -45,6 +48,7 @@ docs/ROADMAP.md
 docs/CONCURRENCE.md
 docs/ACQUISITION.md
 docs/VISIBILITE-IA.md
+docs/API-BESOINS.md
 docs/adr/0023-cap-sur-la-premiere-place.md
 # Le moteur v2 (#210) : ce qui est livré, les mesures, ce qui ne l'est pas
 docs/adr/0025-moteur-v2.md

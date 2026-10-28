@@ -79,3 +79,25 @@ def generation_slot(lock_dir: str, visitor: str, max_concurrent: int):
         else:
             raise GenerationBusy("server")
         yield
+
+
+@contextlib.contextmanager
+def background_slot(lock_dir: str, max_concurrent: int, keep_free: int = 1):
+    """Une place pour une génération en tâche de fond (l'API, ADR 0032), qui en laisse `keep_free` libres au site.
+
+    Prise par la fin du tableau, quand le site les prend par le début : les deux se croisent le plus tard possible.
+    Si, une fois la place prise, il en reste moins de `keep_free` de libres, elle est rendue aussitôt :
+    GenerationBusy("server"). Pas de verrou de visiteur : une génération à la fois par clé se compte en base.
+    """
+    os.makedirs(lock_dir, mode=0o700, exist_ok=True)
+    with contextlib.ExitStack() as held:
+        for slot in reversed(range(max_concurrent)):
+            place = _try_lock(os.path.join(lock_dir, f"place-{slot}.lock"))
+            if place is not None:
+                held.callback(place.close)
+                break
+        else:
+            raise GenerationBusy("server")
+        if max_concurrent - busy_places(lock_dir, max_concurrent) < keep_free:
+            raise GenerationBusy("server")
+        yield

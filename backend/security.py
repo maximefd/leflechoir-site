@@ -79,6 +79,15 @@ RATE_LIMITED_ENDPOINTS = {
     "articles.rate_force": "RATELIMIT_FORCE",
     "main.grid_difficulty": "RATELIMIT_DIFFICULTY",
     "main.generate_grid": "RATELIMIT_GENERATE",
+    # L'API ouverte (ADR 0032) : ses quotas sont en base ; ces plafonds-ci n'arrêtent que les rafales
+    "api_keys.create_key": "RATELIMIT_API_KEYS",
+    "api_v1.create_grid": "RATELIMIT_API_CREATE",
+    "api_v1.get_job": "RATELIMIT_API_READ",
+    "api_v1.notice": "RATELIMIT_API_READ",
+    "api_v1.limits": "RATELIMIT_API_READ",
+    # Sans file ni base, mais du calcul (dessin, relecture) : un plafond par adresse
+    "api_v1.check_clues": "RATELIMIT_API_RENDER",
+    "api_v1.render": "RATELIMIT_API_RENDER",
 }
 
 

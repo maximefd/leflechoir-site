@@ -9,6 +9,20 @@ import type { GrilleJson } from "@/content/grilles/types";
 /** Les grilles publiées, de la plus récente à la plus ancienne. La première est l'horizon du stock. */
 export const GRILLES: { date: string; force?: number }[] = [
   // Novembre 2026 : le format du téléphone (6 × 9, 6 × 10), sans force annoncée (ADR 0026)
+  { date: "2026-11-28" },
+  { date: "2026-11-27" },
+  { date: "2026-11-26" },
+  { date: "2026-11-25" },
+  { date: "2026-11-24" },
+  { date: "2026-11-23" },
+  { date: "2026-11-22" },
+  { date: "2026-11-21" },
+  { date: "2026-11-20" },
+  { date: "2026-11-19" },
+  { date: "2026-11-18" },
+  { date: "2026-11-17" },
+  { date: "2026-11-16" },
+  { date: "2026-11-15" },
   { date: "2026-11-14" },
   { date: "2026-11-13" },
   { date: "2026-11-12" },
@@ -49,6 +63,20 @@ export const GRILLES: { date: string; force?: number }[] = [
 
 /** Le chargement d'une grille, à la demande : la page du jour ne paie pas pour toute la bibliothèque. */
 export const LOADERS: Record<string, () => Promise<{ default: GrilleJson }>> = {
+  "2026-11-28": () => import("./2026-11-28.json"),
+  "2026-11-27": () => import("./2026-11-27.json"),
+  "2026-11-26": () => import("./2026-11-26.json"),
+  "2026-11-25": () => import("./2026-11-25.json"),
+  "2026-11-24": () => import("./2026-11-24.json"),
+  "2026-11-23": () => import("./2026-11-23.json"),
+  "2026-11-22": () => import("./2026-11-22.json"),
+  "2026-11-21": () => import("./2026-11-21.json"),
+  "2026-11-20": () => import("./2026-11-20.json"),
+  "2026-11-19": () => import("./2026-11-19.json"),
+  "2026-11-18": () => import("./2026-11-18.json"),
+  "2026-11-17": () => import("./2026-11-17.json"),
+  "2026-11-16": () => import("./2026-11-16.json"),
+  "2026-11-15": () => import("./2026-11-15.json"),
   "2026-11-14": () => import("./2026-11-14.json"),
   "2026-11-13": () => import("./2026-11-13.json"),
   "2026-11-12": () => import("./2026-11-12.json"),

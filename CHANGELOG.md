@@ -5,6 +5,28 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **L'API ouverte, lot 1 : le socle et le fichier de grille** (ADR 0032, refondue le 27/10/2026 ; fermée en production
+  tant que l'auteur ne l'a pas ouverte) :
+  - une adresse internationale, `/v1/`, la langue en paramètre de la génération ; une clé vaut pour toutes les
+    langues, quel que soit le site du compte (espace « api » commun, `API_DATABASE_URL`) ;
+  - `GET /v1` : la notice pour les modèles (règles du genre, rôle de l'appelant, guides de style par langue avec des
+    exemples, niveaux, langues, limites, marche à suivre) ; messages selon `Accept-Language` (anglais, français,
+    allemand), `reason` stable ;
+  - `POST /v1/grids` (`type`, `lang`, taille, niveau facile, moyen ou difficile, mots, mot mystère, graine,
+    `Idempotency-Key`) répond `202` ; `GET /v1/grids/{id}` rend le **fichier de grille** (format public versionné,
+    gardé 24 heures seulement : il appartient au demandeur) ;
+  - `POST /v1/clues/check` : les définitions d'un fichier, refusées si elles ne tiennent pas ou donnent la réponse,
+    signalées si elles sonnent dictionnaire ; puis les liens pour jouer la grille ou l'ouvrir, qui la contiennent ;
+  - `POST /v1/render` : toute grille valide en SVG, PNG ou PDF, signée, sans dépendance système (resvg, Pillow) ;
+  - les générations en tâche de fond : une file prise par le processus de génération de chaque langue, né du maître
+    gunicorn, qui ne prend jamais la dernière place libre du site ; quotas en base, plafonds, file bornée,
+    disjoncteur par langue, garde contre l'aspiration, entrées strictes, ni CORS ni cookie ;
+  - les clés (`flk_…`), gardées hachées, gérées dans le compte et en ligne de commande ;
+  - la mesure (`client=api`), déclarée dans la page de confidentialité et le registre RGPD (avec les grilles du jour
+    réussies, qui y manquaient).
+- **Les grilles du jour du 15 au 28 novembre**, au format du téléphone (6 × 9, 6 × 10), sans force annoncée ; cinq à
+  mot mystère (BRUME, PRIMEUR pour le beaujolais nouveau, VIOLON pour la Sainte-Cécile, CHAPEAU pour la
+  Sainte-Catherine, AVENT). Le stock court jusqu'au 28 novembre.
 - **Le socle « moteur et API » de l'international** (cap du 26/10/2026, étape 1 ; ADR 0031) :
   - un code `reason` stable sur **toutes** les erreurs de l'API (validation, erreurs HTTP, jetons, routes), gardé par
     un test qui lit le code ;
@@ -64,6 +86,8 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   confidentialité le décrit.
 
 ### Corrigé
+- **`make livrer`** lit le profil du site dans la copie déployée : il le cherchait dans le dossier de travail, resté
+  sur une branche d'avant les profils, et s'arrêtait à la vérification finale après un déploiement pourtant réussi.
 - **Déploiement de l'API** : la vérification de l'extérieur réessaie pendant deux minutes. Le 27/10/2026, elle a conclu
   à l'échec quelques secondes trop tôt, pendant que le tunnel se reconnectait (nouvelle image de cloudflared), alors que
   la nouvelle version était en service. Le message de `make livrer` ne laisse plus croire à un retour en arrière.

@@ -22,7 +22,7 @@ from flask import Flask, current_app, g, request
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db
-from models import ArticleRating, ContactMessage, UsageEvent, VisitorSalt, WordSuggestion
+from models import ArticleRating, ContactMessage, GenerationJob, UsageEvent, VisitorSalt, WordSuggestion
 from security import client_ip
 
 # Durées de conservation (ADR 0016, page de confidentialité, docs/RGPD.md)
@@ -31,7 +31,12 @@ EVENTS_RETENTION = timedelta(days=396)  # 13 mois
 CONTACT_RETENTION = timedelta(days=365)  # les messages de contact : 12 mois
 
 # Routes mesurées à chaque appel, quelle qu'en soit l'issue
-ALWAYS_MEASURED = {"main.generate_grid": "generation", "main.search_words": "search"}
+# Routes mesurées à chaque appel, quelle qu'en soit l'issue. Une demande de l'API ouverte acceptée (202) ne l'est pas
+# à son arrivée : le processus de génération l'enregistre à sa fin, avec son issue (record_background_generation)
+ALWAYS_MEASURED = {"main.generate_grid": "generation", "main.search_words": "search",
+                   "api_v1.create_grid": "generation"}
+# Les générations de l'API ouverte : jamais plus d'un jour en base (ADR 0032)
+JOBS_RETENTION = timedelta(days=1)
 
 
 def _utcnow() -> datetime:
@@ -80,6 +85,8 @@ def _purge(today: date) -> None:
     UsageEvent.query.filter(UsageEvent.created_at < now - EVENTS_RETENTION).delete()
     # Les suggestions de mots (roadmap 1e) : même durée que les événements
     WordSuggestion.query.filter(WordSuggestion.created_at < now - EVENTS_RETENTION).delete()
+    # Les générations de l'API : le processus de génération fait ce ménage, et celui-ci le refait s'il est arrêté
+    GenerationJob.query.filter(GenerationJob.created_at < now - JOBS_RETENTION).delete()
     # Les messages de contact (Phase 8, #131) : douze mois
     ContactMessage.query.filter(ContactMessage.created_at < now - CONTACT_RETENTION).delete()
     # La force des grilles d'articles : l'empreinte ne sert que le jour de la note ; la note reste, anonyme
@@ -132,6 +139,8 @@ def _event_for(response) -> dict | None:
     if request.method == "OPTIONS":
         return None
     endpoint = request.endpoint
+    if g.get("usage_deferred"):
+        return None
     described = g.get("usage_event")
     if endpoint in ALWAYS_MEASURED:
         kind = ALWAYS_MEASURED[endpoint]
@@ -150,7 +159,7 @@ def record(response):
         _record(response)
     finally:
         # Rien ne passe à la requête suivante, même si le contexte d'application lui survit (tests, CLI)
-        for key in ("usage_event", "usage_details", "usage_started"):
+        for key in ("usage_event", "usage_details", "usage_started", "usage_deferred"):
             g.pop(key, None)
 
 
@@ -184,6 +193,57 @@ def _record(response):
     except Exception:
         db.session.rollback()
         logging.exception("Événement d'usage non enregistré (%s %s)", request.method, request.path)
+
+
+def defer() -> None:
+    """L'événement de cette requête s'écrira plus tard, ailleurs : une génération de l'API mise dans la file."""
+    g.usage_deferred = True
+
+
+def record_background_generation(job, cpu_ms: int | None = None) -> None:
+    """L'événement d'une génération de l'API ouverte, écrit par le processus de génération à sa fin (ADR 0032).
+
+    Le même événement qu'une génération du site, avec `client` (api, mcp) dans `data` ; le visiteur est l'empreinte
+    du jour relevée à la demande. La durée est celle du calcul ; l'attente dans la file est à part (`queued_ms`).
+    """
+    if not current_app.config.get("USAGE_ENABLED", True):
+        return
+    params = job.request
+    started = job.started_at or job.finished_at
+    trie = current_app.dela_trie
+    try:
+        db.session.add(UsageEvent(
+            created_at=job.finished_at or _utcnow(),
+            kind="generation",
+            outcome="grid" if job.status == "done" else job.reason,
+            status=200 if job.status == "done" else 422,
+            route="/v1/grids",
+            # La base où s'écrit l'événement est celle du site qui a calculé la grille, dans sa langue
+            site=current_app.config["SITE"],
+            lang=job.lang,
+            visitor=job.visitor,
+            duration_ms=job.duration_ms,
+            cpu_ms=cpu_ms,
+            data={
+                "client": job.client,
+                "keyed": job.api_key_id is not None,
+                "format": f"{params['width']}x{params['height']}",
+                "must": [{"length": len(word), "known": word in trie.words} if trie else {"length": len(word)}
+                         for word in params["required_words"]],
+                "wish_count": len(params["preferred_words"]),
+                "quality": "best",
+                "level": params.get("level"),
+                "received_by": job.site,
+                "geometry": "sur_mesure",
+                "queued_ms": round((started - job.created_at).total_seconds() * 1000) if started else None,
+            },
+            words=({"must": params["required_words"], "wish": params["preferred_words"]}
+                   if params["required_words"] or params["preferred_words"] else None),
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        logging.exception("Événement d'usage de la génération %s non enregistré", job.public_id)
 
 
 def init_usage(app: Flask) -> None:

@@ -106,6 +106,9 @@ test("le calendrier passe d'un mois à l'autre, sans lien vers une grille à ven
   test.skip(mois.length < 2, "un seul mois de grilles");
   await page.clock.setFixedTime(midi(jour));
   await page.goto("/jouer");
+  // /jouer montre d'abord le calendrier écrit au build, puis celui de la grille du jour une fois chargée : on attend
+  // la grille, sinon le clic peut tomber sur le premier calendrier au moment où il est remplacé
+  await expect(page.locator("svg[role=img]").first()).toBeVisible();
 
   const calendrier = page.getByRole("region", { name: "Les grilles parues" });
   const titre = calendrier.getByTestId("calendrier-mois");

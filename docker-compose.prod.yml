@@ -68,6 +68,8 @@ services:
       # Derrière le tunnel, toutes les connexions viennent de cloudflared : l'adresse du visiteur est
       # dans CF-Connecting-IP, que seul Cloudflare peut poser puisque l'API n'a aucun port ouvert
       CLIENT_IP_HEADER: CF-Connecting-IP
+      # L'API ouverte (ADR 0032) : vide, fermée (ses routes répondent 503). L'auteur l'ouvre avec API_ENABLED=1
+      API_ENABLED: ${API_ENABLED:-}
       TRUST_PROXY_HOPS: "0"
       # Capacité (ADR 0013) : deux générations à la fois, un worker de plus pour le reste
       GENERATION_MAX_CONCURRENT: ${GENERATION_MAX_CONCURRENT:-2}

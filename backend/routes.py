@@ -50,7 +50,8 @@ from schemas import (
 from monitoring import report_exception
 from security import HTTP_ERROR_MESSAGES, client_ip
 import usage
-from models import ContactMessage, GridSuccess, LayoutProposal, UsageEvent, WordSuggestion
+from api_keys import forget_account, owned_by
+from models import ApiKey, ContactMessage, GridSuccess, LayoutProposal, UsageEvent, WordSuggestion
 from suggestions import record_replaced_words
 
 # On crée un nouveau Blueprint pour les routes principales
@@ -1049,6 +1050,7 @@ def get_self():
         "words": words,
         "grids": len(user.grids),
         "reussites": GridSuccess.query.filter_by(user_id=user.id).count(),
+        "api_keys": owned_by(user).filter(ApiKey.revoked_at.is_(None)).count(),
     }), 200
 
 
@@ -1075,6 +1077,8 @@ def delete_self():
     # Les mises en page proposées avant le retrait de la proposition (#221) restent en base : elles partent avec le compte
     LayoutProposal.query.filter_by(user_id=user.id).delete()
     GridSuccess.query.filter_by(user_id=user.id).delete()
+    # Les clés de l'API ouverte, et les générations demandées avec elles (ADR 0032)
+    forget_account(user)
     db.session.delete(user)
     db.session.commit()
     usage.describe("account", "delete")

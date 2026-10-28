@@ -1,0 +1,981 @@
+{
+  "date": "2026-11-26",
+  "request": {
+    "size": {
+      "width": 6,
+      "height": 10
+    },
+    "seed": 261126,
+    "quality": "best",
+    "geometry": "sur_mesure",
+    "frequency_mode": "exact"
+  },
+  "response": {
+    "grid": {
+      "cells": [
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 0
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 3,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 0
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 0
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 1,
+          "y": 1
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 2,
+          "y": 1
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 4,
+          "y": 1
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 3,
+          "y": 2
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 4,
+          "y": 2
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 5,
+          "y": 2
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 0,
+          "y": 3
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 1,
+          "y": 3
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 2,
+          "y": 3
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 3,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 5,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 1,
+          "y": 4
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 2,
+          "y": 4
+        },
+        {
+          "char": "V",
+          "is_black": false,
+          "x": 3,
+          "y": 4
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 4
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 0,
+          "y": 5
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 1,
+          "y": 5
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 2,
+          "y": 5
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 3,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 5
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 6
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 1,
+          "y": 6
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 2,
+          "y": 6
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 3,
+          "y": 6
+        },
+        {
+          "char": "H",
+          "is_black": false,
+          "x": 4,
+          "y": 6
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 6
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 0,
+          "y": 7
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 1,
+          "y": 7
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 2,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 7
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 4,
+          "y": 7
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 5,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 8
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 1,
+          "y": 8
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 2,
+          "y": 8
+        },
+        {
+          "char": "C",
+          "is_black": false,
+          "x": 3,
+          "y": 8
+        },
+        {
+          "char": "H",
+          "is_black": false,
+          "x": 4,
+          "y": 8
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 8
+        },
+        {
+          "char": "G",
+          "is_black": false,
+          "x": 0,
+          "y": 9
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 1,
+          "y": 9
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 2,
+          "y": 9
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 9
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 4,
+          "y": 9
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 5,
+          "y": 9
+        }
+      ],
+      "clues": [
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 0,
+          "text": "TITI",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 7,
+          "slot_id": 1,
+          "text": "POURVUT",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 2,
+          "text": "EST",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 3,
+          "text": "MIAOUS",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 9,
+          "slot_id": 4,
+          "text": "ARTISANAT",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 5,
+          "text": "USER",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 6,
+          "text": "TRUST",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 7,
+          "text": "TITRE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 1,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 8,
+          "text": "IVRE",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 5,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 9,
+          "text": "ESSIEU",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 10,
+          "text": "ISSU",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 1,
+          "cell_y": 4,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 11,
+          "text": "SMALA",
+          "x": 1,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 12,
+          "text": "MATHS",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 5,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 13,
+          "text": "HAHA",
+          "x": 4,
+          "y": 6
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 14,
+          "text": "MAN",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 7,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 15,
+          "text": "AI",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 16,
+          "text": "LACHE",
+          "x": 1,
+          "y": 8
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 3,
+          "cell_y": 7,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 2,
+          "slot_id": 17,
+          "text": "CE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 18,
+          "text": "GATEAU",
+          "x": 0,
+          "y": 9
+        }
+      ],
+      "fill_ratio": 1.0,
+      "geometry": "sur_mesure",
+      "height": 10,
+      "layout": "sur-mesure",
+      "must_words": [],
+      "seed": 261126,
+      "statistics": {
+        "attempts": 1,
+        "cache_stats": {
+          "hits": 0,
+          "misses": 0
+        },
+        "metrics": {
+          "backtracks": 2,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "candidates_tested": 38,
+          "fc_checks": 38,
+          "fc_skips": 17,
+          "recursive_calls": 22
+        },
+        "placement_history": [
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 1,
+            "score": 30,
+            "slot_id": 0,
+            "word": "TITI"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 2,
+            "score": 43,
+            "slot_id": 7,
+            "word": "TITRE"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 3,
+            "score": 19,
+            "slot_id": 14,
+            "word": "MAN"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 4,
+            "score": 28,
+            "slot_id": 2,
+            "word": "EST"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 5,
+            "score": 36,
+            "slot_id": 6,
+            "word": "TRUST"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 6,
+            "score": 35,
+            "slot_id": 5,
+            "word": "USER"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 7,
+            "score": 40,
+            "slot_id": 3,
+            "word": "MIAOUS"
+          },
+          {
+            "direction": "down",
+            "length": 7,
+            "order": 8,
+            "score": 38,
+            "slot_id": 1,
+            "word": "POURVUT"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 9,
+            "score": 31,
+            "slot_id": 8,
+            "word": "IVRE"
+          },
+          {
+            "direction": "down",
+            "length": 9,
+            "order": 10,
+            "score": 72,
+            "slot_id": 4,
+            "word": "ARTISANAT"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 11,
+            "score": 30,
+            "slot_id": 10,
+            "word": "ISSU"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 12,
+            "score": 35,
+            "slot_id": 11,
+            "word": "SMALA"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 13,
+            "score": 28,
+            "slot_id": 12,
+            "word": "MATHS"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 14,
+            "score": 56,
+            "slot_id": 9,
+            "word": "ESSIEU"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 15,
+            "score": 45,
+            "slot_id": 18,
+            "word": "GATEAU"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 16,
+            "score": 20,
+            "slot_id": 13,
+            "word": "HAHA"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 17,
+            "score": 31,
+            "slot_id": 16,
+            "word": "LACHE"
+          },
+          {
+            "direction": "down",
+            "length": 2,
+            "order": 18,
+            "score": 15,
+            "slot_id": 17,
+            "word": "CE"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 19,
+            "score": 17,
+            "slot_id": 15,
+            "word": "AI"
+          }
+        ]
+      },
+      "width": 6,
+      "wish_ratio": 0.0,
+      "words": [
+        {
+          "direction": "down",
+          "id": 0,
+          "score": 30,
+          "source": "common",
+          "text": "TITI",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 1,
+          "score": 38,
+          "source": "common",
+          "text": "POURVUT",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 2,
+          "score": 28,
+          "source": "common",
+          "text": "EST",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "direction": "across",
+          "id": 3,
+          "score": 40,
+          "source": "common",
+          "text": "MIAOUS",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 4,
+          "score": 72,
+          "source": "common",
+          "text": "ARTISANAT",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 5,
+          "score": 35,
+          "source": "common",
+          "text": "USER",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 6,
+          "score": 36,
+          "source": "common",
+          "text": "TRUST",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "direction": "across",
+          "id": 7,
+          "score": 43,
+          "source": "common",
+          "text": "TITRE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 8,
+          "score": 31,
+          "source": "common",
+          "text": "IVRE",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 9,
+          "score": 56,
+          "source": "common",
+          "text": "ESSIEU",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 10,
+          "score": 30,
+          "source": "common",
+          "text": "ISSU",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "direction": "down",
+          "id": 11,
+          "score": 35,
+          "source": "common",
+          "text": "SMALA",
+          "x": 1,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 12,
+          "score": 28,
+          "source": "common",
+          "text": "MATHS",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "direction": "down",
+          "id": 13,
+          "score": 20,
+          "source": "common",
+          "text": "HAHA",
+          "x": 4,
+          "y": 6
+        },
+        {
+          "direction": "across",
+          "id": 14,
+          "score": 19,
+          "source": "common",
+          "text": "MAN",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 15,
+          "score": 17,
+          "source": "common",
+          "text": "AI",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 16,
+          "score": 31,
+          "source": "common",
+          "text": "LACHE",
+          "x": 1,
+          "y": 8
+        },
+        {
+          "direction": "down",
+          "id": 17,
+          "score": 15,
+          "source": "common",
+          "text": "CE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "direction": "across",
+          "id": 18,
+          "score": 45,
+          "source": "common",
+          "text": "GATEAU",
+          "x": 0,
+          "y": 9
+        }
+      ]
+    }
+  },
+  "clues": {
+    "AI": "Possède",
+    "ARTISANAT": "Métiers manuels",
+    "CE": "Démonstratif",
+    "ESSIEU": "Axe de roues",
+    "EST": "Point cardinal",
+    "GATEAU": "Douceur d’anniversaire",
+    "HAHA": "Rire écrit",
+    "ISSU": "Né de",
+    "IVRE": "Saoul",
+    "LACHE": "Peureux",
+    "MAN": "Homme, en anglais",
+    "MATHS": "Discipline des chiffres",
+    "MIAOUS": "Cris de chat",
+    "POURVUT": "Équipa",
+    "SMALA": "Grande famille",
+    "TITI": "Gamin de Paris",
+    "TITRE": "Intitulé",
+    "TRUST": "Monopole",
+    "USER": "Abîmer"
+  }
+}

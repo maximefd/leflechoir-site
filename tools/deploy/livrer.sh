@@ -84,8 +84,9 @@ if ! make -C "$work" "$target" >"$log" 2>&1; then
 fi
 grep -E "^Version|en service|en ligne|IndexNow|Dépôt public" "$log" | sed 's/^/  /'
 
-# 4. La vérification, de l'extérieur, aux adresses du site livré (deploy/sites/$SITE.env, ADR 0033)
-profil="$REPO/deploy/sites/${SITE:-fr}.env"
+# 4. La vérification, de l'extérieur, aux adresses du site livré (deploy/sites/$SITE.env, ADR 0033) : le profil de la
+# copie déployée, jamais celui du dossier de travail, qui est peut-être sur une branche d'avant les profils (27/10/2026)
+profil="$work/deploy/sites/${SITE:-fr}.env"
 site="${DEPLOY_SITE_URL:-$(grep -E '^DEPLOY_SITE_URL=' "$profil" | tail -n 1 | cut -d= -f2-)}"
 api="${DEPLOY_API_URL:-$(grep -E '^DEPLOY_API_URL=' "$profil" | tail -n 1 | cut -d= -f2-)}"
 code_site="$(curl -s -o /dev/null -w '%{http_code}' "$site/")"

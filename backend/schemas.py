@@ -424,6 +424,10 @@ def _error_message(error: dict) -> str:
 
     if kind == "missing":
         return f"Le champ « {field} » est obligatoire."
+    if kind == "extra_forbidden":
+        return f"Le champ « {field} » n'existe pas."
+    if kind == "too_long":
+        return f"« {field} » contient trop d'éléments (au plus {context.get('max_length')})."
     if kind == "string_too_short":
         return f"« {field} » doit contenir au moins {context.get('min_length')} caractère(s)."
     if kind == "string_too_long":

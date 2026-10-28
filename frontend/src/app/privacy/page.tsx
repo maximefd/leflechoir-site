@@ -37,7 +37,7 @@ export default function PrivacyPage() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <h1 className="text-3xl font-bold">Confidentialité</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 26 octobre 2026</p>
+      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 27 octobre 2026</p>
 
       <div className="mt-8 space-y-8 text-muted-foreground">
         <p className="rounded-lg border bg-secondary/20 p-4 text-foreground">
@@ -71,6 +71,11 @@ export default function PrivacyPage() {
             <li>
               <strong className="text-foreground">Tes grilles du jour réussies</strong> : leur date, ton meilleur
               temps et le jour de la première réussite (voir plus bas).
+            </li>
+            <li>
+              <strong className="text-foreground">Tes clés d&apos;API</strong>, si tu en crées : leur nom, leur
+              début (« flk_ » et six caractères), leurs dates de création et de dernière utilisation. La clé
+              elle-même n&apos;est gardée que sous une empreinte dont on ne peut pas la retrouver (voir plus bas).
             </li>
             <li>
               <strong className="text-foreground">La date de ton inscription et celle de ta dernière
@@ -140,6 +145,18 @@ export default function PrivacyPage() {
           </ul>
         </Section>
 
+        <Section title="Les grilles demandées à l'API" id="api">
+          <p>
+            Une grille demandée à l&apos;API (par un programme ou un assistant IA) est calculée à son tour, en tâche
+            de fond. Le temps de te la rendre, sont gardés : la demande (le format, les mots fournis, le mot mystère,
+            la graine), la grille obtenue, et qui l&apos;a demandée — ta clé, ou sans clé l&apos;empreinte du jour
+            décrite plus bas, jamais ton adresse IP. Ils servent à te rendre la grille et à faire respecter les
+            limites d&apos;usage (RGPD, art. 6.1.b et 6.1.f), puis sont effacés au bout de 24 heures. Une demande
+            faite avec une clé disparaît aussi avec la clé et ton compte. Une grille envoyée à l&apos;API pour vérifier
+            ses définitions ou la dessiner n&apos;est pas gardée : elle est lue, puis oubliée.
+          </p>
+        </Section>
+
         <Section title="Ce qui passe sans être conservé longtemps">
           <ul className="list-disc space-y-1 pl-5">
             <li>
@@ -175,8 +192,10 @@ export default function PrivacyPage() {
               chaque <strong className="text-foreground">génération</strong> : le format, le type de grille
               (du catalogue ou sur mesure), le réglage de la recherche (la première grille trouvée ou la
               meilleure de plusieurs), le nombre et la longueur
-              des mots imposés, la réussite ou la raison de l&apos;échec, la durée. Le texte des mots imposés et
-              souhaités est gardé 90 jours, pour repérer ceux qui manquent au dictionnaire, puis effacé ;
+              des mots imposés, la réussite ou la raison de l&apos;échec, la durée ; pour une grille demandée à
+              l&apos;API, aussi ce fait, si elle l&apos;a été avec une clé, et son attente dans la file. Le texte des
+              mots imposés et souhaités est gardé 90 jours, pour repérer ceux qui manquent au dictionnaire, puis
+              effacé ;
             </li>
             <li>
               les <strong className="text-foreground">étapes d&apos;un compte</strong> (inscription, confirmation,

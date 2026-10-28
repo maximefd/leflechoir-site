@@ -29,6 +29,8 @@ from audience import audience_bp
 from contact import contact_bp
 from articles import articles_bp
 from article_texte import texte_bp
+from api_keys import api_keys_bp, init_api_keys_cli
+from api_v1 import api_v1_bp
 
 DEV_SECRET = 'default-secret-for-dev'
 # Nom public du site (ADR 0017) : Terminator est le nom du moteur, jamais montré aux visiteurs
@@ -60,6 +62,44 @@ DEFAULT_SETTINGS = dict(
     # Moteur v2 (#210, #219) : géométrie d'une génération qui ne la précise pas. « sur_mesure » (défaut : le seul mode
     # du site) ou « catalogue » (les layouts relevés dans des magazines, gardés dans le code)
     GENERATION_GEOMETRY='sur_mesure',
+    # L'API ouverte (ADR 0032). Fermée tant que l'auteur ne l'a pas ouverte (API_ENABLED=1) : ses routes répondent
+    # 503 `api_disabled`. Les générations y passent par une file et un processus à part (generation_runner.py)
+    API_ENABLED=False,
+    API_DATABASE_URL=None,
+    API_HOME=True,
+    # Faux : le processus de génération n'est pas lancé (tests, commandes) ; la file attend
+    API_RUNNER_ENABLED=True,
+    # Vrai : sans battement récent du processus de génération, une demande est refusée au lieu d'attendre en vain
+    API_RUNNER_REQUIRED=True,
+    API_MAX_BODY_BYTES=16 * 1024,
+    # Budget fixe d'une génération de l'API : la meilleure grille trouvée en 5 s
+    API_TIME_BUDGET_S=5.0,
+    # Places laissées au site quand l'API en prend une : jamais la dernière
+    API_KEEP_FREE_PLACES=1,
+    # File bornée : au-delà, 429 `busy` (≈ 60 s d'attente avec le budget de 5 s) ; une demande qui attend plus de
+    # deux minutes sans être prise échoue (`queue_timeout`)
+    API_QUEUE_MAX=12,
+    API_QUEUE_TIMEOUT_S=120,
+    # Quotas par clé, et sans clé (par empreinte du jour), comptés en base : partagés entre workers
+    API_KEY_PER_MINUTE=6,
+    API_KEY_PER_DAY=300,
+    API_KEY_WORDS_PER_DAY=12000,
+    API_ANON_PER_MINUTE=2,
+    API_ANON_PER_DAY=20,
+    API_ANON_WORDS_PER_DAY=800,
+    # Plafonds de tout le service par 24 heures, qui bornent le coût total
+    API_DAILY_CAP=3000,
+    API_ANON_DAILY_CAP=500,
+    # Contre l'aspiration : une même demande à la graine près, au plus tant de fois par 24 heures
+    API_SAME_SETTINGS_PER_DAY=40,
+    # Disjoncteur : autant de refus « occupé » du site en dix minutes, et l'API se coupe
+    API_BREAKER_SITE_REFUSALS=3,
+    API_MAX_KEYS_PER_USER=5,
+    RATELIMIT_API_KEYS='10 per hour',
+    # Devant les quotas en base : un plafond par adresse, en mémoire, contre les rafales
+    RATELIMIT_API_CREATE='30 per minute',
+    RATELIMIT_API_READ='240 per minute',
+    RATELIMIT_API_RENDER='60 per minute',
     # Dossier des verrous de ces places ; il doit être commun à tous les workers d'une même machine
     GENERATION_LOCK_DIR=os.path.join(tempfile.gettempdir(), 'terminator-generations'),
     CORS_ORIGINS=DEFAULT_CORS_ORIGINS,
@@ -220,6 +260,12 @@ def _load_config_from_env() -> dict:
         GENERATION_MAX_CONCURRENT=max(1, int(
             os.environ.get('GENERATION_MAX_CONCURRENT') or DEFAULT_SETTINGS['GENERATION_MAX_CONCURRENT'])),
         GENERATION_LOCK_DIR=os.environ.get('GENERATION_LOCK_DIR') or DEFAULT_SETTINGS['GENERATION_LOCK_DIR'],
+        API_ENABLED=os.environ.get('API_ENABLED', '').strip().lower() in ('1', 'true', 'oui'),
+        # L'espace « api » commun aux sites (clés, file) : vide, la base de ce site (ADR 0032)
+        API_DATABASE_URL=os.environ.get('API_DATABASE_URL', '').strip() or None,
+        # Ce site reçoit-il les appels de l'API (l'adresse internationale) ? Les autres ne font que calculer leur langue
+        API_HOME=os.environ.get('API_HOME', '1').strip().lower() not in ('0', 'false', 'non'),
+        API_RUNNER_ENABLED=os.environ.get('API_RUNNER_ENABLED', '1').strip().lower() not in ('0', 'false', 'non'),
         CORS_ORIGINS=cors_origins,
         TRUST_PROXY_HOPS=int(os.environ.get('TRUST_PROXY_HOPS', 0)),
         CLIENT_IP_HEADER=os.environ.get('CLIENT_IP_HEADER', '').strip(),
@@ -336,10 +382,11 @@ def create_app(test_config=None):
         hops = app.config['TRUST_PROXY_HOPS']
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=hops, x_proto=hops)
 
-    # La session voyage en cookies (ADR 0015) : credentials CORS, réservés aux origines exactes de CORS_ORIGINS
+    # La session voyage en cookies (ADR 0015) : credentials CORS, réservés aux origines exactes de CORS_ORIGINS.
+    # Sauf l'API ouverte (ADR 0032) : des appels de serveur à serveur, sans CORS ni cookie
     CORS(
         app,
-        resources={r"/api/*": {"origins": parse_cors_origins(app.config['CORS_ORIGINS'])}},
+        resources={r"/api/(?!v1(/|$)).*": {"origins": parse_cors_origins(app.config['CORS_ORIGINS'])}},
         methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization", "X-CSRF-TOKEN"],
         # Le site, sur une autre origine, lit l'identifiant de requête pour « Signaler ce problème » (#131)
@@ -348,6 +395,9 @@ def create_app(test_config=None):
         max_age=600,
     )
 
+    # L'espace « api » (ADR 0032) : clés et file, communs à tous les sites ; à défaut, la base de ce site
+    app.config['SQLALCHEMY_BINDS'] = {**app.config.get('SQLALCHEMY_BINDS', {}),
+                                      'api': app.config['API_DATABASE_URL'] or app.config['SQLALCHEMY_DATABASE_URI']}
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
@@ -365,6 +415,8 @@ def create_app(test_config=None):
     app.register_blueprint(texte_bp)
     app.register_blueprint(sens_bp)
     app.register_blueprint(reussites_bp)
+    app.register_blueprint(api_keys_bp)
+    app.register_blueprint(api_v1_bp)
     init_suggestions(app)
     init_rate_limiting(app)
     init_usage(app)
@@ -372,6 +424,7 @@ def create_app(test_config=None):
     init_admin_cli(app)
     init_system_cli(app)
     init_seo_cli(app)
+    init_api_keys_cli(app)
 
     # Le lexique n'est pas chargé en mode test (les tests fournissent un petit Trie)
     app.dela_trie = None

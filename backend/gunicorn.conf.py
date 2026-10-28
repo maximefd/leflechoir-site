@@ -72,4 +72,25 @@ def post_fork(server, worker):
     from run import app
 
     with app.app_context():
-        db.engine.dispose(close=False)
+        # Toutes les bases : celle du site, et l'espace « api » de l'API ouverte (ADR 0032)
+        for engine in db.engines.values():
+            engine.dispose(close=False)
+
+
+def when_ready(server):
+    """Le processus de génération de l'API ouverte (ADR 0032), fork du maître : il partage le lexique déjà chargé.
+
+    Appelé une fois, avant la création des workers. L'API fermée (API_ENABLED vide), il n'est pas lancé.
+    """
+    import generation_runner
+    from run import app
+
+    if app.config["API_ENABLED"]:
+        server.generation_runner_pid = generation_runner.start(app, [listener.fileno() for listener in server.LISTENERS])
+        server.log.info("Surveillant du processus de génération : pid %s", server.generation_runner_pid)
+
+
+def on_exit(server):
+    import generation_runner
+
+    generation_runner.stop(getattr(server, "generation_runner_pid", None))

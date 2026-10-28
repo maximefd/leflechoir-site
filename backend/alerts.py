@@ -67,6 +67,8 @@ SUBJECTS = {
     "weekly": "Bilan de la semaine",
     "contact": "Nouveau message de contact",
     "contact_more": "Messages de contact en attente",
+    "api_breaker": "Alerte : API coupée, le site manque de place",
+    "api_abuse": "Alerte : API, réglages répétés",
 }
 
 logger = logging.getLogger(__name__)

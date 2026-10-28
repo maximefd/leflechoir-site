@@ -480,3 +480,111 @@ class GridSuccess(db.Model):
 
     def to_json(self):
         return {"ms": self.best_ms, "le": self.first_day.isoformat()}
+
+
+
+# --- L'API ouverte (ADR 0032) : un espace commun à tous les sites ---
+# Une clé vaut pour toutes les langues, quel que soit le site où son compte a été créé ; la file sert toutes les
+# langues, et chaque site calcule celles de sa langue. Ces tables vivent donc dans la base « api »
+# (`API_DATABASE_URL`) : celle du premier site tant qu'il n'y en a qu'un, et celle où se branchent les suivants.
+
+
+class ApiKey(db.Model):
+    """Une clé de l'API ouverte (ADR 0032, point 3).
+
+    La clé elle-même n'est jamais gardée : seulement son empreinte SHA-256, et son début (`prefix`), qui la désigne
+    dans « Mon compte » et dans les journaux. Son propriétaire est un compte d'un site (`owner_site`, `user_id`) :
+    les comptes restent séparés par site, la clé non. Une clé révoquée reste en base, refusée ; elle part avec le
+    compte.
+    """
+    __bind_key__ = 'api'
+    __tablename__ = 'api_key'
+    id = db.Column(db.Integer, primary_key=True)
+    owner_site = db.Column(db.String(10), nullable=False)
+    # Le compte dans la base de son site : pas de clé étrangère, les deux bases sont distinctes
+    user_id = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(60), nullable=False)
+    # « flk_ » et les six caractères suivants : assez pour la reconnaître, rien pour la deviner
+    prefix = db.Column(db.String(16), nullable=False)
+    key_hash = db.Column(db.String(64), nullable=False, unique=True)
+    # free ; un jour « pro », avec ses propres quotas (offre pro, C8)
+    plan = db.Column(db.String(10), nullable=False, default='free')
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow())
+    last_used_at = db.Column(db.DateTime, nullable=True)
+    revoked_at = db.Column(db.DateTime, nullable=True)
+
+    __table_args__ = (db.Index('ix_api_key_owner', 'owner_site', 'user_id'),)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "prefix": self.prefix,
+            "plan": self.plan,
+            "created_at": self.created_at.isoformat() + "Z",
+            "last_used_at": self.last_used_at.isoformat() + "Z" if self.last_used_at else None,
+        }
+
+
+class GenerationJob(db.Model):
+    """Une génération demandée à l'API ouverte, qui attend son tour, tourne ou a fini (ADR 0032, point 4).
+
+    La langue est un paramètre de la demande : le processus de génération du site de cette langue la prend, par
+    priorité (le site d'abord, quand il passera par la file) puis par ordre d'arrivée. Le demandeur est une clé, ou,
+    sans clé, une empreinte du jour (jamais l'adresse, ADR 0016). Rien ne reste au-delà de `expires_at` : un jour,
+    le temps d'être récupérée : on ne stocke pas les grilles, leur fichier appartient au demandeur.
+    """
+    __bind_key__ = 'api'
+    __tablename__ = 'generation_job'
+    id = db.Column(db.Integer, primary_key=True)
+    # Le numéro public : tiré au hasard, il ne dit rien du nombre de générations
+    public_id = db.Column(db.String(32), nullable=False, unique=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow())
+    started_at = db.Column(db.DateTime, nullable=True)
+    finished_at = db.Column(db.DateTime, nullable=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    # queued, running, done, failed
+    status = db.Column(db.String(10), nullable=False, default='queued')
+    # 0 : le site ; 10 : l'API. Plus petit, plus tôt
+    priority = db.Column(db.SmallInteger, nullable=False, default=10)
+    # site, api, mcp
+    client = db.Column(db.String(10), nullable=False, default='api')
+    api_key_id = db.Column(db.Integer, db.ForeignKey('api_key.id', ondelete='CASCADE'), nullable=True)
+    visitor = db.Column(db.String(32), nullable=True)
+    # La langue de la grille ; le site qui a reçu la demande
+    lang = db.Column(db.String(5), nullable=False)
+    site = db.Column(db.String(10), nullable=False)
+    # Rejouer une demande (même en-tête Idempotency-Key) rend la même génération au lieu d'en lancer une autre
+    idempotency_key = db.Column(db.String(80), nullable=True)
+    # La demande validée, sans la graine : deux demandes identiques à la graine près se reconnaissent (aspiration)
+    settings_hash = db.Column(db.String(64), nullable=False)
+    request = db.Column(db.JSON, nullable=False)
+    result = db.Column(db.JSON(none_as_null=True), nullable=True)
+    reason = db.Column(db.String(40), nullable=True)
+    # Mots rendus par la grille : le plafond quotidien de mots par clé se compte sans relire les grilles
+    word_count = db.Column(db.Integer, nullable=False, default=0)
+    duration_ms = db.Column(db.Integer, nullable=True)
+
+    __table_args__ = (
+        db.Index('ix_generation_job_queue', 'status', 'lang', 'priority', 'id'),
+        db.Index('ix_generation_job_key_date', 'api_key_id', 'created_at'),
+        db.Index('ix_generation_job_visitor_date', 'visitor', 'created_at'),
+        db.Index('ix_generation_job_date', 'created_at'),
+        db.Index('ix_generation_job_expires', 'expires_at'),
+    )
+
+
+class ApiRunner(db.Model):
+    """Le processus de génération d'une langue, vu par l'API : vivant (battement), en pause (disjoncteur), où imprimer.
+
+    Chaque site écrit la ligne de sa langue ; la route lit ici quelles langues elle peut servir à cet instant.
+    """
+    __bind_key__ = 'api'
+    __tablename__ = 'api_runner'
+    lang = db.Column(db.String(5), primary_key=True)
+    site = db.Column(db.String(10), nullable=False)
+    # Le site de cette langue : le lien « imprimer » d'une grille y mène
+    site_url = db.Column(db.String(200), nullable=False)
+    beat_at = db.Column(db.DateTime, nullable=False)
+    # Disjoncteur : le site de cette langue refuse des visiteurs faute de place ; l'API attend jusque-là
+    paused_until = db.Column(db.DateTime, nullable=True)
