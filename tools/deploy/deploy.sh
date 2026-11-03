@@ -14,7 +14,7 @@
 #
 # Un site par langue (ADR 0017, ADR 0033) : SITE (défaut : fr) choisit son profil, deploy/sites/$SITE.env (versionné,
 # sans secret) : NEXT_PUBLIC_SITE, PROJET (le projet Compose et le dossier /opt/$PROJET du serveur), DEPLOY_SITE_URL,
-# DEPLOY_API_URL, PAGES_PROJECT, LEXIQUE_DIR (le lexique curé de la langue, sur ce Mac). Une variable d'environnement passe avant le profil.
+# DEPLOY_API_URL, PAGES_PROJECT, LEXIQUE_DIR (le lexique curé de la langue, sur ce Mac), et DEPLOY_MCP_URL, facultatif. Une variable d'environnement passe avant le profil.
 #
 # Variables lues dans .env, communes aux sites :
 #   DEPLOY_HOST              la connexion SSH au serveur (ex. ubuntu@203.0.113.10)
@@ -30,6 +30,8 @@ for var in NEXT_PUBLIC_SITE PROJET DEPLOY_SITE_URL DEPLOY_API_URL PAGES_PROJECT 
     eval "[ -n \"\${$var:-}\" ] || $var=\"\$(from_file \"$PROFILE\" $var)\""
     eval "[ -n \"\${$var}\" ]" || { printf 'ERREUR : %s manque dans %s\n' "$var" "$PROFILE" >&2; exit 1; }
 done
+# Facultatif : l'adresse publique du connecteur MCP, vérifiée après le déploiement
+[ -n "${DEPLOY_MCP_URL:-}" ] || DEPLOY_MCP_URL="$(from_file "$PROFILE" DEPLOY_MCP_URL)"
 for var in DEPLOY_HOST NEXT_PUBLIC_SENTRY_DSN; do
     eval "[ -n \"\${$var:-}\" ] || $var=\"\$(from_file .env $var)\""
 done
@@ -81,6 +83,15 @@ deploy_api() {
         sleep 10
     done
     say "API : $VERSION en service."
+    # Le connecteur MCP (ADR 0032), s'il est annoncé pour ce site : une alerte seulement, sa route dans le tunnel
+    # est un geste de l'auteur (docs/PRODUCTION.md, « Le connecteur MCP »)
+    if [ -n "${DEPLOY_MCP_URL:-}" ]; then
+        if curl -fsS --max-time 20 "$DEPLOY_MCP_URL/health" >/dev/null 2>&1; then
+            say "Connecteur : en service ($DEPLOY_MCP_URL/mcp)."
+        else
+            say "ATTENTION : le connecteur ne répond pas par $DEPLOY_MCP_URL (route du tunnel, MCP_ALLOWED_HOSTS ?)."
+        fi
+    fi
 }
 
 deploy_front() {

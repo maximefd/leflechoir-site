@@ -45,6 +45,8 @@ services:
       - GENERATION_TIME_BUDGET_S=${GENERATION_TIME_BUDGET_S:-20}
       # L'API ouverte (ADR 0032) : ouverte en local, fermée en production tant que l'auteur ne l'a pas ouverte
       - API_ENABLED=${API_ENABLED:-1}
+      # La clé de relais du connecteur MCP (service mcp ci-dessous) : la même des deux côtés
+      - API_RELAY_SECRET=${API_RELAY_SECRET:-relais-local}
       - GENERATION_QUALITY=${GENERATION_QUALITY:-best}
       - GENERATION_QUALITY_BUDGET_S=${GENERATION_QUALITY_BUDGET_S:-5}
       - GENERATION_GEOMETRY=${GENERATION_GEOMETRY:-sur_mesure}
@@ -78,6 +80,21 @@ services:
     container_name: terminator_mail
     ports:
       - "8025:8025"
+
+  # Le connecteur MCP de l'API ouverte (ADR 0032) : les assistants IA y créent, vérifient et dessinent des grilles.
+  # Sans lexique ; il appelle l'API sur le réseau interne. http://localhost:5098/mcp
+  mcp:
+    container_name: terminator_mcp
+    build: ./mcp
+    ports:
+      - "5098:8080"
+    environment:
+      - API_URL=http://api:5000
+      - API_RELAY_SECRET=${API_RELAY_SECRET:-relais-local}
+      # En local, sans nom d'hôte public : le connecteur démarre quand même
+      - MCP_REQUIRE_CONFIG=0
+    depends_on:
+      - api
 
 volumes:
   pgdata:

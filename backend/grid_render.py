@@ -38,6 +38,10 @@ MYSTERY_TITLES = {"fr": "MOT MYSTÈRE", "de": "LÖSUNGSWORT", "en": "MYSTERY WOR
 # l'adresse du site (« leflechoir.fr »), choisie par l'auteur le 28/10/2026
 SIGNATURES = {"fr": "Grille créée avec l'API de {site}", "de": "Rätsel erstellt mit der API von {site}",
               "en": "Grid made with the {site} API"}
+# Signée de son auteur (champ `author`, facultatif) : « Grille de Mamie Jo, créée avec l'API de leflechoir.fr »
+AUTHOR_SIGNATURES = {"fr": "Grille de {author}, créée avec l'API de {site}",
+                     "de": "Rätsel von {author}, erstellt mit der API von {site}",
+                     "en": "Grid by {author}, made with the {site} API"}
 SIGNATURE_SIZE = 26
 SIGNATURE_GAP = 22
 # Largeur du PNG en pixels par défaut, et résolution du PDF (300 points par pouce : net à l'impression)
@@ -310,7 +314,9 @@ def render_svg(grid: dict, clues: dict[str, str] | None, solution: bool, lang: s
     parts.append(f'<rect x="0" y="0" width="{width * CELL}" height="{height * CELL}" fill="none" '
                  f'stroke="{PAPER["line"]}" stroke-width="{BORDER}"/>')
     if signature:
-        text = SIGNATURES.get(lang, SIGNATURES["en"]).format(site=signature)
+        author = grid.get("author")
+        templates = AUTHOR_SIGNATURES if author else SIGNATURES
+        text = templates.get(lang, templates["en"]).format(site=signature, author=author)
         parts.append(f'<text x="{width * CELL}" y="{_n(height * CELL + SIGNATURE_GAP + SIGNATURE_SIZE * 0.8)}" '
                      f'text-anchor="end" font-size="{SIGNATURE_SIZE}" fill="{PAPER["letter"]}">{escape(text)}</text>')
     parts.append("</g></svg>")

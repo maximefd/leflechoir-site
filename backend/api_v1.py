@@ -40,6 +40,7 @@ import alerts
 import grid_file
 import usage
 from api_keys import authenticate
+from assistant_ranges import verified_assistant
 from api_messages import LANGUAGE_NAMES, message, pick_language, who
 from engine.langues import LANGUES, langue
 from engine.mystery import MAX_LETTERS, MIN_LETTERS, letters_in
@@ -50,6 +51,7 @@ from models import ApiKey, ApiRunner, GenerationJob, db
 from monitoring import report_exception
 from normalization import normalize_phrase, normalize_word
 from schemas import MAX_SEED
+from security import relay_origin
 
 api_v1_bp = Blueprint("api_v1", __name__, url_prefix="/v1")
 
@@ -87,10 +89,46 @@ class CreateGridRequest(StrictModel):
     seed: Annotated[int, Field(ge=0, le=MAX_SEED)] | None = None
     mystery_word: Annotated[str, StringConstraints(strip_whitespace=True, max_length=40,
                                                    pattern=grid_file.PLAIN_TEXT)] | None = None
+    # Facultatif : le nom dont la personne signe sa grille (« Grille de Mamie Jo »), sur le dessin et le site
+    author: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=grid_file.MAX_AUTHOR_LENGTH,
+                                             pattern=grid_file.PLAIN_TEXT)] | None = None
 
 
 class GridFileRequest(StrictModel):
     grid: grid_file.GridFileIn
+
+
+ClueText = Annotated[str, StringConstraints(strip_whitespace=True, max_length=400)]
+
+
+class AnsweredClue(StrictModel):
+    """Une définition et le mot qu'elle définit : une définition ne peut pas glisser sur le mot voisin."""
+    answer: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
+    clue: ClueText
+
+
+class CheckRequest(StrictModel):
+    """Deux façons de faire vérifier des définitions : le fichier entier (`grid`), ou, plus court pour un assistant, le
+    numéro d'une génération des dernières 24 heures (`id`) et ses définitions (`clues`).
+
+    `clues` : de préférence des paires `{answer, clue}`, dans n'importe quel ordre (essai dans Claude du 28/10/2026 :
+    avec une simple liste dans l'ordre des mots, deux définitions se sont inversées) ; ou une liste dans l'ordre."""
+    grid: grid_file.GridFileIn | None = None
+    id: Annotated[str, StringConstraints(pattern=r"^gen_[A-Za-z0-9_-]{8,40}$")] | None = None
+    clues: Annotated[list[AnsweredClue] | list[ClueText | None],
+                     Field(max_length=4 * MAX_SIDE * MAX_SIDE)] | None = None
+
+
+def clues_by_answer(words: list[dict], pairs: list[AnsweredClue]) -> tuple[list[str | None], list[str]]:
+    """Les définitions dans l'ordre des mots, d'après leurs paires ; et les mots donnés qui ne sont pas dans la grille.
+
+    Un même mot deux fois dans la grille (rare) reçoit ses définitions dans l'ordre où elles sont données."""
+    waiting: dict[str, list[str]] = {}
+    for pair in pairs:
+        waiting.setdefault(normalize_word(pair.answer), []).append(pair.clue)
+    ordered = [waiting[word["answer"]].pop(0) if waiting.get(word["answer"]) else None for word in words]
+    unknown = [answer for answer, rest in waiting.items() for _ in rest]
+    return ordered, unknown
 
 
 class RenderRequest(StrictModel):
@@ -99,6 +137,8 @@ class RenderRequest(StrictModel):
     # « puzzle » : la grille à remplir, avec ses définitions ; « solution » : les lettres
     view: Literal["puzzle", "solution"] = "puzzle"
     width: Annotated[int, Field(ge=PNG_WIDTHS[0], le=PNG_WIDTHS[1])] | None = None
+    # SVG seulement : faux pour un client qui a déjà la police (l'interface du connecteur) — 80 Ko de moins par dessin
+    embed_font: bool = True
 
 
 def _utcnow() -> datetime:
@@ -200,12 +240,43 @@ def guard():
             return refuse(413, "payload_too_large", params={"max_kb": config["API_MAX_BODY_BYTES"] // 1024})
         if request.mimetype != "application/json":
             return refuse(415, "unsupported_media_type")
+    # Le connecteur MCP relaie un assistant reconnu à son adresse : ses quotas sont ceux de l'assistant. Un autre
+    # appelant du connecteur est compté à son adresse (client_ip), au niveau d'une clé
+    g.api_relay = relayed_assistant()
+    g.api_relay_other = None if g.api_relay or relay_origin() is None else claimed_assistant()
+    if g.api_relay:
+        g.api_key = None
+        g.api_visitor = f"mcp:{g.api_relay}"
+        return None
+    if g.api_relay_other:
+        g.api_key = None
+        # L'empreinte du jour de son adresse, précédée du nom qu'il se donne pour la mesure (« lechat?:3f9a… »)
+        label = f"{g.api_relay_other}?:"
+        g.api_visitor = label + usage.visitor_fingerprint(_utcnow().date())[:32 - len(label)]
+        return None
     key, refusal = authenticate(request.headers.get("Authorization"))
     if refusal:
         return refuse(401, refusal)
     g.api_key = key
     # L'empreinte du jour, comme pour la mesure d'usage : jamais l'adresse elle-même
     g.api_visitor = usage.visitor_fingerprint(_utcnow().date())
+
+
+# Le nom que se donne l'appelant du connecteur (son client MCP), pour la mesure seulement : il s'invente
+ASSISTANTS = (("openai", "chatgpt"), ("chatgpt", "chatgpt"), ("claude", "claude"), ("anthropic", "claude"),
+              ("mistral", "lechat"), ("le chat", "lechat"), ("gemini", "gemini"), ("google", "gemini"))
+
+
+def claimed_assistant() -> str:
+    client = (request.headers.get("X-Relay-Client") or "").lower()
+    return next((name for marker, name in ASSISTANTS if marker in client), "other")
+
+
+def relayed_assistant() -> str | None:
+    """L'assistant (« claude », « chatgpt ») au nom duquel le connecteur MCP appelle, s'il est reconnu à l'adresse de
+    l'appelant (assistant_ranges.py) ; None sinon, et toujours sans la clé de relais (`API_RELAY_SECRET`)."""
+    origin = relay_origin()
+    return verified_assistant(origin) if origin else None
 
 
 RATE_LIMIT_HEADERS = ("X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset")
@@ -359,7 +430,10 @@ def _signature() -> str:
 
 def _limits(key: ApiKey | None) -> dict:
     config = current_app.config
-    if key is not None:
+    if g.get("api_relay"):
+        return {"per_minute": config["API_MCP_PER_MINUTE"], "per_day": config["API_MCP_PER_DAY"],
+                "words_per_day": config["API_MCP_WORDS_PER_DAY"]}
+    if key is not None or g.get("api_relay_other"):
         return {"per_minute": config["API_KEY_PER_MINUTE"], "per_day": config["API_KEY_PER_DAY"],
                 "words_per_day": config["API_KEY_WORDS_PER_DAY"]}
     return {"per_minute": config["API_ANON_PER_MINUTE"], "per_day": config["API_ANON_PER_DAY"],
@@ -391,9 +465,13 @@ def quota_refusal(key: ApiKey | None, settings_hash: str, now: datetime):
     """Le refus qui s'applique à cette demande, dans l'ordre où un client peut y remédier ; None si elle passe."""
     config = current_app.config
     limits = _limits(key)
-    whom = who(key is not None, _lang())
+    relayed = bool(g.get("api_relay") or g.get("api_relay_other"))
+    whom = who(key is not None or relayed, _lang())
 
-    if _own_jobs(key).filter(GenerationJob.status.in_(("queued", "running"))).first() is not None:
+    # Une génération à la fois par demandeur ; un assistant relayé sert des milliers de personnes à la fois (Le Chat
+    # aussi, qui ne publie pas ses adresses)
+    if not relayed and _own_jobs(key).filter(
+            GenerationJob.status.in_(("queued", "running"))).first() is not None:
         return refuse(429, "generation_in_progress", retry_after=POLL_AFTER_S)
     used = _usage_of(key, now)
     if used["last_minute"] >= limits["per_minute"]:
@@ -522,6 +600,7 @@ def notice():
             "Tells you, for every word, where its clue goes and how many characters fit; checks that your clues fit, "
             "do not give the answer away, and sound like arrowword clues rather than dictionary entries.",
             "Numbers the cells of a mystery word (a name, a short message) when you give one.",
+            "Signs the grid with its author's name when the person wants it (« author »): « Grid by Mamie Jo ».",
             "Gives the same grid again for the same seed and the same settings.",
         ],
         "what_it_does_not": [
@@ -531,7 +610,8 @@ def notice():
         ],
         "genre_rules": GENRE_RULES,
         "your_role": ("You are the puzzle author; the engine is the builder. Choose the words that make the grid "
-                      "personal (a theme, a person, an event) and the level for the person who will play it. When the "
+                      "personal (a theme, a person, an event) and the level for the person who will play it, and ask "
+                      "whether they want to sign it (author, optional). When the "
                       "grid is built, write one clue per word, in the grid's language and in the style of "
                       "languages[].style for that level, within clue_max_chars. Check them, then give the person the "
                       "links to play or print the grid, or the drawing they asked for."),
@@ -539,7 +619,7 @@ def notice():
             {"step": 1, "call": "POST /v1/grids",
              "body": {"type": "arrowword", "lang": "fr", "width": 10, "height": 10, "level": "easy",
                       "required_words": ["Léa"], "preferred_words": ["anniversaire", "gâteau", "bougie"],
-                      "mystery_word": "Bravo"},
+                      "mystery_word": "Bravo", "author": "Mamie Jo"},
              "returns": "202, with Location and Retry-After"},
             {"step": 2, "call": "GET /v1/grids/{id}",
              "note": "Every Retry-After seconds until status is « done » (a few seconds) or « failed »."},
@@ -572,7 +652,7 @@ def notice():
         "messages": "Every error has a stable « reason »; its « message » follows Accept-Language (en, fr, de).",
         "license": (f"Grids are free to use, including commercially. Every drawing is signed « made with the "
                     f"{_signature()} API »; "
-                    f"attribution appreciated. Terms: {config['FRONTEND_URL'].rstrip('/')}/terms"),
+                    f"attribution appreciated. Terms: {config['FRONTEND_URL'].rstrip('/')}/terms#api"),
     }), 200
 
 
@@ -600,7 +680,10 @@ def _normalized_words(words: list[str], code: str) -> tuple[list[str], list[str]
 def create_grid():
     config = current_app.config
     key = g.api_key
-    usage.add_details(client="api", keyed=key is not None)
+    client = "mcp" if g.get("api_relay") or g.get("api_relay_other") else "api"
+    # Reconnu à son adresse, ou le nom qu'il se donne (suivi d'un « ? » : non vérifié)
+    assistant = g.get("api_relay") or (f"{g.api_relay_other}?" if g.get("api_relay_other") else None)
+    usage.add_details(client=client, keyed=key is not None, assistant=assistant)
     payload, refusal = parse_strict(CreateGridRequest)
     if refusal:
         return refusal
@@ -647,7 +730,8 @@ def create_grid():
               "required_words": required, "preferred_words": preferred,
               # Une graine toujours : la grille se rejoue à l'identique
               "seed": payload.seed if payload.seed is not None else secrets.randbelow(MAX_SEED + 1),
-              "mystery_word": mystery or None}
+              "mystery_word": mystery or None,
+              "author": payload.author or None}
     if key is not None:
         # Les demandes d'une même clé passent une à une, de la vérification à l'inscription
         key = ApiKey.query.filter_by(id=key.id).with_for_update().one()
@@ -670,7 +754,7 @@ def create_grid():
         return refusal
 
     job = GenerationJob(public_id=JOB_ID_PREFIX + secrets.token_urlsafe(16), created_at=now,
-                        expires_at=now + JOB_RETENTION, status="queued", priority=10, client="api",
+                        expires_at=now + JOB_RETENTION, status="queued", priority=10, client=client,
                         api_key_id=key.id if key else None, visitor=g.api_visitor, lang=code, site=config["SITE"],
                         idempotency_key=idempotency, settings_hash=settings_hash, request=params)
     db.session.add(job)
@@ -696,11 +780,36 @@ def get_job(public_id):
 
 @api_v1_bp.route("/clues/check", methods=["POST"])
 def check_clues():
-    """Les définitions d'un fichier, mot par mot : refus et alertes de style ; si rien n'est refusé, les liens."""
-    payload, refusal = parse_strict(GridFileRequest)
+    """Les définitions d'un fichier, mot par mot : refus et alertes de style ; si rien n'est refusé, les liens.
+
+    Par le numéro d'une génération (`id`, `clues`) : l'assistant n'a pas à recopier toute la grille pour envoyer ses
+    définitions (essai dans Claude du 28/10/2026 : des milliers de caractères réécrits pour quarante définitions).
+    """
+    payload, refusal = parse_strict(CheckRequest)
     if refusal:
         return refusal
-    grid, refusal = _read_file(payload.grid)
+    if (payload.grid is None) == (payload.id is None) or (payload.id is not None and payload.clues is None):
+        return refuse(400, "invalid_request", params={"detail": VALIDATION_TEXTS["value"][_lang()].format(
+            field="grid | id + clues")})
+    if payload.id is not None:
+        job = _readable_job(payload.id)
+        if job is None or job.status != "done":
+            return refuse(404, "not_found")
+        words = job.result["grid"]["words"]
+        if payload.clues and isinstance(payload.clues[0], AnsweredClue):
+            clues, unknown = clues_by_answer(words, payload.clues)
+            if unknown:
+                return refuse(400, "clue_unknown_answer", params={"words": ", ".join(unknown)}, words=unknown)
+        else:
+            clues = payload.clues
+            if len(clues) != len(words):
+                return refuse(400, "clue_count", params={"expected": len(words), "given": len(clues)},
+                              expected=len(words))
+        data = grid_file.GridFileIn.model_validate(
+            {**job.result["grid"], "words": [{**word, "clue": clue} for word, clue in zip(words, clues)]})
+    else:
+        data = payload.grid
+    grid, refusal = _read_file(data)
     if refusal:
         return refusal
     results = []
@@ -734,8 +843,8 @@ def render():
     solution = payload.view == "solution"
     usage.add_details(client="api", render=payload.format)
     if payload.format == "svg":
-        return Response(render_svg(grid, None, solution=solution, lang=grid["lang"], signature=_signature()),
-                        mimetype="image/svg+xml")
+        return Response(render_svg(grid, None, solution=solution, lang=grid["lang"], signature=_signature(),
+                                   embed_font=payload.embed_font), mimetype="image/svg+xml")
     svg = render_svg(grid, None, solution=solution, lang=grid["lang"], signature=_signature(), embed_font=False)
     if payload.format == "png":
         return Response(render_png(svg, payload.width or 1600), mimetype="image/png")

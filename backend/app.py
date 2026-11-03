@@ -65,6 +65,9 @@ DEFAULT_SETTINGS = dict(
     # L'API ouverte (ADR 0032). Fermée tant que l'auteur ne l'a pas ouverte (API_ENABLED=1) : ses routes répondent
     # 503 `api_disabled`. Les générations y passent par une file et un processus à part (generation_runner.py)
     API_ENABLED=False,
+    # Le processus de génération sans ouvrir les routes : pour le test de charge sur le serveur (`flask api charge`,
+    # docs/PRODUCTION.md), avant l'ouverture
+    API_RUNNER=False,
     API_DATABASE_URL=None,
     API_HOME=True,
     # Faux : le processus de génération n'est pas lancé (tests, commandes) ; la file attend
@@ -95,11 +98,20 @@ DEFAULT_SETTINGS = dict(
     # Disjoncteur : autant de refus « occupé » du site en dix minutes, et l'API se coupe
     API_BREAKER_SITE_REFUSALS=3,
     API_MAX_KEYS_PER_USER=5,
+    # Le connecteur MCP (ADR 0032) appelle l'API au nom des assistants : une clé de relais partagée avec lui seul
+    # (vide : pas de relais). Les quotas d'un assistant (tous ses utilisateurs arrivent de quelques adresses) sont
+    # comptés pour lui, par minute et par 24 heures
+    API_RELAY_SECRET='',
+    API_MCP_PER_MINUTE=30,
+    API_MCP_PER_DAY=2000,
+    API_MCP_WORDS_PER_DAY=80000,
     RATELIMIT_API_KEYS='10 per hour',
     # Devant les quotas en base : un plafond par adresse, en mémoire, contre les rafales
     RATELIMIT_API_CREATE='30 per minute',
     RATELIMIT_API_READ='240 per minute',
     RATELIMIT_API_RENDER='60 per minute',
+    # Le même, pour un assistant reconnu (Claude, ChatGPT), tous ses utilisateurs ensemble
+    RATELIMIT_API_RENDER_RELAY='120 per minute',
     # Dossier des verrous de ces places ; il doit être commun à tous les workers d'une même machine
     GENERATION_LOCK_DIR=os.path.join(tempfile.gettempdir(), 'terminator-generations'),
     CORS_ORIGINS=DEFAULT_CORS_ORIGINS,
@@ -261,8 +273,10 @@ def _load_config_from_env() -> dict:
             os.environ.get('GENERATION_MAX_CONCURRENT') or DEFAULT_SETTINGS['GENERATION_MAX_CONCURRENT'])),
         GENERATION_LOCK_DIR=os.environ.get('GENERATION_LOCK_DIR') or DEFAULT_SETTINGS['GENERATION_LOCK_DIR'],
         API_ENABLED=os.environ.get('API_ENABLED', '').strip().lower() in ('1', 'true', 'oui'),
+        API_RUNNER=os.environ.get('API_RUNNER', '').strip().lower() in ('1', 'true', 'oui'),
         # L'espace « api » commun aux sites (clés, file) : vide, la base de ce site (ADR 0032)
         API_DATABASE_URL=os.environ.get('API_DATABASE_URL', '').strip() or None,
+        API_RELAY_SECRET=os.environ.get('API_RELAY_SECRET', '').strip(),
         # Ce site reçoit-il les appels de l'API (l'adresse internationale) ? Les autres ne font que calculer leur langue
         API_HOME=os.environ.get('API_HOME', '1').strip().lower() not in ('0', 'false', 'non'),
         API_RUNNER_ENABLED=os.environ.get('API_RUNNER_ENABLED', '1').strip().lower() not in ('0', 'false', 'non'),

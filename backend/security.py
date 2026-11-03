@@ -9,6 +9,7 @@ Mesures de sécurité transverses de l'API :
 Voir docs/SECURITY.md pour le modèle de menace et les limites connues.
 """
 
+import hmac
 import ipaddress
 import logging
 from datetime import timezone
@@ -169,8 +170,29 @@ def register_jwt_callbacks(jwt: JWTManager) -> None:
         return jsonify({"error": "Session fermée. Reconnecte-toi.", "reason": "session_closed"}), 401
 
 
+def relay_authenticated() -> bool:
+    """L'appel vient du connecteur MCP (ADR 0032) : lui seul connaît la clé de relais (`API_RELAY_SECRET`)."""
+    secret = current_app.config.get("API_RELAY_SECRET") or ""
+    given = request.headers.get("X-Relay-Key") or ""
+    return bool(secret) and hmac.compare_digest(secret.encode(), given.encode())
+
+
+def relay_origin() -> str | None:
+    """L'adresse de l'appelant du connecteur (son `CF-Connecting-IP`), qu'il transmet en `X-Relay-Origin` ; None si
+    l'appel n'est pas relayé ou si l'en-tête est malformé. Jamais gardée : elle sert au limiteur et aux empreintes."""
+    if not relay_authenticated():
+        return None
+    try:
+        return str(ipaddress.ip_address(request.headers.get("X-Relay-Origin", "").strip()))
+    except ValueError:
+        return None
+
+
 def client_ip() -> str:
     """Adresse du visiteur : clé du rate limiting et de la limite de générations simultanées.
+
+    Un appel relayé par le connecteur MCP vient de l'adresse du connecteur : c'est celle de son appelant qui compte
+    (revue de sécurité de l'API ouverte, 02/11/2026 : sinon tous ses appelants partageraient un seul compteur).
 
     Derrière Cloudflare Tunnel, toutes les requêtes arrivent de cloudflared, donc de la même adresse :
     le limiteur bloquerait tous les visiteurs ensemble ([ADR 0013](../docs/adr/0013-cible-hebergement-production.md)).
@@ -178,6 +200,9 @@ def client_ip() -> str:
     `CLIENT_IP_HEADER` le désigne : sans tunnel devant l'API, n'importe quel client pourrait
     l'inventer et changer d'adresse à chaque requête pour échapper aux limites.
     """
+    origin = relay_origin()
+    if origin:
+        return origin
     header = current_app.config.get("CLIENT_IP_HEADER")
     if header:
         try:
@@ -185,6 +210,24 @@ def client_ip() -> str:
         except ValueError:
             pass  # En-tête absent ou malformé : l'adresse de la connexion, faute de mieux
     return get_remote_address()
+
+
+RELAY_LIMITED_ENDPOINTS = ("api_v1.check_clues", "api_v1.render")
+
+
+def _relay_key() -> str:
+    from api_v1 import relayed_assistant  # import tardif : api_v1 importe ce module
+
+    return f"relais:{relayed_assistant()}"
+
+
+def _relayed() -> bool:
+    """Un appel relayé pour un assistant reconnu à son adresse : il a ses quotas en base (api_v1.quota_refusal).
+
+    Les autres appels relayés passent par le limiteur, à l'adresse de leur appelant (client_ip)."""
+    from api_v1 import relayed_assistant  # import tardif : api_v1 importe ce module
+
+    return relayed_assistant() is not None
 
 
 def init_rate_limiting(app: Flask) -> Limiter:
@@ -196,7 +239,16 @@ def init_rate_limiting(app: Flask) -> Limiter:
     limiter = Limiter(client_ip, app=app)
     for endpoint, config_key in RATE_LIMITED_ENDPOINTS.items():
         view = app.view_functions[endpoint]
-        app.view_functions[endpoint] = limiter.limit(app.config[config_key])(view)
+        # Un assistant reconnu (Claude, ChatGPT) sert des milliers de personnes depuis quelques adresses : le plafond par
+        # adresse les bloquerait ensemble. Il a ses quotas, par assistant et en base (api_v1.quota_refusal)
+        exempt = _relayed if endpoint.startswith("api_v1.") else None
+        view = limiter.limit(app.config[config_key], exempt_when=exempt)(view)
+        if endpoint in RELAY_LIMITED_ENDPOINTS:
+            # Le dessin et la relecture n'ont pas de quota en base : un plafond par assistant, contre la boucle d'un
+            # assistant ou d'un de ses utilisateurs qui prendrait le calcul du site
+            view = limiter.limit(app.config["RATELIMIT_API_RENDER_RELAY"], key_func=_relay_key,
+                                 exempt_when=lambda: not _relayed())(view)
+        app.view_functions[endpoint] = view
 
     if app.config.get("APP_ENV") == "production" and app.config.get("RATELIMIT_STORAGE_URI", "").startswith("memory://"):
         logging.warning("Rate limiting en mémoire : compteurs non partagés entre processus (utiliser Redis en production multi-instance).")

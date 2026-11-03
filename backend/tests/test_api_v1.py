@@ -293,3 +293,33 @@ def test_the_rate_limiter_does_not_rewrite_the_api_headers(small_trie, tmp_path)
         assert (busy.get_json()["reason"], busy.headers["Retry-After"]) == ("generation_in_progress", "2")
         assert limited.status_code == 429 and limited.get_json()["reason"] == "rate_limited"
         assert 1 <= int(limited.headers["Retry-After"]) <= 60
+
+
+# --- La signature de l'auteur ---
+
+def test_a_grid_signed_by_its_author_says_so_on_the_drawing(api_app, client):
+    svg = post(client, "/v1/render", {"grid": a_grid(author="Mamie Jo")}).get_data(as_text=True)
+
+    assert "Grille de Mamie Jo, créée avec l" in svg and "site.test" in svg
+
+
+def test_the_author_travels_with_the_grid_in_its_links(api_app, client):
+    body = check(client, a_grid(author="Mamie Jo")).get_json()
+
+    assert body["grid"]["author"] == "Mamie Jo"
+    assert grid_file.decode(body["links"]["play"].split("g=")[1])["author"] == "Mamie Jo"
+
+
+@pytest.mark.parametrize("author", ["<b>Jo</b>", "x" * 61])
+def test_an_author_name_is_short_plain_text(api_app, client, author):
+    response = check(client, a_grid(author=author))
+
+    assert (response.status_code, response.get_json()["reason"]) == (400, "invalid_request")
+
+
+def test_an_svg_can_leave_the_font_out_for_a_client_that_has_it(api_app, client):
+    with_font = render(client).get_data(as_text=True)
+    without = render(client, embed_font=False).get_data(as_text=True)
+
+    assert "@font-face" in with_font and "@font-face" not in without
+    assert len(without) < len(with_font) - 50_000

@@ -67,7 +67,16 @@ export function isMeasurablePath(path: string): boolean {
   return PATH_PATTERN.test(path) && !path.startsWith("/admin");
 }
 
-type Beacon = { kind: "view" | "pdf" | "play"; path: string; referrer?: string; visible_ms?: number };
+type Beacon = { kind: "view" | "pdf" | "play"; path: string; referrer?: string; visible_ms?: number; source?: string };
+
+/**
+ * Le seul paramètre d'adresse gardé : `utm_source`, que les assistants IA ajoutent à leurs liens (« chatgpt.com »).
+ * Il dit d'où vient une grille préparée par une IA (ADR 0032) ; le reste de l'adresse n'est jamais envoyé.
+ */
+export function sourceOf(search: string): string {
+  const value = new URLSearchParams(search).get("utm_source") ?? "";
+  return value.toLowerCase().replace(/[^a-z0-9.-]/g, "").slice(0, 40);
+}
 
 function send(beacon: Beacon) {
   if (!isMeasured() || !isMeasurablePath(beacon.path)) return;
@@ -89,7 +98,8 @@ function send(beacon: Beacon) {
 
 export function trackPageView(path: string, referrer: string, visibleMs: number) {
   if (visibleMs < MIN_VISIBLE_MS) return;
-  send({ kind: "view", path, referrer, visible_ms: Math.min(visibleMs, 1_800_000) });
+  const source = typeof window === "undefined" ? "" : sourceOf(window.location.search);
+  send({ kind: "view", path, referrer, visible_ms: Math.min(visibleMs, 1_800_000), ...(source ? { source } : {}) });
 }
 
 /** Un export PDF se fait dans le navigateur : le serveur ne le voit pas. */

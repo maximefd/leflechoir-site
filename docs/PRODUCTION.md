@@ -11,7 +11,8 @@
 |---------|------|
 | `db` | PostgreSQL 15, données dans le volume `pgdata`, joignable seulement par l'API |
 | `api` | L'image de `backend/` sous gunicorn (3 workers, 2 générations à la fois), en utilisateur sans droits ; les migrations se jouent au démarrage |
-| `cloudflared` | Le tunnel : une connexion **sortante** vers Cloudflare, par laquelle arrivent les requêtes de `api.leflechoir.fr` |
+| `mcp` | Le connecteur MCP de l'API ouverte ([ADR 0032](adr/0032-api-ouverte.md)) : un petit service Node, sans lexique ni base, qui appelle l'API sur le réseau interne. Il ne démarre que si `MCP_ALLOWED_HOSTS` est rempli (voir « Préparer le connecteur MCP ») |
+| `cloudflared` | Le tunnel : une connexion **sortante** vers Cloudflare, par laquelle arrivent les requêtes de `api.leflechoir.fr` (et de `mcp.leflechoir.fr`, pour le connecteur) |
 
 Le pare-feu refuse donc tout en entrée, sauf SSH. C'est aussi ce qui rend `CF-Connecting-IP` digne de confiance : personne d'autre que Cloudflare ne peut joindre l'API.
 
@@ -232,6 +233,58 @@ Les libellés des consoles peuvent varier un peu d'une version à l'autre.
     La dernière commande répond `google : ok` et `bing : ok`, ou dit ce qui manque. Ensuite, le minuteur relève
     chaque jour après 6 h (UTC), et inspecte les pages du sitemap une à une : le compte des pages indexées se remplit
     en une heure environ.
+
+## Préparer le connecteur MCP (une fois, avant d'ouvrir l'API)
+
+Le connecteur ([ADR 0032](adr/0032-api-ouverte.md)) est ce que les assistants (Claude, ChatGPT, Le Chat) appellent. Tant que `MCP_ALLOWED_HOSTS` est vide, `server.sh` ne le démarre pas ; une fois rempli, chaque `make deploy` le construit, le démarre après l'API et vérifie qu'il l'atteint.
+
+1. **La clé de relais**, sur le Mac : `openssl rand -hex 32`. Elle prouve à l'API qu'un appel vient du connecteur, qui compte alors les quotas par assistant (30 par minute, 2 000 par jour) plutôt que par adresse.
+2. **Dans `.env.production`, sur le serveur** :
+   ```bash
+   MCP_ALLOWED_HOSTS=mcp.leflechoir.fr
+   API_RELAY_SECRET=<la clé>
+   ```
+   Le connecteur refuse de démarrer sans l'un ou l'autre. Il ne répond qu'aux requêtes adressées à ce nom d'hôte (protection contre le « DNS rebinding »).
+3. **La route du tunnel**, dans Cloudflare : *Zero Trust* → *Networks* → *Tunnels* → le tunnel → *Published application routes* → *Add a published application route* : sous-domaine `mcp`, domaine `leflechoir.fr`, type `HTTP`, URL `mcp:8080`. Cloudflare crée lui-même l'enregistrement DNS.
+4. **La règle de débit**, une deuxième ligne de défense devant les quotas de l'API ([revue de sécurité](REVUE-SECURITE-API.md)) : *Security* → *WAF* → *Rate limiting rules* → *Create rule* :
+   - nom : `API ouverte` ;
+   - *If incoming requests match* : *Hostname* *equals* `mcp.leflechoir.fr`, **Or** (*Hostname* *equals* `api.leflechoir.fr` **And** *URI Path* *starts with* `/v1`) ;
+   - *With the same characteristics* : *IP* ; *When rate exceeds* : `100` requêtes par `10 seconds` ;
+   - *Then take action* : *Block*, pendant `10 seconds`.
+
+   Cent requêtes en dix secondes depuis une même adresse, c'est dix fois ce qu'envoie Claude au plafond de son quota (30 grilles par minute, environ six requêtes chacune) : la règle n'arrête que les rafales.
+5. **Les robots des assistants** : *AI Crawl Control* doit laisser passer `Claude-User` et `ChatGPT-User`, les agents qui appellent les connecteurs (ce sont des « assistants », pas des robots d'entraînement), et Bot Fight Mode rester coupé : ses défis casseraient les appels du connecteur comme ceux du site.
+6. **`make deploy`** : à la fin, « Connecteur : en service (https://mcp.leflechoir.fr/mcp) ». Le connecteur tourne avant l'ouverture : ses outils répondent alors « l'API n'est pas encore ouverte » (`api_disabled`), et rien ne se génère.
+
+Pour l'arrêter : vider `MCP_ALLOWED_HOSTS` (les déploiements suivants ne le démarrent plus), puis, sur le serveur, `docker rm -f leflechoir-mcp-1`.
+
+## Le test de charge de l'API, avant l'ouverture (une fois)
+
+La question ([ADR 0032](adr/0032-api-ouverte.md), lot 3) : **un pic d'appels à l'API change-t-il ce que voient les visiteurs du site ?** On remplit la file de l'API sans ouvrir ses routes, et on mesure pendant ce temps les générations du site. À faire en heure creuse : une vingtaine de minutes.
+
+1. **Faire tourner la file, routes fermées** : dans `/opt/leflechoir/.env.production`, `API_RUNNER=1`, puis `make deploy-api`.
+2. **La mesure au repos**, depuis le Mac (9 générations par minute, deux à la fois) :
+   ```bash
+   python3 tools/api/charge-site.py --minutes 5 --label repos
+   ```
+3. **Remplir la file** (sur le serveur), puis refaire la mesure du Mac pendant qu'elle se vide :
+   ```bash
+   docker exec leflechoir-api-1 flask api charge --jobs 60 --size 12x12
+   ```
+   ```bash
+   python3 tools/api/charge-site.py --minutes 5 --label charge
+   ```
+4. **Le bilan de la file** : `docker exec leflechoir-api-1 flask api charge --report` (débit, attente, durées). Puis `flask api charge --stop`, s'il en reste.
+5. **Remettre en ordre** : retirer `API_RUNNER=1`, puis `make deploy-api`.
+
+**Réussi si** :
+- la mesure « charge » n'a pas plus de refus « occupé » (`busy`) que la mesure « repos » ;
+- son p95 ne dépasse pas celui du repos de plus de 20 % ;
+- la mémoire de l'API reste sous 75 % (`docker stats --no-stream leflechoir-api-1` pendant la charge).
+
+Si des refus apparaissent, le disjoncteur doit couper l'API d'une langue après 3 refus du site en 10 minutes : c'est la deuxième chose que le test vérifie (`flask api charge --report` montre alors des générations restées en file).
+
+Ces générations ne sont pas mesurées comme un usage ; celles du Mac le sont, comme celles d'un visiteur (`flechoir-charge/1`).
 
 ## Préparer le Mac (une fois)
 

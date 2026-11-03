@@ -10,7 +10,7 @@ TOOLS_RUN := docker run --rm -v "$(CURDIR)":/repo -w /repo -e PYTHONDONTWRITEBYT
 SITE ?= fr
 export SITE
 
-.PHONY: help setup dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report livrer verifier deploy-config \
+.PHONY: help setup assistant-ranges dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report livrer verifier deploy-config \
 	deploy deploy-api deploy-front deploy-lexicon rollback deploy-status suggestions-pull \
 	lexicon-download lexicon-build lexicon-export lexicon-sens lexicon-stats listes \
 	curator curator-bg curator-stop curator-logs curator-check curator-urls \
@@ -33,6 +33,9 @@ test: lint-backend test-backend test-tools lint-frontend ## Tous les contrôles 
 
 lint-backend: ## Lint Python du backend et des outils (ruff, règles dans ruff.toml)
 	$(TOOLS_RUN) "pip install -q ruff==0.16.7 && ruff check backend tools"
+
+assistant-ranges: ## Relève les adresses publiées par Claude et ChatGPT pour leurs connecteurs (backend/assistant_ranges.json)
+	sh tools/api/assistant-ranges.sh
 
 test-backend: ## Tests backend (pytest, Python 3.11 dans Docker)
 	$(BACKEND_RUN) "pip install -q -r requirements.txt && pytest -q -p no:cacheprovider"

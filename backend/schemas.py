@@ -171,6 +171,9 @@ class AudienceRequest(ApiModel):
     referrer: Annotated[str, StringConstraints(max_length=100, pattern=r"^[A-Za-z0-9.-]*$")] = ""
     lang: Annotated[str, StringConstraints(max_length=12, pattern=r"^[A-Za-z0-9-]*$")] = ""
     visible_ms: Annotated[int, Field(ge=0, le=1_800_000)] = 0
+    # Le seul paramètre d'adresse gardé : `utm_source`, que les assistants IA ajoutent à leurs liens (« chatgpt.com ») —
+    # d'où vient une grille préparée par une IA (ADR 0032). Un nom de site, jamais une personne
+    source: Annotated[str, StringConstraints(max_length=40, pattern=r"^[a-z0-9.-]*$")] = ""
 
 
 # --- Recherche et génération ---

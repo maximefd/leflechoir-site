@@ -14,7 +14,7 @@ export default function TermsPage() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <h1 className="text-3xl font-bold">Conditions d&apos;utilisation</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 25 septembre 2026</p>
+      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 3 novembre 2026</p>
 
       <div className="mt-8 space-y-8 text-muted-foreground">
         <p className="rounded-lg border bg-secondary/20 p-4 text-foreground">
@@ -86,6 +86,43 @@ export default function TermsPage() {
             En cas d&apos;abus, l&apos;accès peut être limité ou le compte supprimé. Une faille découverte de bonne
             foi est la bienvenue : signale-la à{" "}
             <a href={`mailto:${site.securityEmail}`} className={linkClass}>{site.securityEmail}</a>.
+          </p>
+        </Section>
+
+        <Section title="L'API et le connecteur pour assistants IA" id="api">
+          <p>
+            L&apos;API de {site.name} et son connecteur pour assistants IA construisent des grilles autour des mots
+            qu&apos;on leur donne, vérifient des définitions et dessinent des grilles. Ils sont gratuits, avec des
+            limites d&apos;usage (par clé, par assistant, par adresse) que la notice de l&apos;API indique et qui
+            peuvent évoluer.
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              <strong className="text-foreground">Les grilles obtenues</strong> s&apos;utilisent librement, comme
+              celles du site, y compris dans un cadre commercial. Leurs dessins sont signés ; garder cette signature
+              est apprécié. Les définitions et le nom de l&apos;auteur sont de la responsabilité de qui les écrit.
+            </li>
+            <li>
+              <strong className="text-foreground">Une clé d&apos;API</strong> est personnelle : ne la partage pas et
+              ne la publie pas. Elle peut être fermée en cas d&apos;abus.
+            </li>
+            <li>
+              <strong className="text-foreground">Ce qui n&apos;est pas permis</strong> : chercher à reconstituer le
+              dictionnaire, le moteur ou ses règles, par exemple par des demandes systématiques ; contourner les
+              limites (multiplier les clés ou les adresses, se faire passer pour un assistant) ; revendre
+              l&apos;accès à l&apos;API ou le mettre à disposition d&apos;autres sans accord écrit ; s&apos;en servir
+              pour bâtir un service concurrent de génération de grilles ; y faire passer un contenu illicite.
+            </li>
+            <li>
+              <strong className="text-foreground">Ce que l&apos;API garde</strong> : une grille demandée, 24 heures,
+              le temps de la rendre ; les définitions envoyées pour vérification ou dessin ne sont jamais gardées
+              (voir la <Link href="/privacy#api" className={linkClass}>politique de confidentialité</Link>).
+            </li>
+          </ul>
+          <p>
+            L&apos;API peut être suspendue à tout moment, en particulier pour laisser la place aux visiteurs du site.
+            Son format est versionné (<code>/v1</code>) : un changement qui casserait les programmes qui
+            l&apos;utilisent passera par une nouvelle version.
           </p>
         </Section>
 

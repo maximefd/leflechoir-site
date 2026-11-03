@@ -70,6 +70,10 @@ services:
       CLIENT_IP_HEADER: CF-Connecting-IP
       # L'API ouverte (ADR 0032) : vide, fermée (ses routes répondent 503). L'auteur l'ouvre avec API_ENABLED=1
       API_ENABLED: ${API_ENABLED:-}
+      # Le test de charge avant l'ouverture (docs/PRODUCTION.md) : 1, la file de l'API tourne, ses routes restent fermées
+      API_RUNNER: ${API_RUNNER:-}
+      # La clé du connecteur MCP (service mcp) : ses appels comptent pour l'assistant qui les relaie, pas pour une adresse
+      API_RELAY_SECRET: ${API_RELAY_SECRET:-}
       TRUST_PROXY_HOPS: "0"
       # Capacité (ADR 0013) : deux générations à la fois, un worker de plus pour le reste
       GENERATION_MAX_CONCURRENT: ${GENERATION_MAX_CONCURRENT:-2}
@@ -99,13 +103,39 @@ services:
         condition: service_healthy
     logging: *logging
 
+  # Le connecteur MCP de l'API ouverte (ADR 0032) : sans lexique ni base, il appelle l'API sur le réseau interne.
+  # Démarré par server.sh seulement si MCP_ALLOWED_HOSTS est rempli (profil « connecteur ») ; le tunnel route son
+  # nom d'hôte public (mcp.leflechoir.fr) vers http://mcp:8080
+  mcp:
+    build: ./mcp
+    image: ${PROJET:-leflechoir}-mcp:${RELEASE:-local}
+    profiles: ["connecteur"]
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:5000
+      # Obligatoires : le connecteur refuse de démarrer sans eux (un « :? » bloquerait aussi les sites sans connecteur)
+      API_RELAY_SECRET: ${API_RELAY_SECRET:-}
+      MCP_ALLOWED_HOSTS: ${MCP_ALLOWED_HOSTS:-}
+    # Un petit service : un pic d'appels ne prend pas la mémoire de l'API et du lexique
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      api:
+        condition: service_healthy
+    logging: *logging
+
   cloudflared:
     image: cloudflare/cloudflared:2026.10.3
     restart: unless-stopped
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:
       # Jeton du tunnel (tableau de bord Cloudflare : Zero Trust → Networks → Tunnels). Le nom d'hôte
-      # public api.leflechoir.fr y pointe vers http://api:5000.
+      # public api.leflechoir.fr y pointe vers http://api:5000, et mcp.leflechoir.fr vers http://mcp:8080.
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?Remplir .env.production}
     depends_on:
       api:

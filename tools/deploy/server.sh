@@ -66,9 +66,37 @@ if '${2:-}' == 'curated' and (not lexicon.get('curated') or status.get('word_cou
 "
 }
 
-# db et api d'abord, en attendant qu'ils soient « healthy » ; puis le tunnel, qui dépend de l'API
+# Le connecteur MCP (ADR 0032) ne tourne que sur le serveur qui l'annonce (MCP_ALLOWED_HOSTS rempli dans le .env),
+# et avec une version qui le contient : un retour à une version d'avant le connecteur reste possible
+connector() {
+    grep -Eq '^MCP_ALLOWED_HOSTS=.+' "$ENV_FILE" && grep -q '^  mcp:' "$BASE/releases/$1/docker-compose.prod.yml"
+}
+
+# db et api d'abord, en attendant qu'ils soient « healthy » ; puis le connecteur, s'il y en a un, et le tunnel
 start() {
-    compose "$1" up -d --remove-orphans --wait --wait-timeout 300 db api && compose "$1" up -d cloudflared
+    compose "$1" up -d --remove-orphans --wait --wait-timeout 300 db api || return 1
+    if connector "$1"; then
+        compose "$1" --profile connecteur up -d --wait --wait-timeout 120 mcp || return 1
+    fi
+    compose "$1" up -d cloudflared
+}
+
+build() {
+    compose "$1" build api || return 1
+    if connector "$1"; then
+        compose "$1" --profile connecteur build mcp || return 1
+    fi
+}
+
+# Le connecteur répond, et il atteint l'API (la notice /v1, servie même API fermée : 200 ou 503)
+smoke_connector() {
+    connector "$1" || return 0
+    compose "$1" --profile connecteur exec -T mcp node -e "
+fetch('http://localhost:8080/health').then((r) => { if (!r.ok) throw new Error('health ' + r.status); })
+  .then(() => fetch('http://api:5000/v1')).then((r) => {
+    if (r.status !== 200 && r.status !== 503) throw new Error('API ' + r.status);
+    console.log('  connecteur : ok (API ' + r.status + ')');
+  }).catch((e) => { console.error('connecteur en mauvais état : ' + e.message); process.exit(1); });"
 }
 
 link() { ln -sfn "releases/$2" "$BASE/$1.tmp" && mv -T "$BASE/$1.tmp" "$BASE/$1"; }
@@ -79,7 +107,7 @@ prune() {
     ls -1t "$BASE/releases" | tail -n +"$((KEEP + 1))" | while read -r old; do
         [ "$old" = "$keep_current" ] || [ "$old" = "$keep_previous" ] && continue
         rm -rf "${BASE:?}/releases/$old"
-        docker image rm "$PROJET-api:$old" >/dev/null 2>&1 || true
+        docker image rm "$PROJET-api:$old" "$PROJET-mcp:$old" >/dev/null 2>&1 || true
         say "Ancienne version supprimée : $old"
     done
 }
@@ -98,7 +126,7 @@ deploy() {
     schema_before="$(schema_version)"
 
     say "Construction et démarrage de $new (le lexique se charge : une à deux minutes)…"
-    if compose "$new" build api && start "$new" && smoke "$new"; then
+    if build "$new" && start "$new" && smoke "$new" && smoke_connector "$new"; then
         [ -n "$prev" ] && [ "$prev" != "$new" ] && link previous "$prev"
         link current "$new"
         prune

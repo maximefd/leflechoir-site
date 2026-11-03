@@ -198,7 +198,12 @@ export function GridPlayer({ spec, title, onSolved, fin }: {
   useEffect(() => {
     if (!finished) return;
     inputRef.current?.blur();
-    endRef.current?.scrollIntoView({ block: "center" });
+    // Deux images plus tard : la page qui l'entoure ajoute au-dessus ce que la partie finie lui apprend (réussite, série)
+    // et repousserait le panneau hors de l'écran (grille du 03/11/2026, panneau 64 px trop bas)
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => endRef.current?.scrollIntoView({ block: "center" }));
+    });
+    return () => cancelAnimationFrame(frame);
   }, [finished, inputRef]);
   // Le sens des mots (ADR 0028) : seulement la partie finie, jamais pendant (pas même demandé à l'API avant)
   const sens = useSensDesMots(mini.words.map((word) => word.text), finished);

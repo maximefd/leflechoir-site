@@ -64,5 +64,6 @@ def beacon():
             "referrer": payload.referrer.lower().removeprefix("www."),
             "browser_lang": primary,
             "visible_ms": payload.visible_ms,
+            **({"source": payload.source} if payload.source else {}),
         })
     return "", 204

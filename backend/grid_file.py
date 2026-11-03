@@ -8,8 +8,10 @@ la dessiner, vérifier ses définitions ou l'ouvrir sur le site. Le format est p
      "rows": ["#G#M#A#D#J", "OREE#NIEME", …],               # « # » : une case de définition
      "words": [{"answer": "GRILLE", "x": 1, "y": 0, "direction": "down", "length": 6, "source": "preferred",
                 "clue_cell": {"x": 0, "y": 0}, "arrow": "right_then_down",
-                "clue_shares_cell": true, "clue_max_chars": 43, "clue": "Elle a ses cases"}, …],
-     "mystery": {"word": "CLAUDE", "cells": [{"x": 5, "y": 6}, …]}}
+                "clue_shares_cell": true, "clue_max_chars": 43, "clue": "Elle a ses cases"},
+               {"answer": "DEGOU", "display": "dégou", …}, …],   # display : la forme écrite, quand elle diffère
+     "mystery": {"word": "CLAUDE", "cells": [{"x": 5, "y": 6}, …]},
+     "author": "Mamie Jo"}                                   # facultatif : la grille signée de son auteur
 
 À la lecture, on ne croit que les lignes, la place et le sens des mots, et les définitions : la case de définition, la
 flèche et la place disponible se recalculent (un fichier retouché à la main ne peut pas tromper le dessin). On lit
@@ -34,6 +36,8 @@ VERSION = 1
 MIN_SIDE, MAX_SIDE = 5, 20
 MAX_CLUE_LENGTH = 120
 PLAIN_TEXT = r"^[^\x00-\x1f\x7f<>]+$"
+# Le nom dont la personne signe sa grille (« Grille de Mamie Jo ») : facultatif, court, texte simple
+MAX_AUTHOR_LENGTH = 60
 LEVELS = ("easy", "medium", "hard")
 # Flèches de l'API, et celles du moteur (engine/arrows.py)
 ARROWS = {"droite": "right", "bas": "down", "coudee_bas_droite": "down_then_right",
@@ -65,6 +69,8 @@ class WordIn(FileModel):
     y: Annotated[int, Field(ge=0, lt=MAX_SIDE)]
     direction: Literal["across", "down"]
     source: Literal["required", "preferred", "lexicon"] | None = None
+    # La forme écrite (« dégou » pour DEGOU) : une aide pour qui écrit la définition, jamais vérifiée
+    display: Annotated[str, StringConstraints(strip_whitespace=True, max_length=40, pattern=PLAIN_TEXT)] | None = None
     clue: Annotated[str, StringConstraints(strip_whitespace=True, max_length=400)] | None = None
 
 
@@ -84,6 +90,8 @@ class GridFileIn(FileModel):
                     Field(min_length=MIN_SIDE, max_length=MAX_SIDE)]
     words: Annotated[list[WordIn], Field(max_length=4 * MAX_SIDE * MAX_SIDE)]
     mystery: MysteryIn | None = None
+    author: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=MAX_AUTHOR_LENGTH,
+                                             pattern=PLAIN_TEXT)] | None = None
 
     @field_validator("rows")
     @classmethod
@@ -122,6 +130,7 @@ def complete(rows: list[str], words: list[dict]) -> list[dict]:
             "direction": word["direction"],
             "length": len(word["answer"]),
             "source": word.get("source") or "lexicon",
+            **({"display": word["display"]} if word.get("display") else {}),
             "clue_cell": {"x": found[0][0], "y": found[0][1]} if found else None,
             "arrow": ARROWS.get(found[1]) if found else None,
             "clue": word.get("clue") or None,
@@ -134,12 +143,15 @@ def complete(rows: list[str], words: list[dict]) -> list[dict]:
     return out
 
 
-def build(lang: str, level: str, seed, rows: list[str], words: list[dict], mystery: dict | None) -> dict:
-    """Le fichier d'une grille tout juste générée (generation_runner.py)."""
+def build(lang: str, level: str, seed, rows: list[str], words: list[dict], mystery: dict | None,
+          author: str | None = None) -> dict:
+    """Le fichier d'une grille tout juste générée (generation_runner.py), ou relue (`read`)."""
     grid = {"format": FORMAT, "version": VERSION, "type": "arrowword", "lang": lang, "level": level,
             "width": len(rows[0]), "height": len(rows), "seed": seed, "rows": rows, "words": complete(rows, words)}
     if mystery:
         grid["mystery"] = {"word": mystery["word"], "cells": mystery["cells"]}
+    if author:
+        grid["author"] = author
     return grid
 
 
@@ -168,7 +180,7 @@ def read(data: GridFileIn) -> tuple[dict | None, list[dict]]:
     if problems:
         return None, problems
     grid = build(data.lang, data.level or "medium", data.seed, rows, [word.model_dump() for word in data.words],
-                 data.mystery.model_dump() if data.mystery else None)
+                 data.mystery.model_dump() if data.mystery else None, data.author)
     return grid, []
 
 

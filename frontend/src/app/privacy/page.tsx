@@ -149,11 +149,17 @@ export default function PrivacyPage() {
           <p>
             Une grille demandée à l&apos;API (par un programme ou un assistant IA) est calculée à son tour, en tâche
             de fond. Le temps de te la rendre, sont gardés : la demande (le format, les mots fournis, le mot mystère,
-            la graine), la grille obtenue, et qui l&apos;a demandée — ta clé, ou sans clé l&apos;empreinte du jour
+            la graine, le nom dont tu signes la grille si tu le donnes), la grille obtenue, et qui l&apos;a demandée — ta clé, ou sans clé l&apos;empreinte du jour
             décrite plus bas, jamais ton adresse IP. Ils servent à te rendre la grille et à faire respecter les
             limites d&apos;usage (RGPD, art. 6.1.b et 6.1.f), puis sont effacés au bout de 24 heures. Une demande
             faite avec une clé disparaît aussi avec la clé et ton compte. Une grille envoyée à l&apos;API pour vérifier
             ses définitions ou la dessiner n&apos;est pas gardée : elle est lue, puis oubliée.
+          </p>
+          <p>
+            Par le connecteur d&apos;un assistant IA (Claude, ChatGPT, Le Chat…), l&apos;adresse IP d&apos;où
+            l&apos;appel arrive (en général celle de l&apos;assistant, pas la tienne) sert, sans être gardée, à
+            reconnaître l&apos;assistant parmi les adresses qu&apos;il publie et à appliquer les limites d&apos;usage
+            (art. 6.1.f) ; seule l&apos;empreinte du jour décrite plus bas peut en rester, 24 heures.
           </p>
         </Section>
 
@@ -230,6 +236,11 @@ export default function PrivacyPage() {
               « www.google.com »), jamais l&apos;adresse complète, qui peut contenir une recherche ;
             </li>
             <li><strong className="text-foreground">la langue de ton navigateur</strong> (« fr », « en »…) ;</li>
+            <li>
+              <strong className="text-foreground">l&apos;assistant qui t&apos;a envoyé</strong>, quand un assistant IA a
+              préparé le lien (« chatgpt.com ») : le seul élément de l&apos;adresse qui soit gardé, un nom de site,
+              jamais rien qui te désigne ;
+            </li>
             <li>
               <strong className="text-foreground">le temps pendant lequel la page est restée visible</strong>, le
               fait d&apos;avoir exporté une grille en PDF, et celui d&apos;avoir joué une grille publiée

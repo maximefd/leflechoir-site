@@ -153,4 +153,7 @@ def init_api_keys_cli(app) -> None:
         db.session.commit()
         click.echo(f"Clé {found[0].prefix}… révoquée.")
 
+    from api_charge import add_charge_command  # import tardif : api_charge importe generation_runner
+
+    add_charge_command(group)
     app.cli.add_command(group)

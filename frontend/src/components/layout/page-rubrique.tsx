@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Lien } from "@/components/layout/rubriques";
@@ -10,13 +11,17 @@ export function PageRubrique({
   titre,
   chapo,
   groupes,
+  avant,
 }: {
   titre: string;
   chapo: string;
   groupes: { titre?: string; liens: readonly Lien[] }[];
+  /** Ce qui passe avant la page (le lien préparé d'une IA, sur « Créer ») */
+  avant?: ReactNode;
 }) {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
+      {avant}
       <h1 className="text-3xl font-bold md:text-4xl">{titre}</h1>
       <p className="mt-4 text-lg text-muted-foreground">{chapo}</p>
       {groupes.map((groupe, index) => (

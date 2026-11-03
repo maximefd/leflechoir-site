@@ -101,6 +101,15 @@ def purge() -> None:
     db.session.commit()
 
 
+def relayed_assistant_of(job) -> str | None:
+    """« claude » pour « mcp:claude » ; « lechat? » pour « lechat?:3f9a… » (api_v1.guard)."""
+    if job.client != "mcp" or not job.visitor:
+        return None
+    if job.visitor.startswith("mcp:"):
+        return job.visitor.split(":", 1)[1]
+    return job.visitor.split(":", 1)[0] if "?:" in job.visitor else "other?"
+
+
 def visitor_fingerprint(today: date) -> str:
     salt = _daily_salt(today)
     source = f"{salt}\n{client_ip()}\n{request.headers.get('User-Agent', '')}"
@@ -226,6 +235,9 @@ def record_background_generation(job, cpu_ms: int | None = None) -> None:
             cpu_ms=cpu_ms,
             data={
                 "client": job.client,
+                # L'assistant d'un appel relayé par le connecteur MCP (« chatgpt », « claude »…), jamais une personne ;
+                # « lechat? » : le nom que se donne un appelant qui n'appelle pas d'une adresse publiée
+                "assistant": relayed_assistant_of(job),
                 "keyed": job.api_key_id is not None,
                 "format": f"{params['width']}x{params['height']}",
                 "must": [{"length": len(word), "known": word in trie.words} if trie else {"length": len(word)}

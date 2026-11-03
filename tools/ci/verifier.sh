@@ -74,10 +74,11 @@ git -C "$WORK" -c user.name=ci-locale -c user.email=ci@localhost merge -q --no-e
 # Le tri, comme le job « tri » de GitHub : ce que la PR touche par rapport à main
 git -C "$WORK" diff --name-only origin/main...HEAD > "$WORK/.fichiers" 2>/dev/null || true
 touche() { [ "${TOUT:-0}" = 1 ] || grep -qE "$1" "$WORK/.fichiers"; }
-BACKEND=0; SITE=0
+BACKEND=0; SITE=0; MCP=0
 touche '^(backend/|tools/|data/|\.github/|frontend/src/content/|frontend/tests/fixtures/)' && BACKEND=1
 touche '^(frontend/|backend/|\.github/)' && SITE=1
-say "  à vérifier : tests Python $( [ $BACKEND = 1 ] && echo oui || echo non ), site et parcours $( [ $SITE = 1 ] && echo oui || echo non )"
+touche '^mcp/' && MCP=1
+say "  à vérifier : tests Python $( [ $BACKEND = 1 ] && echo oui || echo non ), site et parcours $( [ $SITE = 1 ] && echo oui || echo non ), connecteur MCP $( [ $MCP = 1 ] && echo oui || echo non )"
 
 etape "secrets (gitleaks)"
 lancer docker run --rm -v "$WORK":/repo --entrypoint sh ghcr.io/gitleaks/gitleaks:v8.30.1 -c \
@@ -95,6 +96,18 @@ if [ $BACKEND = 1 ]; then
             pytest -q -p no:cacheprovider -n 2 backend/tests/ --cov=backend/engine --cov-report=term --cov-fail-under=80
             python backend/check_layouts.py
             pytest -q -p no:cacheprovider tools/ --cov=tools --cov-report=term --cov-fail-under=70"
+fi
+
+# Le connecteur MCP de l'API ouverte (ADR 0032) : Node 22, comme son image
+if [ $MCP = 1 ]; then
+    etape "connecteur MCP (pnpm audit, types, tests, construction)"
+    lancer docker run --rm --memory=1g -v "$WORK/mcp":/mcp -w /mcp node:22-slim sh -ec "
+        corepack enable
+        pnpm install --frozen-lockfile
+        pnpm audit --prod
+        pnpm typecheck
+        pnpm test
+        pnpm build"
 fi
 
 if [ $SITE = 1 ]; then
@@ -148,6 +161,7 @@ EOF
 fi
 
 DUREE=$(( ($(date +%s) - DEBUT) / 60 ))
-FAIT="secrets"; [ $BACKEND = 1 ] && FAIT="$FAIT, tests Python"; [ $SITE = 1 ] && FAIT="$FAIT, site et parcours"
+FAIT="secrets"; [ $BACKEND = 1 ] && FAIT="$FAIT, tests Python"; [ $MCP = 1 ] && FAIT="$FAIT, connecteur MCP"
+[ $SITE = 1 ] && FAIT="$FAIT, site et parcours"
 statut success "OK en $DUREE min : $FAIT"
 say "Vérifié : $FAIT, en $DUREE min. Le contrôle « ci-locale » est vert sur $COURT."

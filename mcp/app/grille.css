@@ -1,0 +1,16 @@
+/* L'interface du connecteur : une grille imprimée, sobre, qui suit la taille que lui donne l'assistant */
+:root { color-scheme: light dark; --encre: #1b1b1b; --papier: #ffffff; --discret: #5f5b55; --accent: #b4462f; }
+@media (prefers-color-scheme: dark) { :root { --encre: #f2efe9; --papier: #1d1c1a; --discret: #b8b3aa; } }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--encre); background: transparent; }
+.grille { padding: 12px; max-width: 640px; margin: 0 auto; }
+.etat { margin: 0 0 10px; color: var(--discret); }
+.etat:empty { display: none; }
+.dessin svg { display: block; width: 100%; height: auto; background: #fff; border-radius: 4px; }
+.remarques { margin: 10px 0 0; padding-left: 18px; color: var(--discret); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.actions[hidden], .remarques[hidden] { display: none; }
+button { font: inherit; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--encre); background: var(--papier);
+  color: var(--encre); cursor: pointer; }
+button.principal { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

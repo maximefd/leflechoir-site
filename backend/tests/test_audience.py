@@ -47,6 +47,15 @@ def test_a_page_view_is_recorded_without_anything_that_names_a_person(client):
     assert "127.0.0.1" not in json.dumps(event.data)
 
 
+def test_the_assistant_that_prepared_the_link_is_kept_and_nothing_else(client):
+    """`utm_source` (« chatgpt.com ») : d'où vient une grille préparée par une IA (ADR 0032) ; un nom de site seulement."""
+    beacon(client, {"kind": "view", "path": "/creer", "source": "chatgpt.com", "visible_ms": 9_000})
+
+    [event] = pages()
+    assert event.data["source"] == "chatgpt.com"
+    assert beacon(client, {"kind": "view", "path": "/creer", "source": "Jean Dupont"}).status_code == 400
+
+
 def test_a_logged_in_visitor_is_not_attached_to_the_account(client):
     headers = auth_headers(client)
     beacon(client, {"kind": "view", "path": "/grids"}, headers=headers)

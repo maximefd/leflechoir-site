@@ -183,6 +183,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fr": "Ce fichier de grille ne se lit pas : voir le détail.",
         "de": "Diese Rasterdatei ist nicht lesbar: siehe Details.",
     },
+    "clue_count": {
+        "en": "Expected {expected} clues, one per word in the grid's order; got {given}.",
+        "fr": "Il faut {expected} définitions, une par mot dans l'ordre de la grille ; reçu {given}.",
+        "de": "Erwartet werden {expected} Hinweise, einer pro Wort in der Reihenfolge des Rasters; erhalten {given}.",
+    },
+    "clue_unknown_answer": {
+        "en": "These words are not in the grid: {words}. Give each clue with the answer it defines.",
+        "fr": "Ces mots ne sont pas dans la grille : {words}. Donne chaque définition avec le mot qu'elle définit.",
+        "de": "Diese Wörter stehen nicht im Raster: {words}. Gib jeden Hinweis mit dem Wort an, das er beschreibt.",
+    },
     "clue_missing": {
         "en": "This word has no clue yet.",
         "fr": "Ce mot n'a pas encore de définition.",

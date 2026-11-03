@@ -80,12 +80,13 @@ def post_fork(server, worker):
 def when_ready(server):
     """Le processus de génération de l'API ouverte (ADR 0032), fork du maître : il partage le lexique déjà chargé.
 
-    Appelé une fois, avant la création des workers. L'API fermée (API_ENABLED vide), il n'est pas lancé.
+    Appelé une fois, avant la création des workers. L'API fermée (API_ENABLED vide), il n'est pas lancé, sauf pour le
+    test de charge (API_RUNNER=1 : la file tourne, les routes restent fermées).
     """
     import generation_runner
     from run import app
 
-    if app.config["API_ENABLED"]:
+    if app.config["API_ENABLED"] or app.config["API_RUNNER"]:
         server.generation_runner_pid = generation_runner.start(app, [listener.fileno() for listener in server.LISTENERS])
         server.log.info("Surveillant du processus de génération : pid %s", server.generation_runner_pid)
 

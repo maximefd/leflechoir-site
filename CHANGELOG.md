@@ -5,6 +5,35 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **L'API ouverte, lot 3 : avant l'ouverture** (ADR 0032 ; l'API reste fermée en production) :
+  - le **connecteur MCP en production** : un service `mcp` (profil « connecteur »), démarré par `server.sh` si
+    `MCP_ALLOWED_HOSTS` est rempli, construit et vérifié à chaque déploiement, routé par le tunnel
+    (`mcp.leflechoir.fr`) ; il refuse de démarrer sans nom d'hôte ni clé de relais ; `deploy.sh` vérifie son
+    adresse publique (`DEPLOY_MCP_URL`) ; marche à suivre dans `docs/PRODUCTION.md`.
+  - la **revue de sécurité** (`docs/REVUE-SECURITE-API.md`, privée) : un assistant ne se reconnaît plus au nom
+    qu'il se donne mais à son adresse publiée (Anthropic, OpenAI : `make assistant-ranges`), les autres appelants du
+    connecteur sont comptés à leur adresse ; un plafond de dessins par assistant ; la page `/grille` dit que le texte
+    vient de son auteur, avec « Signaler un contenu » ; corps du connecteur bornés à 64 Ko.
+  - le **test de charge** avant l'ouverture : `API_RUNNER=1` fait tourner la file routes fermées, `flask api charge`
+    la remplit (sans compter comme un usage) et en rend compte, `tools/api/charge-site.py` mesure depuis le Mac ce
+    que voient les visiteurs du site ; marche à suivre et critères dans `docs/PRODUCTION.md`.
+  - les **conditions d'utilisation de l'API** (`/terms#api`, à relire par un avocat) et la confidentialité du
+    connecteur (`/privacy#api` : l'adresse d'appel sert sans être gardée) ; la règle de débit Cloudflare, chemin exact
+    dans `docs/PRODUCTION.md`.
+- **L'API ouverte, lot 2 : les voies d'accès** (ADR 0032 ; l'API reste fermée en production) :
+  - le **connecteur MCP** (`mcp/`, TypeScript) : créer une grille (il attend la fin), vérifier les définitions, la
+    dessiner ; son interface dans la conversation (MCP App) montre la grille, la solution et les liens pour jouer ou
+    imprimer ; vérifié dans l'hôte de démonstration officiel ; dans la pile de développement et la CI locale ;
+  - après l'essai dans Claude du 28/10 : les définitions s'envoient en paires `{answer, clue}` (une définition ne
+    glisse plus sur un autre mot), la vérification livre d'un coup la grille et sa solution dessinées (le bouton
+    bascule sans appel d'outil, donc sans autorisation), et une interface plus ancienne se réduit à une ligne : une
+    seule grille à jour dans la conversation ; le nom de l'auteur, facultatif, signe la grille ;
+  - le **relais par assistant** : les quotas d'un appel venu du connecteur sont ceux de l'assistant (ChatGPT, Claude,
+    Le Chat), pas d'une adresse ;
+  - la page **`/grille`**, qui lit une grille dans son lien (rien n'est stocké) : la jouer, l'imprimer, l'enregistrer
+    dans « Mes grilles » ;
+  - le **lien préparé** sur `/creer` : ce qui a été compris, avec tolérance, puis le générateur prérempli ;
+  - la mesure de `utm_source`, l'assistant qui a préparé le lien, déclarée dans la page de confidentialité.
 - **L'API ouverte, lot 1 : le socle et le fichier de grille** (ADR 0032, refondue le 27/10/2026 ; fermée en production
   tant que l'auteur ne l'a pas ouverte) :
   - une adresse internationale, `/v1/`, la langue en paramètre de la génération ; une clé vaut pour toutes les
@@ -41,6 +70,10 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   un profil de déploiement par site (`deploy/sites/<site>.env`), un projet Compose par site sur le serveur, `SITE` en
   paramètre de `make deploy`, `make livrer` et `make deploy-config` (français par défaut) ; le nom public du site
   n'est plus écrit en dur dans le code du site ni dans le relevé SEO, et un test y veille.
+
+### Corrigé
+- **Grille du jour** : le panneau « Bravo » vient à l'écran même quand la page ajoute au-dessus la réussite et la
+  série ; il restait 64 px sous l'écran sur la grille du 3 novembre (le défilement attend deux images).
 
 ### Sécurité
 - **Dépendances de l'API** (Dependabot, #256) : SQLAlchemy 2.1.6, sentry-sdk 2.73.0, pydantic 2.14.1, et le pilote
