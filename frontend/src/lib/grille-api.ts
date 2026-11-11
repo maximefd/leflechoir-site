@@ -10,6 +10,10 @@ import type { MiniGridSpec } from "@/lib/mini-grid";
  *   tolérance : une IA oublie parfois un « & » (essai du 27/10/2026, docs/API-BESOINS.md).
  */
 
+/** Le lien de la grille ouverte, gardé le temps de l'onglet (dans le navigateur seul) : il survit au détour par la
+ * connexion */
+export const GRILLE_LINK_KEY = "terminator:grille-api";
+
 export type GridFileWord = {
   answer: string;
   x: number;

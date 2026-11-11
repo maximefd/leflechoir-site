@@ -38,6 +38,9 @@ export function Footer() {
           <Link href="/privacy" className="hover:text-primary">
             Confidentialité
           </Link>
+          <Link href="/sources" className="hover:text-primary">
+            Sources et licences
+          </Link>
         </nav>
       </div>
       <p className="container mx-auto px-4 pb-4 text-center text-xs text-muted-foreground">

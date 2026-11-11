@@ -254,3 +254,44 @@ def test_the_frontend_fixture_has_the_shape_of_the_real_response(client, admin_h
 
     assert shape(recorded) == shape(data)
     assert recorded["unread"] == data["unread"] > 0
+
+
+# --- Le signalement d'un contenu (règlement sur les services numériques, art. 16 ; avis du 08/11/2026) ---
+
+REPORT = {"url": "gen_dJAdP6Oy55HsvpFnavIKSQ",
+          "explanation": "La définition de LEO insulte une personne nommée.", "name": "Camille Martin",
+          "email": "camille@exemple.fr", "good_faith": True}
+
+
+def report(client, body=None):
+    return client.post("/api/contact/signalement", data=json.dumps({**REPORT, **(body or {})}),
+                       content_type="application/json")
+
+
+def test_a_report_keeps_what_the_law_asks_and_acknowledges_receipt(client, outbox):
+    response = report(client)
+
+    assert response.status_code == 201
+    [message] = stored()
+    assert message.reason == "report" and message.reply_email == "camille@exemple.fr"
+    assert message.details == {"url": REPORT["url"], "name": "Camille Martin", "good_faith": True}
+    assert REPORT["url"] in message.message and "Camille Martin" in message.message
+    # L'accusé de réception à qui signale, et la notification à l'auteur (sans le texte)
+    receipt = [m for m in outbox if m["To"] == "camille@exemple.fr"]
+    assert len(receipt) == 1 and "signalement reçu" in receipt[0]["Subject"]
+    assert any(m["To"] == AUTHOR for m in outbox)
+
+
+@pytest.mark.parametrize("change, reason", [({"good_faith": False}, "good_faith_required"),
+                                            ({"email": "pas-une-adresse"}, "invalid_request"),
+                                            ({"url": ""}, "invalid_request")])
+def test_a_report_needs_good_faith_an_address_and_its_content(client, change, reason):
+    response = report(client, change)
+
+    assert (response.status_code, response.get_json()["reason"]) == (400, reason)
+    assert stored() == []
+
+
+def test_a_robot_report_is_dropped_quietly(client, outbox):
+    assert report(client, {"website": "http://spam"}).status_code == 201
+    assert stored() == [] and outbox == []

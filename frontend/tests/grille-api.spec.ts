@@ -47,7 +47,14 @@ test("une grille faite avec l'API se joue depuis son lien, sans rien demander au
   const definitions = page.getByRole("list", { name: "Les définitions" });
   await expect(definitions).toContainText(grille.words[0].clue);
   // Sans compte : de quoi la garder ; et la grille n'est jamais partie au serveur (elle est après le « # »)
-  await expect(page.getByRole("link", { name: "Crée un compte" })).toHaveAttribute("href", /\/register\?next=/);
+  // Les liens de compte ne recopient pas le fragment : le suivre enverrait la grille au serveur
+  await expect(page.getByRole("link", { name: "Crée un compte" })).toHaveAttribute("href", "/register?next=%2Fgrille");
+  await expect(page.getByRole("link", { name: "connecte-toi" })).toHaveAttribute("href", "/login?next=%2Fgrille");
+  expect(envoyees.filter((requete) => requete.includes(donnees.slice(0, 40)))).toEqual([]);
+
+  // Au retour de la connexion, dans le même onglet, sans fragment : la grille attendait dans l'onglet
+  await page.goto("/grille");
+  await expect(page.getByText(`9 × 9 cases, ${grille.words.length} mots`)).toBeVisible();
   expect(envoyees.filter((requete) => requete.includes(donnees.slice(0, 40)))).toEqual([]);
 });
 
@@ -55,9 +62,26 @@ test("une grille signée dit le nom de son auteur", async ({ page }) => {
   await page.goto(lien({ ...fichierDeGrille("2026-10-28"), author: "Mamie Jo" }, "jouer"));
 
   await expect(page.getByTestId("auteur")).toHaveText("Une grille de Mamie Jo");
-  // Le texte est le sien, pas le nôtre : la page le dit, et propose de signaler un contenu
+  // Le texte est le sien, et la grille ne nous parvient pas : la page le dit, et dit à qui s'adresser
   await expect(page.getByTestId("grille-tiers")).toContainText("écrites par Mamie Jo");
-  await expect(page.getByRole("link", { name: "Signaler un contenu" })).toHaveAttribute("href", "/contact");
+  await expect(page.getByTestId("grille-tiers")).toContainText("nous ne la recevons pas");
+});
+
+test("signaler un contenu gardé : la bonne foi déclarée, et un accusé de réception promis", async ({ page }) => {
+  // Règlement sur les services numériques, art. 16 (avis juridiques des 08 et 09/11/2026)
+  await page.goto("/signaler");
+
+  await expect(page.getByText("nous ne la recevons pas et ne pouvons pas la retirer")).toBeVisible();
+  const envoyer = page.getByRole("button", { name: "Envoyer le signalement" });
+  await page.getByLabel("Le contenu en cause").fill("gen_dJAdP6Oy55HsvpFnavIKSQ");
+  await page.getByLabel("Pourquoi ce contenu te paraît illicite").fill("Une définition vise une personne nommée.");
+  await page.getByLabel("Ton nom").fill("Camille Martin");
+  await page.getByLabel("Ton adresse e-mail").fill("camille@exemple.fr");
+  await expect(envoyer).toBeDisabled(); // sans la déclaration de bonne foi
+  await page.getByLabel(/Je déclare de bonne foi/).check();
+  await envoyer.click();
+
+  await expect(page.getByRole("status")).toContainText("Un accusé de réception part à ton adresse");
 });
 
 test("un mot sans définition : la grille ne se joue pas encore, et la page le dit", async ({ page }) => {

@@ -342,11 +342,11 @@ make deploy-lexicon
 ```
 
 La commande :
-- envoie le fichier **sans la colonne des définitions**, qui restent sur le Mac ;
+- envoie **deux fichiers, jamais fondus en un** (avis juridique du 09/11/2026) : la liste de mots (`lexique_cure.csv`, `MOT;forme affichée`, tirée du DELA) et les fréquences (`frequences.csv`, `MOT;zipf`, tirées de Lexique). L'API les joint en mémoire. Les définitions du Wiktionnaire n'y sont plus : elles restent dans la base du Mac. Un ancien export à quatre colonnes est refusé (relancer `make lexicon-export`, ou redémarrer le curateur), et la version en service doit savoir recevoir les fréquences : `make deploy` d'abord ;
 - envoie aussi `data/lexicon/build/sens.sqlite`, le sens des mots ([ADR 0028](adr/0028-sens-des-mots-wiktionnaire.md)), s'il a changé depuis le dernier envoi (environ 40 Mo). On le reconstruit avec `make lexicon-sens` (quelques minutes) après de gros changements du lexique ; absent, le site s'en passe ;
-- fait vérifier son empreinte par le serveur, puis redémarre l'API (environ une minute de coupure) ;
+- fait vérifier leurs empreintes par le serveur, puis redémarre l'API (environ une minute de coupure) ;
 - s'assure que l'API a bien chargé le lexique curé, avec plus de 50 000 mots ;
-- remet le lexique précédent en service si ce n'est pas le cas.
+- remet le lexique précédent en service si ce n'est pas le cas, ses fréquences avec lui.
 
 La commande réexporte d'abord le lexique (`make lexicon-export`), pour que les dernières décisions et les mots ajoutés (`additions.csv`) partent, puis, le lexique en service, renvoie au serveur les réponses aux suggestions de mots ([ADR 0020](adr/0020-suggestions-et-ajouts-au-lexique.md)). Pour récupérer les suggestions du site avant de les trier : `make suggestions-pull`.
 

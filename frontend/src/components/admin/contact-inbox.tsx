@@ -13,7 +13,7 @@ type Inbox = {
   messages: {
     id: number;
     at: string;
-    reason: "suggestion" | "problem" | "data";
+    reason: "suggestion" | "problem" | "data" | "report";
     message: string;
     reply_email: string | null;
     request_id: string | null;
@@ -22,7 +22,7 @@ type Inbox = {
   }[];
 };
 
-const REASONS = { suggestion: "Suggestion", problem: "Problème", data: "Données personnelles" } as const;
+const REASONS = { suggestion: "Suggestion", problem: "Problème", data: "Données personnelles", report: "Signalement de contenu" } as const;
 
 /**
  * La boîte de réception des messages du formulaire de contact (Phase 8, #131). Les seules écritures sont « marquer

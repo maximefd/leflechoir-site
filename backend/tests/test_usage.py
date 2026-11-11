@@ -9,7 +9,7 @@ import stats
 import usage
 from extensions import db
 from generation_slots import generation_slot
-from models import UsageEvent, User, VisitorSalt
+from models import DayVisitors, MissingWord, UsageEvent, User, VisitorSalt
 
 from tests.helpers import TEST_PASSWORD, auth_headers, register, send, unique_email
 from tests.paths import FIXTURE_LAYOUTS_DIR
@@ -21,6 +21,8 @@ BROWSER = {"User-Agent": "Mozilla/5.0 (test)", "CF-IPCountry": "fr"}
 def clean_usage(test_app):
     UsageEvent.query.delete()
     VisitorSalt.query.delete()
+    MissingWord.query.delete()
+    DayVisitors.query.delete()
     db.session.commit()
     test_app.extensions.pop("usage_salt", None)
     yield
@@ -68,7 +70,9 @@ def test_imposed_words_are_kept_as_text_and_as_shape(grid_app, client, small_wor
     [event] = events("generation")
     assert event.data["must"] == [{"length": 4, "known": True}]
     assert event.data["wish_count"] == 1
-    assert event.words == {"must": [known], "wish": ["ZZQXW"]}
+    # Avis du 08/11/2026 : le texte n'est plus dans l'événement ; seul le mot inconnu est gardé, à part, sans visiteur
+    assert event.words is None
+    assert [(row.source, row.word) for row in MissingWord.query.all()] == [("wish", "ZZQXW")]
 
 
 def test_the_mystery_word_is_never_measured(grid_app, client):
@@ -233,21 +237,49 @@ def test_measuring_never_breaks_a_request(grid_app, client, monkeypatch):
 # --- Conservation ---
 
 def test_old_imposed_words_and_old_events_are_purged(test_app):
+    """Les mots encore gardés dans les événements passent dans missing_word (les inconnus imposés seulement), puis
+    les mots de plus de 90 jours et les événements de plus de 13 mois disparaissent."""
     now = datetime.utcnow()
 
-    def event(age_days, words):
+    def event(age_days, words, known):
         return UsageEvent(created_at=now - timedelta(days=age_days), kind="generation", outcome="grid",
-                          status=200, site="fr", lang="fr", data={}, words=words)
+                          status=200, site="fr", lang="fr", words=words,
+                          data={"must": [{"length": len(w), "known": known} for w in (words or {}).get("must", [])]})
 
-    db.session.add_all([event(10, {"must": ["ANNIVERSAIRE"]}), event(100, {"must": ["CAMILLE"]}),
-                        event(400, None)])
+    db.session.add_all([event(10, {"must": ["ANNIVERSAIRE"]}, False), event(10, {"must": ["CHAT"]}, True),
+                        event(100, {"must": ["CAMILLE"]}, False), event(400, None, True)])
     db.session.add(VisitorSalt(day=date.today() - timedelta(days=2), salt="ancien"))
     db.session.commit()
 
     usage.purge()
 
-    assert [e.words for e in events()] == [{"must": ["ANNIVERSAIRE"]}, None]
+    assert [e.words for e in events()] == [None, None, None]
+    assert [row.word for row in MissingWord.query.all()] == ["ANNIVERSAIRE"]
     assert VisitorSalt.query.count() == 0
+
+
+def test_a_closed_day_keeps_its_visitor_counts_but_loses_the_fingerprints(test_app):
+    """Avis du 08/11/2026 : l'empreinte ne survit pas à sa journée ; les comptes qu'elle permettait restent."""
+    yesterday = datetime.utcnow() - timedelta(days=1)
+
+    def event(visitor, kind="search", outcome="results", data=None, country="FR"):
+        return UsageEvent(created_at=yesterday, kind=kind, outcome=outcome, status=200, site="fr", lang="fr",
+                          visitor=visitor, country=country, data=data or {})
+
+    db.session.add_all([event("a"), event("a", "generation", "grid"), event("b", country="BE"),
+                        event("a", "page", "view", {"referrer": "www.google.com"}),
+                        event("c", "page", "view", {"referrer": ""})])
+    db.session.commit()
+    before = stats.compute()["daily"][-2]["visitors"]
+
+    usage.purge()
+
+    assert UsageEvent.query.filter(UsageEvent.visitor.isnot(None)).count() == 0
+    counts = {row.key: row.visitors for row in DayVisitors.query.all()}
+    assert counts["events"] == 2 and counts["funnel:grid"] == 1 and counts["country:BE"] == 1
+    assert counts["pages"] == 2 and counts["referrer:www.google.com"] == 1 and counts["referrer:"] == 1
+    # Le poste de pilotage voit les mêmes visiteurs qu'avant la clôture
+    assert stats.compute()["daily"][-2]["visitors"] == before == 2
 
 
 # --- flask stats ---

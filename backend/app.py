@@ -102,6 +102,9 @@ DEFAULT_SETTINGS = dict(
     # (vide : pas de relais). Les quotas d'un assistant (tous ses utilisateurs arrivent de quelques adresses) sont
     # comptés pour lui, par minute et par 24 heures
     API_RELAY_SECRET='',
+    # La version des conditions de l'API (/terms#api) : annoncée par la notice, enregistrée à la création d'une clé.
+    # La même que frontend/src/lib/conditions-api.ts (un test y veille)
+    API_TERMS_VERSION='2026-11-09',
     API_MCP_PER_MINUTE=30,
     API_MCP_PER_DAY=2000,
     API_MCP_WORDS_PER_DAY=80000,
@@ -128,6 +131,9 @@ DEFAULT_SETTINGS = dict(
     RATELIMIT_REGISTER='5 per hour',
     RATELIMIT_REFRESH='30 per minute',
     RATELIMIT_SEARCH='120 per minute',
+    # Le volume du jour, en mots demandés (avis juridique du 09/11/2026) : une recherche à la frappe en demande 200, soit
+    # 500 recherches par jour et par adresse ; la liste entière (environ 480 000 mots) ne s'énumère plus en une journée
+    RATELIMIT_SEARCH_WORDS='100000 per day',
     # Suggestions de mots : aucune limite pour un humain, un plafond anti-robot (roadmap 1e)
     RATELIMIT_SUGGEST='60 per minute',
     # La balise d'audience : une par page quittée, donc bien moins que le rythme d'un lecteur (#130)

@@ -55,6 +55,20 @@ def test_reloads_only_when_the_file_changes(tmp_path):
     assert manager.trie.words == {"PORTE"}
 
 
+def test_reloads_when_only_the_frequencies_change(tmp_path):
+    curated, fallback = tmp_path / "lexique_cure.csv", tmp_path / "dela.csv"
+    write_lexicon(curated, ["PORTE"])
+    write_lexicon(fallback, ["PORTE"])
+    manager = LexiconManager(curated, fallback)
+    manager.check()
+    assert manager.trie.frequency("PORTE") == 0.0
+
+    (tmp_path / "frequences.csv").write_text("PORTE;4.2\n", encoding="utf-8")
+
+    assert manager.check() is True
+    assert manager.trie.frequency("PORTE") == 4.2
+
+
 def test_switches_to_the_curated_lexicon_once_exported(tmp_path):
     curated, fallback = tmp_path / "lexique_cure.csv", tmp_path / "dela.csv"
     write_lexicon(fallback, ["PORTE", "AABAM"])

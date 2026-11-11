@@ -21,7 +21,7 @@ from flask.cli import AppGroup
 from flask_jwt_extended import get_current_user, jwt_required
 
 from extensions import db
-from models import Dictionary, PersonalWord, UsageEvent, WordSuggestion
+from models import Dictionary, MissingWord, PersonalWord, WordSuggestion
 from normalization import normalize_word
 from schemas import SuggestionRequest, parse_body
 from usage import visitor_fingerprint
@@ -112,15 +112,12 @@ def grouped(status: str = "pending") -> list[dict]:
         add(row.kind, row.word, row.display, row.source, _person(row))
 
     if status == "pending":
-        # Mots imposés que le lexique ne connaît pas (le texte n'est gardé que 90 jours)
-        since = _utcnow() - timedelta(days=MUST_WORDS_WINDOW_DAYS)
-        for event in UsageEvent.query.filter(UsageEvent.kind == "generation", UsageEvent.created_at >= since,
-                                             UsageEvent.words.isnot(None)).all():
-            texts = (event.words or {}).get("must", [])
-            for detail, text in zip(event.data.get("must", []), texts):
-                if not detail.get("known", True):
-                    add("add", normalize_word(text), text, "must_unknown",
-                        f"u{event.user_id}" if event.user_id else f"v{event.visitor}")
+        # Mots imposés que le lexique ne connaît pas (missing_word, 90 jours) : rien n'y dit qui les a demandés, chaque
+        # demande compte pour une personne
+        since = (_utcnow() - timedelta(days=MUST_WORDS_WINDOW_DAYS)).date()
+        for row in MissingWord.query.filter(MissingWord.source == "must", MissingWord.day >= since,
+                                            MissingWord.lang == current_app.config["SITE_LANG"]).all():
+            add("add", row.word, row.display, "must_unknown", f"m{row.id}")
         # Mots rangés par plusieurs personnes dans leurs dictionnaires : le curateur écarte ceux déjà au lexique
         owners = defaultdict(set)
         displays = {}

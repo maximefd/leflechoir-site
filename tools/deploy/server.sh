@@ -150,15 +150,21 @@ deploy() {
 }
 
 # Le lexique curé, envoyé par deploy.sh : vérifié, mis en service, et remplacé par le précédent si l'API
-# ne le charge pas. Il vit hors des versions (LEXICON_DIR), et l'API le lit au démarrage.
+# ne le charge pas. Il vit hors des versions (LEXICON_DIR), et l'API le lit au démarrage. Deux fichiers qui vont
+# ensemble, jamais fondus (avis juridique du 09/11/2026) : la liste de mots et les fréquences, en service et en
+# arrière ensemble.
 lexicon() {
-    expected="${1:?Usage : server.sh lexicon SHA256 [SHA256_DU_SENS]}"
-    sens_expected="${2:-}"
+    expected="${1:?Usage : server.sh lexicon SHA256 SHA256_DES_FREQUENCES [SHA256_DU_SENS]}"
+    frequencies_expected="${2:?Usage : server.sh lexicon SHA256 SHA256_DES_FREQUENCES [SHA256_DU_SENS]}"
+    sens_expected="${3:-}"
     dir="$BASE/lexicon"
     new="$dir/lexique_cure.csv.nouveau"; live="$dir/lexique_cure.csv"; old="$dir/lexique_cure.csv.precedent"
+    freq_new="$dir/frequences.csv.nouveau"; freq_live="$dir/frequences.csv"; freq_old="$dir/frequences.csv.precedent"
     sens_new="$dir/sens.sqlite.nouveau"; sens_live="$dir/sens.sqlite"; sens_old="$dir/sens.sqlite.precedent"
     [ -s "$new" ] || die "$new absent : relancer make deploy-lexicon"
     [ "$(sha256sum "$new" | cut -d' ' -f1)" = "$expected" ] || die "le lexique reçu est abîmé (empreinte différente) : relancer make deploy-lexicon"
+    [ -s "$freq_new" ] && [ "$(sha256sum "$freq_new" | cut -d' ' -f1)" = "$frequencies_expected" ] \
+        || die "les fréquences reçues sont abîmées (empreinte différente) : relancer make deploy-lexicon"
     if [ -n "$sens_expected" ]; then
         [ -s "$sens_new" ] && [ "$(sha256sum "$sens_new" | cut -d' ' -f1)" = "$sens_expected" ] \
             || die "le fichier du sens des mots reçu est abîmé (empreinte différente) : relancer make deploy-lexicon"
@@ -167,7 +173,10 @@ lexicon() {
     [ -n "$current" ] || die "aucune version en service : make deploy d'abord"
 
     [ -f "$live" ] && cp -p "$live" "$old"
+    # Pas de fréquences avant la séparation : le retour en arrière n'en remet pas (l'ancien lexique les portait)
+    if [ -f "$freq_live" ]; then cp -p "$freq_live" "$freq_old"; else rm -f "$freq_old"; fi
     mv "$new" "$live"
+    mv "$freq_new" "$freq_live"
     # Le sens des mots (ADR 0028) : lu à chaque requête, il suit le lexique et revient en arrière avec lui
     if [ -n "$sens_expected" ]; then
         [ -f "$sens_live" ] && cp -p "$sens_live" "$sens_old"
@@ -180,6 +189,7 @@ lexicon() {
     fi
     say "L'API ne tourne pas avec ce lexique : retour au précédent." >&2
     if [ -f "$old" ]; then mv "$old" "$live"; else rm -f "$live"; fi
+    if [ -f "$freq_old" ]; then mv "$freq_old" "$freq_live"; else rm -f "$freq_live"; fi
     if [ -n "$sens_expected" ]; then
         if [ -f "$sens_old" ]; then mv "$sens_old" "$sens_live"; else rm -f "$sens_live"; fi
     fi
@@ -227,7 +237,7 @@ case "${1:-}" in
     suggestions-export) suggestions export ;;
     suggestions-apply) suggestions apply ;;
     rollback) rollback ;;
-    lexicon) lexicon "${2:-}" "${3:-}" ;;
+    lexicon) lexicon "${2:-}" "${3:-}" "${4:-}" ;;
     status) status ;;
     *) die "Usage : server.sh deploy VERSION | rollback | lexicon SHA256 | status | suggestions-export | suggestions-apply" ;;
 esac

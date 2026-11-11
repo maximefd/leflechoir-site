@@ -28,9 +28,10 @@ from flask import current_app
 from flask.cli import AppGroup
 
 from audience import source_kind
-from models import UsageEvent
+from models import MissingWord, UsageEvent
 import usage
 import usage_demo
+import visitor_days
 
 PERIODS = (("Aujourd'hui", 1), ("7 jours", 7), ("30 jours", 30))
 BUSY = ("busy_visitor", "busy_server")
@@ -49,7 +50,7 @@ MUST_COUNT_CAP = 5  # « 5 et plus »
 MATRIX_COUNT_CAP = 3  # « 3 et plus » : au-delà, les cases du croisement seraient presque vides
 # Longueur du plus long mot imposé : c'est elle qui pèse sur la réussite, plus que le nombre (#73)
 LENGTH_BANDS = ((4, "2 à 4"), (6, "5 à 6"), (8, "7 à 8"), (10, "9 à 10"), (None, "11 et plus"))
-FUNNEL_STEPS = ("visits", "active", "searched", "generated", "grid", "registered", "saved")
+FUNNEL_STEPS = visitor_days.FUNNEL_STEPS
 
 
 def _percentile(values: list[int], share: float) -> float | None:
@@ -80,36 +81,24 @@ def _engine_outcome(outcome: str | None) -> str:
     return outcome if outcome in ENGINE_OUTCOMES else "other"
 
 
-def _funnel(events: list[UsageEvent]) -> dict:
+def _funnel(events: list[UsageEvent], closed: Counter | None = None) -> dict:
     """Le parcours, en visiteurs d'un jour : visite → recherche ou génération → grille → compte → grille conservée.
 
     Une empreinte ne vit qu'un jour (usage.py) : qui génère lundi et s'inscrit mardi compte une fois à chaque
     étape, deux jours différents. Une « visite » est une empreinte qui a produit au moins un événement : qui ne
     fait que lire une page n'est pas vu avant la balise (#130). Les étapes ne sont pas strictement emboîtées :
-    un compte déjà créé conserve une grille sans repasser par l'inscription.
+    un compte déjà créé conserve une grille sans repasser par l'inscription. Les jours clos, dont l'empreinte est
+    effacée, apportent leurs comptes (`closed`, visitor_days.py).
     """
-    steps: dict[str, set] = {step: set() for step in FUNNEL_STEPS}
-    for event in events:
-        if not event.visitor:
-            continue
-        visit = (event.created_at.date(), event.visitor)
-        steps["visits"].add(visit)
-        if event.kind == "search":
-            steps["searched"].add(visit)
-        elif event.kind == "generation":
-            steps["generated"].add(visit)
-            if event.outcome == "grid":
-                steps["grid"].add(visit)
-        elif event.kind == "account" and event.outcome == "register":
-            steps["registered"].add(visit)
-        elif event.kind == "grid":
-            steps["saved"].add(visit)
-    steps["active"] = steps["searched"] | steps["generated"]
-    return {step: len(visits) for step, visits in steps.items()}
+    closed = closed or Counter()
+    return {step: len(visits) + closed[f"funnel:{step}"]
+            for step, visits in visitor_days.funnel_sets(events).items()}
 
 
-def _daily(events: list[UsageEvent], now: datetime) -> list[dict]:
-    """Un jour par ligne (UTC), du plus ancien à aujourd'hui, jours sans événement compris."""
+def _daily(events: list[UsageEvent], now: datetime, closed: dict | None = None) -> list[dict]:
+    """Un jour par ligne (UTC), du plus ancien à aujourd'hui, jours sans événement compris ; les visiteurs des jours
+    clos viennent de leurs comptes (`closed`, jour par jour)."""
+    closed = closed or {}
     days = [now.date() - timedelta(days=offset) for offset in range(DAILY_DAYS - 1, -1, -1)]
     counters: dict = {day: Counter() for day in days}
     visitors: dict = {day: set() for day in days}
@@ -140,7 +129,8 @@ def _daily(events: list[UsageEvent], now: datetime) -> list[dict]:
         if event.status >= 500:
             count["server_errors"] += 1
     keys = ("searches", "generations", "grids", "busy", "registers", "saved", "errors", "server_errors")
-    return [{"day": day.isoformat(), "visitors": len(visitors[day]), **{key: counters[day][key] for key in keys},
+    return [{"day": day.isoformat(), "visitors": len(visitors[day]) + closed.get(day, Counter())["events"],
+             **{key: counters[day][key] for key in keys},
              "p95": _percentile(durations[day], 0.95)} for day in days]
 
 
@@ -183,11 +173,13 @@ def _median(values: list[int]) -> float | None:
     return _percentile(values, 0.5)
 
 
-def _audience(pages: list[UsageEvent], now: datetime) -> dict:
+def _audience(pages: list[UsageEvent], now: datetime, closed: dict | None = None) -> dict:
     """La balise du navigateur (audience.py) : pages vues, temps passé, sources, langues, exports PDF.
 
-    Des événements `page`, à part des autres : ils ne changent aucun des chiffres de l'usage de l'API.
+    Des événements `page`, à part des autres : ils ne changent aucun des chiffres de l'usage de l'API. Les visiteurs
+    des jours clos viennent de leurs comptes (`closed`, jour par jour).
     """
+    closed = closed or {}
     start_of_today = datetime.combine(now.date(), datetime.min.time())
     periods = []
     for label, days in PERIODS:
@@ -198,7 +190,8 @@ def _audience(pages: list[UsageEvent], now: datetime) -> dict:
         periods.append({
             "label": label, "days": days,
             "views": len(views),
-            "visitors": len({(e.created_at.date(), e.visitor) for e in views if e.visitor}),
+            "visitors": len({(e.created_at.date(), e.visitor) for e in views if e.visitor})
+            + visitor_days.total(closed, start.date(), now.date())["pages"],
             "median_visible_ms": _median(visible),
             "pdf": sum(1 for e in inside if e.outcome == "pdf"),
         })
@@ -211,8 +204,15 @@ def _audience(pages: list[UsageEvent], now: datetime) -> dict:
 
     # Sources : un visiteur compte une fois par jour et par origine ; l'accès direct (référent vide) à part
     visits = {(e.created_at.date(), e.visitor, e.data.get("referrer", "")) for e in views if e.visitor}
-    kinds = Counter(source_kind(referrer) for _, _, referrer in visits)
-    hosts = Counter(referrer for _, _, referrer in visits if referrer)
+    by_referrer = Counter(referrer for _, _, referrer in visits)
+    for of_day in closed.values():
+        for key, count in of_day.items():
+            if key.startswith("referrer:"):
+                by_referrer[key.removeprefix("referrer:")] += count
+    kinds = Counter()
+    for referrer, count in by_referrer.items():
+        kinds[source_kind(referrer)] += count
+    hosts = Counter({referrer: count for referrer, count in by_referrer.items() if referrer})
     langs = Counter(e.data.get("browser_lang") or "?" for e in views)
 
     daily = []
@@ -220,7 +220,8 @@ def _audience(pages: list[UsageEvent], now: datetime) -> dict:
         day = (now - timedelta(days=offset)).date()
         of_day = [e for e in views if e.created_at.date() == day]
         daily.append({"day": day.isoformat(), "views": len(of_day),
-                      "visitors": len({e.visitor for e in of_day if e.visitor})})
+                      "visitors": len({e.visitor for e in of_day if e.visitor})
+                      + closed.get(day, Counter())["pages"]})
 
     return {
         "periods": periods,
@@ -235,7 +236,9 @@ def _audience(pages: list[UsageEvent], now: datetime) -> dict:
     }
 
 
-def _period_figures(events: list[UsageEvent], days: int, cpu_count: int) -> dict:
+def _period_figures(events: list[UsageEvent], days: int, cpu_count: int, closed: Counter | None = None) -> dict:
+    """Les chiffres d'une période ; `closed` : les comptes de ses jours clos entiers (visitor_days.total)."""
+    closed = closed or Counter()
     by_kind = defaultdict(list)
     for event in events:
         by_kind[event.kind].append(event)
@@ -244,9 +247,9 @@ def _period_figures(events: list[UsageEvent], days: int, cpu_count: int) -> dict
     accounts = Counter(e.outcome for e in by_kind["account"])
     durations = [e.duration_ms for e in generations if e.outcome == "grid" and e.duration_ms is not None]
     cpu_ms = sum(e.cpu_ms or 0 for e in generations)
-    visitor_days = len({(e.created_at.date(), e.visitor) for e in events if e.visitor})
+    visitor_count = len({(e.created_at.date(), e.visitor) for e in events if e.visitor}) + closed["events"]
     return {
-        "visitors": visitor_days,
+        "visitors": visitor_count,
         "searches": len(by_kind["search"]),
         "generations": len(generations),
         "grids": outcomes["grid"],
@@ -267,7 +270,7 @@ def _period_figures(events: list[UsageEvent], days: int, cpu_count: int) -> dict
         "saved": len(by_kind["grid"]),
         "errors": sum(1 for e in events if e.status >= 400),
         "server_errors": sum(1 for e in events if e.status >= 500),
-        "funnel": _funnel(events),
+        "funnel": _funnel(events, closed),
     }
 
 
@@ -351,6 +354,9 @@ def race(now: datetime | None = None, site: str | None = None) -> dict:
 
     visitors = {start: set() for start in starts}
     counts = {start: Counter() for start in starts}
+    closed_weeks = Counter()
+    for day, of_day in visitor_days.closed(starts[0], now.date(), site).items():
+        closed_weeks[_week_start(day)] += of_day["events"]
     for created_at, kind, outcome, visitor in rows:
         start = _week_start(created_at.date())
         if kind != "page" and visitor:
@@ -358,7 +364,7 @@ def race(now: datetime | None = None, site: str | None = None) -> dict:
         if key := RACE_COUNTED.get((kind, outcome)):
             counts[start][key] += 1
 
-    series = {"visitors": [len(visitors[start]) for start in starts]}
+    series = {"visitors": [len(visitors[start]) + closed_weeks[start] for start in starts]}
     for key in set(RACE_COUNTED.values()):
         series[key] = [counts[start][key] for start in starts]
     series["finished"] = [pdf + saved for pdf, saved in zip(series["pdf"], series["saved"])]
@@ -389,16 +395,20 @@ def compute(now: datetime | None = None, cpu_count: int | None = None) -> dict:
     events = [e for e in recent if e.kind != "page"]
     pages = [e for e in recent if e.kind == "page"]
     start_of_today = datetime.combine(now.date(), datetime.min.time())
+    closed = visitor_days.closed(since.date(), now.date())
 
     periods = {}
     for label, days in PERIODS:
         start = start_of_today if days == 1 else now - timedelta(days=days)
-        periods[label] = _period_figures([e for e in events if e.created_at >= start], days, cpu_count)
+        periods[label] = _period_figures([e for e in events if e.created_at >= start], days, cpu_count,
+                                         visitor_days.total(closed, start.date(), now.date()))
 
     generations = [e for e in events if e.kind == "generation"]
     formats = defaultdict(Counter)
     by_must_count = defaultdict(Counter)
-    unknown_words = Counter()
+    # Les mots imposés absents du lexique (missing_word, 90 jours) : sur les 30 derniers jours, pour la curation
+    unknown_words = Counter(word for (word,) in MissingWord.query.with_entities(MissingWord.word)
+                            .filter(MissingWord.source == "must", MissingWord.day >= since.date()).all())
     for event in generations:
         if event.outcome in BUSY or event.outcome == "rate_limited":
             continue
@@ -406,24 +416,23 @@ def compute(now: datetime | None = None, cpu_count: int | None = None) -> dict:
         formats[event.data.get("format", "?")][succeeded] += 1
         must = event.data.get("must", [])
         by_must_count[min(len(must), 3)][succeeded] += 1
-        must_texts = (event.words or {}).get("must", [])
-        for detail, text in zip(must, must_texts):
-            if not detail.get("known", True):
-                unknown_words[text] += 1
 
     return {
         "now": now,
         "periods": periods,
         "race": race(now),
-        "audience": _audience(pages, now),
+        "audience": _audience(pages, now, closed),
         "outcomes": Counter(e.outcome for e in generations),
         "formats": formats,
         "by_must_count": by_must_count,
         "unknown_words": unknown_words,
-        "countries": Counter(e.country or "?" for e in events if e.visitor),
+        # Les faits par pays (l'empreinte des jours clos est effacée : le compte se fait sur tous les faits)
+        "countries": Counter(e.country or "?" for e in events),
         "country_visitors": Counter(country for _, _, country in
-                                    {(e.created_at.date(), e.visitor, e.country or "?") for e in events if e.visitor}),
-        "daily": _daily(events, now),
+                                    {(e.created_at.date(), e.visitor, e.country or "?") for e in events if e.visitor})
+        + Counter({key.removeprefix("country:"): count for key, count in visitor_days.total(
+            closed, since.date() - timedelta(days=1), now.date()).items() if key.startswith("country:")}),
+        "daily": _daily(events, now, closed),
         "tables": _generation_tables(generations),
         "errors": Counter((e.route or "?", e.status) for e in events if e.status >= 400),
         "latest": list(reversed(generations))[:10],
@@ -440,17 +449,23 @@ def _engine(referrer: str) -> str:
     return "other_search"
 
 
-def _figures(events: list[UsageEvent]) -> dict:
-    """Les chiffres d'une période pour les cartes du tableau de bord (ADR 0029)."""
+def _figures(events: list[UsageEvent], closed: Counter | None = None) -> dict:
+    """Les chiffres d'une période pour les cartes du tableau de bord (ADR 0029) ; `closed` : les comptes de ses jours
+    clos entiers (visitor_days.py)."""
+    closed = closed or Counter()
     views = [e for e in events if e.kind == "page" and e.outcome == "view"]
     # Une visite : un visiteur, un jour, une origine — comme les sources du poste de pilotage (_audience)
-    visits = {(e.created_at.date(), e.visitor, e.data.get("referrer", "")) for e in views if e.visitor}
+    visits = Counter(referrer for _, _, referrer in
+                     {(e.created_at.date(), e.visitor, e.data.get("referrer", "")) for e in views if e.visitor})
+    for key, count in closed.items():
+        if key.startswith("referrer:"):
+            visits[key.removeprefix("referrer:")] += count
     sources = Counter()
-    for _, _, referrer in visits:
+    for referrer, count in visits.items():
         kind = source_kind(referrer)
-        sources[_engine(referrer) if kind == "search" else kind] += 1
+        sources[_engine(referrer) if kind == "search" else kind] += count
     return {
-        "visitors": len({(e.created_at.date(), e.visitor) for e in views if e.visitor}),
+        "visitors": len({(e.created_at.date(), e.visitor) for e in views if e.visitor}) + closed["pages"],
         "views": len(views),
         "sources": {key: sources[key] for key in ("direct", "google", "bing", "other_search", "ai", "other")},
         "generations": sum(1 for e in events if e.kind == "generation" and e.outcome == "grid"),
@@ -468,20 +483,22 @@ def dashboard(days: int, now: datetime | None = None) -> dict:
     events = (UsageEvent.query.filter(UsageEvent.site == site, UsageEvent.created_at >= previous_start)
               .filter(UsageEvent.kind.in_(("page", "generation", "account"))).all())
     current = [e for e in events if e.created_at >= start]
+    closed = visitor_days.closed(previous_start.date(), now.date(), site)
     by_day = defaultdict(list)
     for event in current:
         by_day[event.created_at.date()].append(event)
     daily = []
     for offset in range(days - 1, -1, -1):
         day = (now - timedelta(days=offset)).date()
-        figures = _figures(by_day[day])
+        figures = _figures(by_day[day], closed.get(day))
         daily.append({"day": day.isoformat(), "visitors": figures["visitors"], "views": figures["views"],
                       "search": figures["sources"]["google"] + figures["sources"]["bing"]
                       + figures["sources"]["other_search"],
                       "ai": figures["sources"]["ai"]})
     return {
-        "current": _figures(current),
-        "previous": _figures([e for e in events if e.created_at < start]),
+        "current": _figures(current, visitor_days.total(closed, start.date(), now.date())),
+        "previous": _figures([e for e in events if e.created_at < start],
+                             visitor_days.total(closed, previous_start.date(), start.date())),
         "daily": daily,
     }
 

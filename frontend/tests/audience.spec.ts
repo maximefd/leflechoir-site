@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
  * La balise d'audience (ADR 0016, point 3, #130). L'API n'est pas appelée : `/api/audience` est jouée, pour lire
  * ce que le navigateur enverrait — et ce qu'il n'enverrait pas.
  */
-type Beacon = { kind: string; path: string; referrer: string; lang: string; visible_ms: number };
+type Beacon = { kind: string; path: string; referrer: string; visible_ms: number };
 
 // Playwright pilote le navigateur : `navigator.webdriver` y est vrai, et la balise ne part pas (c'est voulu, voir
 // le dernier test). Les autres parcours se jouent comme un lecteur, navigateur non piloté.
@@ -32,15 +32,14 @@ test("une page quittée est comptée, sans cookie ni identifiant", async ({ page
   expect(first.kind).toBe("view");
   expect(first.path).toBe("/");
   expect(first.visible_ms).toBeGreaterThanOrEqual(100);
-  expect(first.lang).toMatch(/^[a-z]{2}/i);
   // Rien qui désigne une personne : ni cookie de session, ni jeton CSRF, ni en-tête d'autorisation
   for (const headers of seen.headers) {
     expect(headers["cookie"]).toBeUndefined();
     expect(headers["authorization"]).toBeUndefined();
     expect(headers["x-csrf-token"]).toBeUndefined();
   }
-  // Le corps ne porte que ces champs
-  expect(Object.keys(first).sort()).toEqual(["kind", "lang", "path", "referrer", "visible_ms"]);
+  // Le corps ne porte que ces champs : rien de lu dans le terminal, pas même sa langue
+  expect(Object.keys(first).sort()).toEqual(["kind", "path", "referrer", "visible_ms"]);
 });
 
 test("rien n'est écrit dans le navigateur pour mesurer", async ({ page }) => {

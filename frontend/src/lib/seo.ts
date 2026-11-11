@@ -27,6 +27,7 @@ const FIXED_PATHS = [
   "/legal",
   "/privacy",
   "/terms",
+  "/sources",
 ] as const;
 
 /** Une page de mots : `/mots/<slug>` (liste ou outil), `/mots/<slug>/<combinaison>` (content/mots/combinaisons.ts) */

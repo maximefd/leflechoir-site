@@ -77,6 +77,8 @@ RATE_LIMITED_ENDPOINTS = {
     "suggestions.suggest": "RATELIMIT_SUGGEST",
     "audience.beacon": "RATELIMIT_AUDIENCE",
     "contact.send_message": "RATELIMIT_CONTACT",
+    # Un signalement envoie un accusé de réception : le même plafond que le contact
+    "contact.send_report": "RATELIMIT_CONTACT",
     "articles.rate_force": "RATELIMIT_FORCE",
     "main.grid_difficulty": "RATELIMIT_DIFFICULTY",
     "main.generate_grid": "RATELIMIT_GENERATE",
@@ -92,6 +94,26 @@ RATE_LIMITED_ENDPOINTS = {
 }
 
 
+# Ce que coûte une recherche dans le volume du jour : les mots qu'elle demande (`limit`, 200 par défaut, 500 au plus)
+SEARCH_DEFAULT_LIMIT, SEARCH_MAX_LIMIT = 200, 500
+
+
+def _search_cost() -> int:
+    body = request.get_json(silent=True)
+    wanted = body.get("limit") if isinstance(body, dict) else None
+    if isinstance(wanted, bool) or not isinstance(wanted, int):
+        return SEARCH_DEFAULT_LIMIT
+    return max(1, min(wanted, SEARCH_MAX_LIMIT))
+
+
+def _search_volume_reached(_limit):
+    """Le plafond du jour, et non une rafale : « réessaie dans quelques instants » serait faux."""
+    response = jsonify({"error": "Tu as fait beaucoup de recherches aujourd'hui : reviens demain.",
+                        "reason": "search_daily_limit"})
+    response.status_code = 429
+    return response
+
+
 def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(RequestValidationError)
     def handle_validation_error(error: RequestValidationError):
@@ -99,6 +121,9 @@ def register_error_handlers(app: Flask) -> None:
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(error: HTTPException):
+        # Une réponse déjà préparée en JSON (le plafond du jour de la recherche, `_search_volume_reached`) reste telle quelle
+        if error.response is not None and error.response.is_json:
+            return error.response
         # On garde la réponse d'origine (en-têtes Allow, Retry-After...) avec un corps JSON en français
         response = error.get_response()
         code = error.code or 500
@@ -248,6 +273,9 @@ def init_rate_limiting(app: Flask) -> Limiter:
             # assistant ou d'un de ses utilisateurs qui prendrait le calcul du site
             view = limiter.limit(app.config["RATELIMIT_API_RENDER_RELAY"], key_func=_relay_key,
                                  exempt_when=lambda: not _relayed())(view)
+        if endpoint == "main.search_words":
+            view = limiter.limit(app.config["RATELIMIT_SEARCH_WORDS"], cost=_search_cost,
+                                 on_breach=_search_volume_reached)(view)
         app.view_functions[endpoint] = view
 
     if app.config.get("APP_ENV") == "production" and app.config.get("RATELIMIT_STORAGE_URI", "").startswith("memory://"):

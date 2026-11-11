@@ -11,7 +11,8 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
 
-export type SensDuMot = { lemme: string; textes: string[] };
+/** `source` : la page du Wiktionnaire d'où vient le texte, que l'API joint à chaque sens avec sa licence. */
+export type SensDuMot = { lemme: string; textes: string[]; source?: string; licence?: string };
 type SensResponse = { sens: Record<string, SensDuMot> };
 
 const STORAGE_KEY = "terminator:sens-des-mots";
@@ -61,6 +62,12 @@ export function SensTexte({ word, sens, className = "" }: { word: string; sens?:
     <p className={`text-xs leading-snug text-muted-foreground ${className}`}>
       {fromLemma && <span className="italic">{deLemme(sens.lemme)} : </span>}
       {sens.textes.join(" · ")}
+      {/* L'attribution de CC BY-SA 4.0 : la page d'où vient chaque sens (avis juridique du 09/11/2026) */}
+      {" "}
+      <a href={sens.source ?? `https://fr.wiktionary.org/wiki/${encodeURIComponent(sens.lemme)}`} target="_blank"
+         rel="noopener noreferrer" className="underline" aria-label={`Source : ${sens.lemme}, sur le Wiktionnaire`}>
+        source
+      </a>
     </p>
   );
 }
@@ -78,7 +85,8 @@ export function SensMention({ className = "" }: { className?: string }) {
          className="underline">
         CC BY-SA 4.0
       </a>
-      , parfois abrégés.
+      , parfois abrégés (voir les{" "}
+      <a href="/sources" className="underline">sources et licences</a>).
     </p>
   );
 }

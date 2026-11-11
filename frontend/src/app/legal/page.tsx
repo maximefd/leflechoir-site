@@ -45,6 +45,13 @@ export default function LegalPage() {
             <a href={`mailto:${site.contactEmail}`} className={linkClass}>{site.contactEmail}</a> (voir la{" "}
             <Link href="/contact" className={linkClass}>page contact</Link>).
           </p>
+          <p>
+            Point de contact unique, pour les autorités comme pour les utilisateurs (règlement sur les services
+            numériques, art. 11 et 12) : la même adresse,{" "}
+            <a href={`mailto:${site.contactEmail}`} className={linkClass}>{site.contactEmail}</a>, en français ou
+            en anglais. Pour signaler un contenu illicite :{" "}
+            <Link href="/signaler" className={linkClass}>le formulaire de signalement</Link>.
+          </p>
         </Section>
 
         <Section title="Hébergement">

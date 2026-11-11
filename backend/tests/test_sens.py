@@ -45,13 +45,27 @@ def test_le_sens_des_mots_de_la_grille(client, sens_file):
     assert response.status_code == 200
     body = response.get_json()
     assert body["source"] == "Wiktionnaire" and body["licence"] == "CC BY-SA 4.0"
-    assert body["sens"] == {
-        "ADRET": {"lemme": "adret", "textes": ["Versant d’une montagne le mieux exposé au soleil."]},
+    textes = {word: (entry["lemme"], entry["textes"]) for word, entry in body["sens"].items()}
+    assert textes == {
+        "ADRET": ("adret", ["Versant d’une montagne le mieux exposé au soleil."]),
         # Une forme fléchie prend le sens de son lemme, et de sa nature : NOYANT, le verbe
-        "ULULENT": {"lemme": "ululer", "textes": ["Crier, en parlant des oiseaux de nuit."]},
-        "NOYANT": {"lemme": "noyer", "textes": ["Asphyxier par immersion.", "Remplir un moteur de liquide."]},
+        "ULULENT": ("ululer", ["Crier, en parlant des oiseaux de nuit."]),
+        "NOYANT": ("noyer", ["Asphyxier par immersion.", "Remplir un moteur de liquide."]),
     }
     assert "max-age" in response.headers["Cache-Control"]
+
+
+def test_chaque_sens_porte_sa_source_et_sa_licence(client, sens_file):
+    """L'API publique partage au sens de CC BY-SA 4.0 : l'attribution est dans la réponse, sens par sens."""
+    body = ask(client, ["ULULENT"]).get_json()
+
+    assert body["licence_url"] == "https://creativecommons.org/licenses/by-sa/4.0/deed.fr"
+    assert body["sens"]["ULULENT"] | {"textes": None} == {
+        "lemme": "ululer", "textes": None,
+        "source": "https://fr.wiktionary.org/wiki/ululer",  # la page du lemme, d'où vient le texte
+        "licence": "CC BY-SA 4.0",
+        "modifications": "Texte parfois abrégé.",
+    }
 
 
 def test_trop_de_mots(client, sens_file):
@@ -88,4 +102,6 @@ def test_la_recherche_donne_le_sens_a_part_de_la_definition(client, test_app, se
     [result] = [r for r in response.get_json()["results"] if r["mot"] == "ADRET"]
     # `definition` reste réservée aux dictionnaires personnels : le sens du Wiktionnaire n'y entre jamais
     assert result["definition"] is None
-    assert result["sens"] == {"lemme": "adret", "textes": ["Versant d’une montagne le mieux exposé au soleil."]}
+    assert result["sens"]["textes"] == ["Versant d’une montagne le mieux exposé au soleil."]
+    # Hors de /api/sens aussi, le sens porte de quoi être crédité (CC BY-SA 4.0, avis juridique du 09/11/2026)
+    assert (result["sens"]["source"], result["sens"]["licence"]) == ("https://fr.wiktionary.org/wiki/adret", "CC BY-SA 4.0")

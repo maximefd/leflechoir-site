@@ -10,7 +10,10 @@ import { getApiBaseUrl } from "@/lib/utils";
  *   par un robot ;
  * - elle n'utilise pas `apiFetch` : celui-ci joint la session et son jeton CSRF, or la balise ne doit porter
  *   aucun cookie (`credentials: "omit"`), même connecté ;
- * - c'est `fetch` en JSON avec `keepalive` : `sendBeacon` enverrait du `text/plain`, que l'API refuse.
+ * - c'est `fetch` en JSON avec `keepalive` : `sendBeacon` enverrait du `text/plain`, que l'API refuse ;
+ * - elle ne lit rien du terminal pour mesurer : ni écran, ni polices, ni langue (l'API la prend dans l'en-tête
+ *   `Accept-Language`, audit des scripts du 09/11/2026). `navigator.webdriver` et Global Privacy Control ne sont lus
+ *   que pour **ne pas** mesurer.
  */
 
 const DECLINED_KEY = "mesure";
@@ -88,7 +91,6 @@ function send(beacon: Beacon) {
     body: JSON.stringify({
       ...beacon,
       referrer: beacon.referrer ?? "",
-      lang: navigator.language ?? "",
       visible_ms: Math.round(beacon.visible_ms ?? 0),
     }),
   }).catch(() => {

@@ -72,6 +72,14 @@ function callerAddress(req: Request): string | undefined {
   return /^[0-9a-fA-F:.]{2,45}$/.test(address) ? address : undefined;
 }
 
+// La réserve de fouille de textes et de données (TDMRep du W3C) et les conditions, comme sur l'API : pas
+// d'entraînement commercial d'IA sur ces réponses (conditions de l'API, avis juridique du 08/11/2026)
+const termsUrl = process.env.TERMS_URL ?? "https://leflechoir.fr/terms#api";
+app.use((_req: Request, res: Response, next: () => void) => {
+  res.set({ "tdm-reservation": "1", "tdm-policy": termsUrl, Link: `<${termsUrl}>; rel="terms-of-service"` });
+  next();
+});
+
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
 });

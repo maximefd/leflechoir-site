@@ -26,7 +26,7 @@ import click
 from flask import current_app
 
 from extensions import db
-from models import (AlertSent, ContactMessage, SeoDaily, SeoQueryDaily, SeoUrlCheck, SystemDaily, SystemSample,
+from models import (AlertSent, ContactMessage, MissingWord, SeoDaily, SeoQueryDaily, SeoUrlCheck, SystemDaily, SystemSample,
                     UsageEvent)
 
 DEMO_PREFIX = "demo"
@@ -440,6 +440,8 @@ def clear() -> int:
     """Efface les événements fictifs, et eux seuls ; puis les échantillons système, tous (voir en tête)."""
     _refuse_production()
     removed = UsageEvent.query.filter(UsageEvent.visitor.startswith(DEMO_PREFIX)).delete(synchronize_session=False)
+    # Les mots inconnus du tirage (les vrais ne sont pas dans cette liste fictive)
+    MissingWord.query.filter(MissingWord.word.in_(UNKNOWN_WORDS)).delete(synchronize_session=False)
     for model in (SystemSample, SystemDaily):
         model.query.delete(synchronize_session=False)
     AlertSent.query.filter(AlertSent.period.startswith(DEMO_PREFIX)).delete(synchronize_session=False)
@@ -455,6 +457,9 @@ def seed_demo(days: int = DEFAULT_DAYS, seed: int = DEFAULT_SEED, now: datetime 
     site, lang = current_app.config["SITE"], current_app.config["SITE_LANG"]
     events = generate(days, seed, now, site=site, lang=lang)
     db.session.bulk_insert_mappings(UsageEvent, events)
+    # Comme en vrai : les mots imposés inconnus vont dans missing_word, sans rien qui relie à la visite
+    import usage  # import tardif : usage lit les modèles que ce module remplit
+    usage._move_event_words()
     seed_system(days, seed, now, site, lang)
     seed_contact(now, site, lang)
     seed_seo(days, seed, now, site, lang)

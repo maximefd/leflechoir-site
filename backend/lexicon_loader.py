@@ -6,6 +6,10 @@ L'API utilise le lexique curé (`LEXICON_PATH`, produit par `tools.lexicon expor
 curateur tous les 500 mots triés) s'il existe, sinon le DELA complet. Quand le fichier change,
 le nouveau Trie est construit à côté de l'ancien puis remplacé d'un coup : les requêtes en cours
 gardent l'ancien lexique, les suivantes utilisent le nouveau. Aucun redémarrage n'est nécessaire.
+
+Le lexique, ce sont deux fichiers côte à côte, jamais un seul (avis juridique du 09/11/2026) : la liste de mots
+(`lexique_cure.csv`, tirée du DELA) et leurs fréquences (`frequences.csv`, tirées de Lexique). Un changement de l'un
+ou de l'autre recharge le tout.
 """
 
 import logging
@@ -18,7 +22,7 @@ from typing import Callable
 
 from engine.word_repository import prepare_lexicon
 from layout_catalog import available_formats
-from trie_engine import DictionnaireTrie
+from trie_engine import FREQUENCIES_FILE, DictionnaireTrie
 
 BACKEND_DIR = Path(__file__).resolve().parent
 DEFAULT_LEXICON_PATH = BACKEND_DIR / "dela_clean.csv"
@@ -49,6 +53,15 @@ def load_trie(path: Path) -> DictionnaireTrie:
     return trie
 
 
+def _stamp(path: Path):
+    """Ce qui dit qu'un fichier a changé ; None s'il n'existe pas."""
+    try:
+        stat = path.stat()
+    except FileNotFoundError:
+        return None
+    return stat.st_mtime_ns, stat.st_size
+
+
 class LexiconManager:
     def __init__(self, preferred_path=None, fallback_path=DEFAULT_LEXICON_PATH,
                  loader: Callable[[Path], DictionnaireTrie] = load_trie):
@@ -75,7 +88,7 @@ class LexiconManager:
             except FileNotFoundError:
                 logging.error("Lexique introuvable : %s", source)
                 return False
-            signature = (str(source), stat.st_mtime_ns, stat.st_size)
+            signature = (str(source), stat.st_mtime_ns, stat.st_size, _stamp(source.with_name(FREQUENCIES_FILE)))
             if signature == self._signature:
                 return False
 

@@ -35,8 +35,8 @@ def pages():
 
 
 def test_a_page_view_is_recorded_without_anything_that_names_a_person(client):
-    response = beacon(client, {"kind": "view", "path": "/grid/", "referrer": "www.Google.com", "lang": "fr-FR",
-                               "visible_ms": 42_000})
+    response = beacon(client, {"kind": "view", "path": "/grid/", "referrer": "www.Google.com", "visible_ms": 42_000},
+                      headers={"Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8"})
 
     assert response.status_code == 204 and response.data == b""
     [event] = pages()
@@ -45,6 +45,15 @@ def test_a_page_view_is_recorded_without_anything_that_names_a_person(client):
     assert event.user_id is None
     assert event.visitor and len(event.visitor) == 32  # l'empreinte du jour, jamais l'adresse IP
     assert "127.0.0.1" not in json.dumps(event.data)
+
+
+def test_the_language_comes_from_the_header_never_from_the_page(client):
+    """La page ne lit plus la langue du terminal (audit des scripts, 09/11/2026) : seul compte l'en-tête du protocole."""
+    beacon(client, {"kind": "view", "path": "/", "lang": "de-DE"}, headers={"Accept-Language": "en-GB"})
+    beacon(client, {"kind": "view", "path": "/", "lang": "de-DE"})
+    beacon(client, {"kind": "view", "path": "/"}, headers={"Accept-Language": "*"})
+
+    assert [event.data["browser_lang"] for event in pages()] == ["en", "", ""]
 
 
 def test_the_assistant_that_prepared_the_link_is_kept_and_nothing_else(client):

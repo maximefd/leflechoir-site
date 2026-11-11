@@ -5,6 +5,35 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Les suites de l'avis complémentaire du 09/11/2026** :
+  - **le lexique en deux couches** : l'export écrit la liste de mots (`lexique_cure.csv`, `MOT;forme affichée`, du
+    DELA) et les fréquences (`frequences.csv`, de Lexique) dans deux fichiers que l'API joint en mémoire ; plus de
+    définitions dans le fichier du lexique ; la forme affichée est toujours une graphie du DELA. Mêmes mots, formes et
+    fréquences pour le moteur (mesuré sur le lexique réel) ; `make deploy-lexicon` envoie les deux fichiers et refuse
+    un ancien export ;
+  - **chaque sens du Wiktionnaire porte sa page source, sa licence et la mention de ses modifications** dans les
+    réponses de `/api/sens` et `/api/search` ;
+  - **audit des scripts de la page** (note datée sur l'article 82) : la balise d'audience ne lit plus la langue du
+    navigateur (l'API la prend dans `Accept-Language`) ; les liens de compte d'une grille partagée ne recopient plus
+    le fragment dans `?next=`, qui l'aurait envoyé au serveur ;
+  - **un plafond du jour sur la recherche** : 100 000 mots demandés par adresse (`RATELIMIT_SEARCH_WORDS`, refus
+    `search_daily_limit`), contre l'énumération du lexique ;
+  - `python -m tools.lexicon preuve` : le dossier de preuve du tri, recalculable ; tableau des licences champ par
+    champ et dossier du tri dans `docs/juridique` ; `/sources` cite le titulaire du DELA et le fichier de Lexique.
+- **La conformité avant l'ouverture de l'API** (avis juridique du 08/11/2026) :
+  - l'**empreinte du jour s'efface** à la clôture de chaque journée : les visiteurs sont comptés dans `day_visitors`
+    (jour, parcours, pays, sources), et le poste de pilotage additionne ces comptes ; les appels de l'API n'en portent
+    plus ;
+  - les **mots demandés** ne restent plus dans les événements : seuls les inconnus du lexique, d'un seul tenant, dans
+    `missing_word`, sans rien qui relie à qui les a demandés (90 jours) ;
+  - `/terms#api` et `/privacy` réécrits d'après l'avis, pour un éditeur particulier ; points de contact DSA dans les
+    mentions légales ;
+  - une **clé d'API exige l'acceptation des conditions** (version et instant gardés) ; la notice et chaque réponse
+    annoncent leur version ; **réserve TDMRep** contre l'entraînement commercial d'IA sur l'API et le connecteur ;
+  - **`/signaler`** et `POST /api/contact/signalement` (DSA, art. 16) : adresse du contenu, raisons, nom, e-mail,
+    bonne foi, accusé de réception, dans la boîte de réception ;
+  - `docs/RGPD.md` : registre à jour, test de mise en balance, procédure de violation, décision sur la conservation
+    des données d'identification. Migration 0020, additive.
 - **L'API ouverte, lot 3 : avant l'ouverture** (ADR 0032 ; l'API reste fermée en production) :
   - le **connecteur MCP en production** : un service `mcp` (profil « connecteur »), démarré par `server.sh` si
     `MCP_ALLOWED_HOSTS` est rempli, construit et vérifié à chaque déploiement, routé par le tunnel

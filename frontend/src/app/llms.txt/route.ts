@@ -39,7 +39,8 @@ export function GET() {
     "## Le site",
     "",
     lien(`Qui fait ${site.name}`, "/a-propos", "un auteur de mots fléchés, en France ; d'où viennent les grilles et les mots."),
-    lien("Mentions légales et crédits", "/legal", "l'éditeur, l'hébergement, les sources du lexique et leurs licences."),
+    lien("Mentions légales", "/legal", "l'éditeur, l'hébergement, les points de contact."),
+    lien("Sources et licences", "/sources", "les ressources libres du dictionnaire (DELA, Lexique, Wiktionnaire), leurs licences et ce qu'elles permettent."),
     lien("Confidentialité", "/privacy", "la mesure d'usage sans cookie, ce qui est conservé et pour combien de temps."),
     "",
   ].join("\n");

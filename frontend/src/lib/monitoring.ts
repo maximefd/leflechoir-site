@@ -4,13 +4,22 @@
  * Seules les erreurs partent, et rien qui identifie l'utilisateur ou ouvre son compte : ni cookies, ni
  * adresse IP, ni le jeton des liens reçus par e-mail (`/reset-password?token=…`), que l'adresse de la page
  * porte et que Sentry joindrait sinon au rapport et à son fil d'événements.
+ *
+ * Ni, surtout, ce qui suit le « # » : une grille partagée y voyage entière, avec le nom de son auteur (`/grille#g=…`).
+ * Le navigateur ne l'envoie jamais au serveur ; Sentry, lui, l'emporterait avec l'adresse de la page (avis juridique
+ * du 08/11/2026). Le fragment est retiré à l'émission, partout où une adresse peut se trouver.
  */
 import type { Breadcrumb, ErrorEvent } from "@sentry/browser";
 
-/** Adresse sans ses paramètres sensibles : `?token=abc` devient `?token=[retiré]`. */
+/** Adresse sans ses paramètres sensibles ni son fragment : `?token=abc#g=…` devient `?token=[retiré]`. */
 export function withoutSecrets(url: string | undefined): string | undefined {
   if (!url) return url;
-  return url.replace(/([?&](?:token|password)=)[^&#\s]*/gi, "$1[retiré]");
+  return withoutFragment(url.replace(/([?&](?:token|password)=)[^&#\s]*/gi, "$1[retiré]"));
+}
+
+/** Un texte sans fragment d'adresse : tout ce qui suit un « # » collé à une adresse, jusqu'à l'espace suivant. */
+export function withoutFragment(text: string): string {
+  return text.replace(/#[^\s"']*/g, "");
 }
 
 export function scrubEvent(event: ErrorEvent): ErrorEvent {
@@ -22,6 +31,7 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
     event.request.headers = userAgent ? { "User-Agent": userAgent } : {};
   }
   delete event.user;
+  if (event.transaction) event.transaction = withoutFragment(event.transaction);
   event.breadcrumbs = event.breadcrumbs?.map(scrubBreadcrumb);
   return event;
 }
@@ -33,6 +43,7 @@ export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
       if (typeof data[key] === "string") data[key] = withoutSecrets(data[key]);
     }
   }
+  if (breadcrumb.message) breadcrumb.message = withoutFragment(breadcrumb.message);
   return breadcrumb;
 }
 

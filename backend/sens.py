@@ -4,6 +4,9 @@
   textes sont sous CC BY-SA 4.0 ; ils restent dans ce module et sa route, sans champ commun avec les définitions.
 - Le fichier `sens.sqlite` est construit sur le Mac (`make lexicon-sens`) et envoyé avec le lexique
   (`make deploy-lexicon`). On l'ouvre en lecture seule à chaque requête : rien n'est chargé en mémoire.
+- **Chaque sens porte sa source et sa licence** (avis juridique du 09/11/2026) : l'API publique « partage » au sens
+  de CC BY-SA 4.0, donc l'attribution voyage dans la réponse même, avec la page d'où vient le texte et la mention de
+  ses modifications. Un sens recopié hors de son contexte garde ainsi de quoi être crédité.
 - Absent (développement sans lexique, serveur avant le premier envoi) : la route répond `senses_unavailable` et
   le site n'affiche simplement aucun sens.
 """
@@ -11,6 +14,7 @@
 import logging
 import sqlite3
 from pathlib import Path
+from urllib.parse import quote
 
 from flask import Blueprint, current_app, jsonify
 
@@ -24,6 +28,10 @@ logger = logging.getLogger(__name__)
 MAX_SENS_WORDS = 200
 SOURCE = "Wiktionnaire"
 LICENCE = "CC BY-SA 4.0"
+LICENCE_URL = "https://creativecommons.org/licenses/by-sa/4.0/deed.fr"
+MODIFICATIONS = "Texte parfois abrégé."
+# La page d'où vient un sens, par langue du site : les sens du français viennent de fr.wiktionary.org
+WIKI_PAGES = {"fr": "https://fr.wiktionary.org/wiki/"}
 # Le fichier ne change qu'avec le lexique : le navigateur peut le garder une journée
 CACHE_SECONDS = 86_400
 
@@ -38,7 +46,7 @@ def sens_path(config) -> Path | None:
 
 
 def lookup(words, path: Path | None, lang: str) -> dict[str, dict] | None:
-    """Mot normalisé -> {"lemme", "textes"} ; None si le fichier des sens est absent ou illisible."""
+    """Mot normalisé -> {"lemme", "textes", "source", "licence", "modifications"} ; None sans fichier des sens."""
     if path is None or not path.is_file():
         return None
     wanted = sorted({normalize_word(word) for word in words} - {""})
@@ -60,8 +68,11 @@ def lookup(words, path: Path | None, lang: str) -> dict[str, dict] | None:
         logger.exception("Fichier des sens illisible : %s", path)
         return None
     found: dict[str, dict] = {}
+    pages = WIKI_PAGES.get(lang, WIKI_PAGES["fr"])
     for norm, lemme, texte in rows:
-        found.setdefault(norm, {"lemme": lemme, "textes": []})["textes"].append(texte)
+        entry = found.setdefault(norm, {"lemme": lemme, "textes": [], "source": pages + quote(lemme.replace(" ", "_")),
+                                        "licence": LICENCE, "modifications": MODIFICATIONS})
+        entry["textes"].append(texte)
     return found
 
 
@@ -78,6 +89,6 @@ def senses():
     if found is None:
         return jsonify({"error": "Le sens des mots n'est pas disponible pour le moment.",
                         "reason": "senses_unavailable"}), 503
-    response = jsonify({"sens": found, "source": SOURCE, "licence": LICENCE})
+    response = jsonify({"sens": found, "source": SOURCE, "licence": LICENCE, "licence_url": LICENCE_URL})
     response.headers["Cache-Control"] = f"public, max-age={CACHE_SECONDS}"
     return response

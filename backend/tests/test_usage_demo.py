@@ -10,7 +10,7 @@ import stats
 import system_samples
 import usage_demo
 from extensions import db
-from models import AlertSent, SystemDaily, SystemSample, UsageEvent, User, VisitorSalt
+from models import AlertSent, MissingWord, SystemDaily, SystemSample, UsageEvent, User, VisitorSalt
 
 from tests.paths import FIXTURE_LAYOUTS_DIR
 
@@ -51,6 +51,7 @@ def test_one_command_fills_the_dashboard(test_app, runner):
     assert {"grid", "timeout", "busy_server", "must_words", "must_words_unplaced", "rate_limited",
             "invalid_request"} <= outcomes
     assert {e.outcome for e in events if e.kind == "account"} >= {"register", "verify", "login"}
+    assert all(e.words is None for e in events) and MissingWord.query.count() > 0
 
     # Chaque rubrique du poste de pilotage a de quoi s'afficher
     figures = stats.as_json(stats.compute())
@@ -147,7 +148,8 @@ def test_demo_events_have_the_shape_of_real_ones(test_app, client, small_trie, s
     generation, search = one("generation", "grid", with_words=True), one("search", "results")
     assert set(generation["data"]) == set(real["generation"].data)
     assert set(generation["data"]["must"][0]) == set(real["generation"].data["must"][0])
-    assert set(generation["words"]) == set(real["generation"].words)
+    # Les mots ne restent pas dans les événements (ils vont dans missing_word) ; le tirage les y verse à son tour
+    assert real["generation"].words is None and set(generation["words"]) == {"must", "wish"}
     assert set(search["data"]) == set(real["search"].data)
     assert (generation["route"], search["route"]) == (real["generation"].route, real["search"].route)
     # Les routes citées existent toutes dans l'API

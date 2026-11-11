@@ -197,6 +197,28 @@ def test_login_is_rate_limited():
     assert blocked.get_json() == {"error": "Trop de requêtes. Réessaie dans quelques instants.", "reason": "rate_limited"}
 
 
+def test_search_has_a_daily_volume_in_words_requested():
+    """Contre l'énumération du lexique (avis juridique du 09/11/2026) : le volume compte les mots demandés."""
+    app = make_app(RATELIMIT_ENABLED=True, RATELIMIT_SEARCH_WORDS="1000 per day")
+    client = app.test_client()
+
+    statuses = [send(client, "post", "/api/search", {"mask": "P?RTE", "limit": 500}).status_code for _ in range(3)]
+
+    assert statuses[:2] != [429, 429] and statuses[2] == 429
+    blocked = send(client, "post", "/api/search", {"mask": "P?RTE"})
+    assert blocked.get_json() == {"error": "Tu as fait beaucoup de recherches aujourd'hui : reviens demain.",
+                                  "reason": "search_daily_limit"}
+
+
+def test_a_search_costs_its_default_limit_when_none_is_given():
+    app = make_app(RATELIMIT_ENABLED=True, RATELIMIT_SEARCH_WORDS="400 per day")
+    client = app.test_client()
+
+    statuses = [send(client, "post", "/api/search", {"mask": "P?RTE"}).status_code for _ in range(3)]
+
+    assert 429 not in statuses[:2] and statuses[2] == 429
+
+
 def login_statuses(client, visitors):
     """Une tentative de connexion par visiteur (valeur de CF-Connecting-IP, None : sans l'en-tête)."""
     body = {"email": unique_email(), "password": "mauvais-mot-de-passe"}

@@ -37,6 +37,8 @@ api_keys_bp = Blueprint("api_keys", __name__, url_prefix="/api/account/api-keys"
 class ApiKeyRequest(ApiModel):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=60,
                                            pattern=r"^[\w '’().,:&!/-]+$")]
+    # Les conditions de l'API (/terms#api), acceptées en cochant une case non cochée d'avance (avis du 08/11/2026)
+    accept_terms: bool = False
 
 
 def _utcnow() -> datetime:
@@ -103,13 +105,18 @@ def create_key():
     if user.email_verified_at is None:
         return jsonify({"error": "Confirme d'abord ton adresse e-mail : le lien est dans le message reçu à "
                                  "l'inscription.", "reason": "email_not_verified"}), 403
+    if not payload.accept_terms:
+        return jsonify({"error": "Accepte d'abord les conditions d'utilisation de l'API (leflechoir.fr/terms#api).",
+                        "reason": "terms_not_accepted"}), 400
     active = owned_by(user).filter(ApiKey.revoked_at.is_(None)).count()
     if active >= current_app.config["API_MAX_KEYS_PER_USER"]:
         return jsonify({"error": f"Tu as déjà {active} clés actives : révoque celle qui ne sert plus.",
                         "reason": "too_many_keys"}), 409
     key = new_key()
     entry = ApiKey(owner_site=current_app.config["SITE"], user_id=user.id, name=payload.name,
-                   prefix=key[:SHOWN_LENGTH], key_hash=digest(key))
+                   prefix=key[:SHOWN_LENGTH], key_hash=digest(key),
+                   # La preuve de l'acceptation : la version et l'instant, avec le compte (jamais d'adresse IP)
+                   terms_version=current_app.config["API_TERMS_VERSION"], terms_accepted_at=_utcnow())
     db.session.add(entry)
     db.session.commit()
     usage.describe("account", "api_key_created", user=user)

@@ -33,6 +33,7 @@ from sqlalchemy.exc import IntegrityError
 import seo
 import stats
 import system_samples
+import visitor_days
 from extensions import db
 from mailer import send_email
 from models import AlertSent, ContactMessage, SystemSample, UsageEvent
@@ -232,8 +233,13 @@ def weekly_body(now: datetime) -> str:
     # Les pages vues (la balise du navigateur) ont leur rubrique : les chiffres de l'API restent ceux de `flask stats`
     events = UsageEvent.query.filter(UsageEvent.created_at >= now - timedelta(days=14), UsageEvent.kind != "page",
                                      UsageEvent.site == config["SITE"]).all()
-    week = stats._period_figures([e for e in events if e.created_at >= now - timedelta(days=7)], 7, cpu_count)
-    before = stats._period_figures([e for e in events if e.created_at < now - timedelta(days=7)], 7, cpu_count)
+    # Les visiteurs des jours clos : leurs comptes (l'empreinte est effacée à la fin de chaque jour)
+    closed = visitor_days.closed((now - timedelta(days=14)).date(), now.date(), config["SITE"])
+    week_start, before_start = (now - timedelta(days=7)).date(), (now - timedelta(days=14)).date()
+    week = stats._period_figures([e for e in events if e.created_at >= now - timedelta(days=7)], 7, cpu_count,
+                                 visitor_days.total(closed, week_start, now.date()))
+    before = stats._period_figures([e for e in events if e.created_at < now - timedelta(days=7)], 7, cpu_count,
+                                   visitor_days.total(closed, before_start, week_start))
 
     def line(label, key, fmt=str):
         return f"{label:<28} {fmt(week[key]):>10}   (semaine précédente : {fmt(before[key])})"

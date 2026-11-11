@@ -150,6 +150,18 @@ def test_the_notice_tells_a_model_everything_it_needs(api_app, client):
     assert notice["clues"]["max_chars_half_cell"] < notice["clues"]["max_chars_full_cell"]
 
 
+def test_the_answers_carry_the_terms_and_the_mining_reservation(api_app, client):
+    """Avis du 08/11/2026 : la version des conditions dans la notice et chaque réponse, et la réserve de fouille de
+    textes et de données au format TDMRep (lisible par machine)."""
+    response = client.get("/v1", headers=AGENT)
+    terms = response.get_json()["terms"]
+
+    assert terms["url"].endswith("/terms#api") and terms["version"] == api_app.config["API_TERMS_VERSION"]
+    assert response.headers["X-Terms-Version"] == terms["version"]
+    assert response.headers["tdm-reservation"] == "1" and response.headers["tdm-policy"] == terms["url"]
+    assert 'rel="terms-of-service"' in response.headers["Link"]
+
+
 def test_the_answers_are_never_cached(api_app, client):
     response = client.get("/v1", headers=AGENT)
 

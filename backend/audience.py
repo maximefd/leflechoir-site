@@ -4,7 +4,8 @@ Le navigateur envoie une balise (frontend/src/lib/audience.ts) quand une page se
 conditions d'exemption de la CNIL :
 
 - **statistiques anonymes** : le chemin sans paramètres, le nom d'hôte seul du référent, la langue principale du
-  navigateur, la durée pendant laquelle la page a été visible. Aucun identifiant de compte (la balise ne porte pas
+  navigateur (lue dans l'en-tête `Accept-Language`, que le navigateur envoie de lui-même : la page ne lit plus rien
+  dans le terminal, audit des scripts du 09/11/2026), la durée pendant laquelle la page a été visible. Aucun identifiant de compte (la balise ne porte pas
   de cookie), jamais l'adresse IP : le visiteur est l'empreinte du jour, comme pour les autres événements ;
 - **opposition** : le navigateur n'envoie rien si le visiteur a refusé (lien de la page confidentialité) ou si
   `Global Privacy Control` est actif. Ici, en second rempart, une requête qui porte `Sec-GPC: 1` est oubliée ;
@@ -53,16 +54,22 @@ def _declined() -> bool:
     return bool(ROBOT_AGENT.search(request.headers.get("User-Agent", "")))
 
 
+def _browser_lang() -> str:
+    """La langue principale demandée par le navigateur (« fr » pour `fr-FR,fr;q=0.9,en;q=0.8`), vide sinon."""
+    first = request.headers.get("Accept-Language", "").split(",")[0].split(";")[0].strip()
+    primary = first.split("-")[0].lower()
+    return primary if re.fullmatch(r"[a-z]{2,3}", primary) else ""
+
+
 @audience_bp.post("")
 def beacon():
     """Une page vue : le chemin, d'où l'on vient, la langue du navigateur, le temps où elle est restée visible."""
     payload = parse_body(AudienceRequest)
     if not _declined():
-        primary = payload.lang.split("-")[0].lower()[:3]
         usage.describe("page", payload.kind, data={
             "path": payload.path.rstrip("/") or "/",
             "referrer": payload.referrer.lower().removeprefix("www."),
-            "browser_lang": primary,
+            "browser_lang": _browser_lang(),
             "visible_ms": payload.visible_ms,
             **({"source": payload.source} if payload.source else {}),
         })

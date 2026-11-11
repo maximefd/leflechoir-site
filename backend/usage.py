@@ -5,9 +5,13 @@ Une requête écrit au plus un événement, à la fin (`after_request`) :
 - un fait de compte ou une grille conservée, que la vue décrit par `describe()` ;
 - sinon, toute erreur (4xx, 5xx) sur une route connue : le compteur d'erreurs par route et par statut.
 
-Le visiteur est une empreinte du jour : un hachage de l'adresse IP et du navigateur avec un sel tiré au
-hasard chaque jour, gardé en base le temps de la journée puis détruit. Elle compte les visiteurs d'un jour
-sans permettre de suivre personne d'un jour à l'autre. **L'adresse IP n'est jamais enregistrée.**
+Le visiteur est une empreinte du jour : un hachage de l'adresse IP avec un sel tiré au hasard chaque jour, gardé en base le temps de la journée puis détruit. Elle compte les visiteurs d'un jour
+sans permettre de suivre personne d'un jour à l'autre. **L'adresse IP n'est jamais enregistrée.** La journée close,
+l'empreinte elle-même est effacée des événements, après que les visiteurs ont été comptés (visitor_days.py) ; les
+appels de l'API ouverte n'en portent pas (avis juridique du 08/11/2026).
+
+Les mots demandés ne sont plus gardés dans les événements : seuls ceux que le lexique ne connaît pas, d'un seul tenant,
+le sont, dans `missing_word`, sans rien qui relie à qui les a demandés (90 jours).
 
 Mesurer ne doit jamais casser une requête : toute erreur ici est journalisée, puis oubliée.
 """
@@ -22,7 +26,10 @@ from flask import Flask, current_app, g, request
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db
-from models import ArticleRating, ContactMessage, GenerationJob, UsageEvent, VisitorSalt, WordSuggestion
+import visitor_days
+from models import (ArticleRating, ContactMessage, GenerationJob, MissingWord, UsageEvent, VisitorSalt,
+                    WordSuggestion)
+from normalization import normalize_word
 from security import client_ip
 
 # Durées de conservation (ADR 0016, page de confidentialité, docs/RGPD.md)
@@ -37,6 +44,9 @@ ALWAYS_MEASURED = {"main.generate_grid": "generation", "main.search_words": "sea
                    "api_v1.create_grid": "generation"}
 # Les générations de l'API ouverte : jamais plus d'un jour en base (ADR 0032)
 JOBS_RETENTION = timedelta(days=1)
+# Un mot absent du lexique : d'un seul tenant (des lettres, comme dans une grille), assez court pour ne pas être une
+# phrase ou un nom complet (avis du 08/11/2026)
+MISSING_WORD_LENGTH = (2, 25)
 
 
 def _utcnow() -> datetime:
@@ -77,11 +87,12 @@ def _daily_salt(today: date) -> str:
 def _purge(today: date) -> None:
     """Ménage quotidien, fait par la première requête mesurée du jour : pas de tâche planifiée à oublier."""
     now = datetime.combine(today, datetime.min.time())
-    # Le sel d'hier disparaît : plus personne ne peut relier une empreinte d'hier à une adresse
+    # Le sel d'hier disparaît : plus personne ne peut relier une empreinte d'hier à une adresse ; puis l'empreinte
+    # elle-même, une fois les visiteurs des jours clos comptés
     VisitorSalt.query.filter(VisitorSalt.day < today).delete()
-    (UsageEvent.query
-     .filter(UsageEvent.created_at < now - WORDS_RETENTION, UsageEvent.words.isnot(None))
-     .update({UsageEvent.words: None}, synchronize_session=False))
+    visitor_days.close(now)
+    _move_event_words()
+    MissingWord.query.filter(MissingWord.day < today - WORDS_RETENTION).delete()
     UsageEvent.query.filter(UsageEvent.created_at < now - EVENTS_RETENTION).delete()
     # Les suggestions de mots (roadmap 1e) : même durée que les événements
     WordSuggestion.query.filter(WordSuggestion.created_at < now - EVENTS_RETENTION).delete()
@@ -93,6 +104,39 @@ def _purge(today: date) -> None:
     (ArticleRating.query
      .filter(ArticleRating.created_at < now, ArticleRating.visitor.isnot(None))
      .update({ArticleRating.visitor: None}, synchronize_session=False))
+
+
+def _missing(words: dict | None, lang: str, known=None) -> list[tuple[str, str]]:
+    """Les mots (source, mot) d'une demande que le lexique ne connaît pas, d'un seul tenant et de longueur raisonnable."""
+    if not words:
+        return []
+    if known is None:
+        trie = getattr(current_app, "dela_trie", None)
+        known = trie.words if trie else set()
+    low, high = MISSING_WORD_LENGTH
+    result = []
+    for source in ("must", "wish"):
+        for text in words.get(source) or []:
+            word = normalize_word(text, lang)
+            if low <= len(word) <= high and word == text and word not in known:
+                result.append((source, word))
+    return result
+
+
+def _keep_missing(day: date, site: str, lang: str, words: dict | None, known=None) -> None:
+    for source, word in _missing(words, lang, known):
+        db.session.add(MissingWord(day=day, site=site, lang=lang, word=word, display=word, source=source))
+
+
+def _move_event_words() -> None:
+    """Les mots encore gardés dans les événements (avant le 08/11/2026) : les inconnus imposés passent dans
+    `missing_word`, le reste est effacé. Rien à faire une fois la reprise faite."""
+    for event in UsageEvent.query.filter(UsageEvent.words.isnot(None)).all():
+        must = (event.words or {}).get("must") or []
+        unknown = [text for detail, text in zip((event.data or {}).get("must", []), must)
+                   if not detail.get("known", True)]
+        _keep_missing(event.created_at.date(), event.site, event.lang, {"must": unknown}, known=set())
+        event.words = None
 
 
 def purge() -> None:
@@ -111,8 +155,11 @@ def relayed_assistant_of(job) -> str | None:
 
 
 def visitor_fingerprint(today: date) -> str:
+    """L'empreinte du jour : l'adresse IP et le sel du jour, rien d'autre. Le navigateur (User-Agent) n'y entre plus :
+    rien de ce qui vient du terminal (avis juridique complémentaire du 09/11/2026, article 82 de la loi Informatique
+    et Libertés). Deux personnes derrière la même adresse comptent pour une : un compte un peu plus bas, assumé."""
     salt = _daily_salt(today)
-    source = f"{salt}\n{client_ip()}\n{request.headers.get('User-Agent', '')}"
+    source = f"{salt}\n{client_ip()}"
     return hashlib.sha256(source.encode()).hexdigest()[:32]
 
 
@@ -178,10 +225,13 @@ def _record(response):
         return
     started = g.get("usage_started")
     now = _utcnow()
+    # L'API ouverte n'a pas de visiteurs à compter : ses appels ne portent pas d'empreinte (avis du 08/11/2026)
+    api = (request.endpoint or "").startswith("api_v1.")
     try:
         if response.status_code >= 500:
             db.session.rollback()  # la vue a pu laisser la session dans un état d'échec
         data = {**event["data"], **g.get("usage_details", {})}
+        _keep_missing(now.date(), current_app.config["SITE"], current_app.config["SITE_LANG"], event["words"])
         db.session.add(UsageEvent(
             created_at=now,
             kind=event["kind"],
@@ -191,12 +241,11 @@ def _record(response):
             site=current_app.config["SITE"],
             lang=current_app.config["SITE_LANG"],
             country=_country(),
-            visitor=visitor_fingerprint(now.date()),
+            visitor=None if api else visitor_fingerprint(now.date()),
             user_id=event["user_id"],
             duration_ms=round((time.perf_counter() - started[0]) * 1000) if started else None,
             cpu_ms=round((time.process_time() - started[1]) * 1000) if started else None,
             data=data,
-            words=event["words"],
         ))
         db.session.commit()
     except Exception:
@@ -212,8 +261,8 @@ def defer() -> None:
 def record_background_generation(job, cpu_ms: int | None = None) -> None:
     """L'événement d'une génération de l'API ouverte, écrit par le processus de génération à sa fin (ADR 0032).
 
-    Le même événement qu'une génération du site, avec `client` (api, mcp) dans `data` ; le visiteur est l'empreinte
-    du jour relevée à la demande. La durée est celle du calcul ; l'attente dans la file est à part (`queued_ms`).
+    Le même événement qu'une génération du site, avec `client` (api, mcp) dans `data`, sans empreinte : l'API n'a pas
+    de visiteurs à compter. La durée est celle du calcul ; l'attente dans la file est à part (`queued_ms`).
     """
     if not current_app.config.get("USAGE_ENABLED", True):
         return
@@ -230,7 +279,6 @@ def record_background_generation(job, cpu_ms: int | None = None) -> None:
             # La base où s'écrit l'événement est celle du site qui a calculé la grille, dans sa langue
             site=current_app.config["SITE"],
             lang=job.lang,
-            visitor=job.visitor,
             duration_ms=job.duration_ms,
             cpu_ms=cpu_ms,
             data={
@@ -249,9 +297,10 @@ def record_background_generation(job, cpu_ms: int | None = None) -> None:
                 "geometry": "sur_mesure",
                 "queued_ms": round((started - job.created_at).total_seconds() * 1000) if started else None,
             },
-            words=({"must": params["required_words"], "wish": params["preferred_words"]}
-                   if params["required_words"] or params["preferred_words"] else None),
         ))
+        _keep_missing((job.finished_at or _utcnow()).date(), current_app.config["SITE"], job.lang,
+                      {"must": params["required_words"], "wish": params["preferred_words"]},
+                      known=trie.words if trie else set())
         db.session.commit()
     except Exception:
         db.session.rollback()

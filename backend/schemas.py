@@ -127,6 +127,20 @@ class ReussitesRequest(ApiModel):
     reussites: Annotated[list[Reussite], Field(min_length=1, max_length=500)]
 
 
+class ReportRequest(ApiModel):
+    """Un signalement de contenu (règlement sur les services numériques, art. 16) : l'adresse précise du contenu, les
+    raisons, le nom et l'adresse de qui signale, sa déclaration de bonne foi."""
+    # Le contenu en cause : le numéro d'une grille de l'API (« gen_… ») ou l'adresse d'une page du site
+    url: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=2000)]
+    explanation: Annotated[str, StringConstraints(strip_whitespace=True, min_length=10, max_length=2000)]
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=120)]
+    email: Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, min_length=3, max_length=254,
+                                            pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
+    good_faith: bool = False
+    # Le pot de miel : un champ caché que seul un robot remplit
+    website: Annotated[str, StringConstraints(max_length=200)] = ""
+
+
 class ContactRequest(ApiModel):
     """Un message du formulaire de contact (Phase 8, #131) : un motif, un texte, une adresse de réponse facultative."""
     reason: Literal["suggestion", "problem", "data"]
@@ -163,13 +177,13 @@ class ContactReadRequest(ApiModel):
 class AudienceRequest(ApiModel):
     """Une page vue, un export PDF ou une partie jouée, signalé par le navigateur (ADR 0016, point 3, #130).
 
-    Tout est borné : un chemin sans paramètres, le nom d'hôte seul du référent, la langue du navigateur.
+    Tout est borné : un chemin sans paramètres, le nom d'hôte seul du référent. La langue du navigateur vient de
+    l'en-tête `Accept-Language`, plus du corps (audit des scripts, 09/11/2026) : un ancien `lang` est ignoré.
     Rien ici ne désigne une personne.
     """
     kind: Literal["view", "pdf", "play"]
     path: Annotated[str, StringConstraints(min_length=1, max_length=100, pattern=r"^/[A-Za-z0-9/_.-]*$")]
     referrer: Annotated[str, StringConstraints(max_length=100, pattern=r"^[A-Za-z0-9.-]*$")] = ""
-    lang: Annotated[str, StringConstraints(max_length=12, pattern=r"^[A-Za-z0-9-]*$")] = ""
     visible_ms: Annotated[int, Field(ge=0, le=1_800_000)] = 0
     # Le seul paramètre d'adresse gardé : `utm_source`, que les assistants IA ajoutent à leurs liens (« chatgpt.com ») —
     # d'où vient une grille préparée par une IA (ADR 0032). Un nom de site, jamais une personne

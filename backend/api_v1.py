@@ -302,6 +302,13 @@ def own_headers(response):
         response.headers.pop("Retry-After", None)
     # Une réponse de l'API ne vaut que pour son demandeur et à cet instant
     response.headers["Cache-Control"] = "no-store"
+    # Les conditions en vigueur, et la réserve de fouille de textes et de données (CPI L122-5-3), lisible par machine
+    # au format TDMRep du W3C : l'entraînement commercial d'IA sur ces réponses n'est pas permis (avis du 08/11/2026)
+    terms = f"{current_app.config['FRONTEND_URL'].rstrip('/')}/terms#api"
+    response.headers["Link"] = f'<{terms}>; rel="terms-of-service"'
+    response.headers["X-Terms-Version"] = current_app.config["API_TERMS_VERSION"]
+    response.headers["tdm-reservation"] = "1"
+    response.headers["tdm-policy"] = terms
     response.headers["Content-Language"] = g.get("msg_lang") or "en"
     response.headers["Vary"] = "Accept-Language, Authorization"
     return response
@@ -653,6 +660,15 @@ def notice():
         "license": (f"Grids are free to use, including commercially. Every drawing is signed « made with the "
                     f"{_signature()} API »; "
                     f"attribution appreciated. Terms: {config['FRONTEND_URL'].rstrip('/')}/terms#api"),
+        # Appeler l'API vaut acceptation de ces conditions ; une clé les fait accepter expressément (avis du 08/11)
+        "terms": {"url": f"{config['FRONTEND_URL'].rstrip('/')}/terms#api", "version": config["API_TERMS_VERSION"],
+                  # Les ressources libres du dictionnaire et leurs licences (DELA, Lexique, Wiktionnaire)
+                  "sources": f"{config['FRONTEND_URL'].rstrip('/')}/sources",
+                  "acceptance": "Calling the API means accepting these terms, in the version given here.",
+                  "text_and_data_mining": "Reserved for our own elements (word selection, its organisation, the "
+                                          "engine, our texts): no training of commercial AI systems on them (French "
+                                          "IP Code L122-5-3, Directive 2019/790 art. 4). Free resources listed at "
+                                          "sources keep their own licences."},
     }), 200
 
 

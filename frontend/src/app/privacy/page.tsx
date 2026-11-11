@@ -22,7 +22,7 @@ const PROCESSORS = [
   { name: "OVH", what: "héberge le serveur de l'application et sa base de données", where: "France" },
   {
     name: "Cloudflare",
-    what: "sert les pages du site, relaie les connexions au serveur, garde les sauvegardes chiffrées et fait suivre les messages envoyés à l'adresse de contact",
+    what: "sert les pages du site (avec ses journaux d'accès) ; relaie les connexions au serveur par un tunnel où il voit le trafic en clair, donc les mots, définitions et noms envoyés à l'API ; filtre les requêtes abusives, sans déposer de cookie (vérifié le 9 novembre 2026) ; garde les sauvegardes chiffrées, dans un seau situé dans l'Union européenne ; et fait suivre les messages envoyés à l'adresse de contact, dont il traite le contenu",
     where: "Union européenne et États-Unis (certifié Data Privacy Framework)",
   },
   { name: "Brevo", what: "envoie les e-mails du compte (confirmation de l'adresse, mot de passe oublié)", where: "France" },
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <h1 className="text-3xl font-bold">Confidentialité</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 27 octobre 2026</p>
+      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 9 novembre 2026</p>
 
       <div className="mt-8 space-y-8 text-muted-foreground">
         <p className="rounded-lg border bg-secondary/20 p-4 text-foreground">
@@ -147,19 +147,39 @@ export default function PrivacyPage() {
 
         <Section title="Les grilles demandées à l'API" id="api">
           <p>
-            Une grille demandée à l&apos;API (par un programme ou un assistant IA) est calculée à son tour, en tâche
-            de fond. Le temps de te la rendre, sont gardés : la demande (le format, les mots fournis, le mot mystère,
-            la graine, le nom dont tu signes la grille si tu le donnes), la grille obtenue, et qui l&apos;a demandée — ta clé, ou sans clé l&apos;empreinte du jour
-            décrite plus bas, jamais ton adresse IP. Ils servent à te rendre la grille et à faire respecter les
-            limites d&apos;usage (RGPD, art. 6.1.b et 6.1.f), puis sont effacés au bout de 24 heures. Une demande
-            faite avec une clé disparaît aussi avec la clé et ton compte. Une grille envoyée à l&apos;API pour vérifier
-            ses définitions ou la dessiner n&apos;est pas gardée : elle est lue, puis oubliée.
+            Une grille demandée à l&apos;API, par un programme ou par un assistant IA, est calculée à son tour, en
+            tâche de fond. Le temps de te la rendre, sont gardés : la demande (le format, les mots fournis, le mot
+            mystère, la graine, le nom dont tu signes la grille si tu le donnes), la grille obtenue, et un identifiant
+            d&apos;appel : ta clé si tu en utilises une, sinon l&apos;empreinte du jour décrite plus bas. Cela sert à
+            te rendre la grille et à faire respecter les limites d&apos;usage (intérêt légitime, RGPD art. 6.1.f ; et
+            art. 6.1.b quand tu appelles l&apos;API pour toi-même). Tout est effacé au plus tard au bout de 24 heures ;
+            une demande faite avec une clé disparaît aussi avec la clé et ton compte. Ces données ne sont pas gardées
+            avec ton adresse IP, qui peut en revanche apparaître dans le journal technique du serveur (plus bas).
           </p>
           <p>
-            Par le connecteur d&apos;un assistant IA (Claude, ChatGPT, Le Chat…), l&apos;adresse IP d&apos;où
-            l&apos;appel arrive (en général celle de l&apos;assistant, pas la tienne) sert, sans être gardée, à
-            reconnaître l&apos;assistant parmi les adresses qu&apos;il publie et à appliquer les limites d&apos;usage
-            (art. 6.1.f) ; seule l&apos;empreinte du jour décrite plus bas peut en rester, 24 heures.
+            Une grille envoyée à l&apos;API pour vérifier ses définitions ou la dessiner n&apos;est pas conservée :
+            elle est lue, puis oubliée. Une grille partagée voyage dans son lien, après le « # », que ton navigateur
+            ne nous envoie pas : nous ne la recevons ni ne la stockons, et le lien reste valable tant que
+            quelqu&apos;un le garde. Sur ce chemin, nous ne traitons aucune donnée : le nom de l&apos;auteur et les
+            définitions sont lus par le navigateur de qui ouvre le lien, pas par nous. Les rapports d&apos;erreur
+            partent sans ce fragment.
+          </p>
+          <p>
+            <strong className="text-foreground">Quand l&apos;appel vient d&apos;un assistant IA</strong> (Claude,
+            ChatGPT, Le Chat…), l&apos;adresse IP que reçoit le serveur est celle de l&apos;infrastructure qui appelle :
+            le plus souvent celle du fournisseur de l&apos;assistant, parfois celle d&apos;un intermédiaire technique,
+            parfois la tienne. Elle sert, sans être conservée dans notre base, à reconnaître l&apos;assistant parmi les
+            adresses qu&apos;il publie et à appliquer les limites d&apos;usage (art. 6.1.f). Nous ne recevons pas ta
+            conversation : le connecteur n&apos;y a pas accès. Nous ne transmettons rien au fournisseur de
+            l&apos;assistant : c&apos;est lui qui nous appelle, et il traite tes échanges sous sa propre
+            responsabilité, selon sa propre politique de confidentialité.
+          </p>
+          <p>
+            <strong className="text-foreground">Le nom dont tu signes une grille</strong> est facultatif. Il apparaît
+            sur son dessin et voyage dans son lien : toute personne qui a le lien le voit. Un pseudonyme convient, et
+            nous te le conseillons. Nous le gardons au plus 24 heures ; nous ne pouvons pas le retirer des liens, des
+            copies ou des captures qui circulent déjà. Pour en demander le retrait de ce qui est encore chez nous,
+            écris à l&apos;adresse de contact.
           </p>
         </Section>
 
@@ -175,7 +195,8 @@ export default function PrivacyPage() {
               <strong className="text-foreground">Ton adresse IP</strong> : gardée en mémoire pour limiter le
               nombre de requêtes et protéger le service des abus, puis oubliée, au plus tard après une heure. Le
               journal technique du serveur la note aussi, avec la page demandée, pour diagnostiquer une panne ou une
-              attaque ; il est effacé au bout de 14 jours (intérêt légitime, RGPD art. 6.1.f).
+              attaque ; il est effacé au bout de 14 jours (intérêt légitime, RGPD art. 6.1.f). Nos prestataires
+              techniques tiennent leurs propres journaux, pour les durées que leur documentation indique.
             </li>
             <li>
               <strong className="text-foreground">Les rapports d&apos;erreur</strong> : quand quelque chose casse, la
@@ -199,9 +220,10 @@ export default function PrivacyPage() {
               (du catalogue ou sur mesure), le réglage de la recherche (la première grille trouvée ou la
               meilleure de plusieurs), le nombre et la longueur
               des mots imposés, la réussite ou la raison de l&apos;échec, la durée ; pour une grille demandée à
-              l&apos;API, aussi ce fait, si elle l&apos;a été avec une clé, et son attente dans la file. Le texte des
-              mots imposés et souhaités est gardé 90 jours, pour repérer ceux qui manquent au dictionnaire, puis
-              effacé ;
+              l&apos;API, aussi ce fait, si elle l&apos;a été avec une clé, et son attente dans la file. Les mots
+              imposés ou souhaités que le dictionnaire ne connaît pas, d&apos;un seul tenant, sont gardés 90 jours
+              avec leur jour et leur langue seulement, pour repérer ceux qui manquent : rien ne les relie à qui les a
+              demandés ;
             </li>
             <li>
               les <strong className="text-foreground">étapes d&apos;un compte</strong> (inscription, confirmation,
@@ -210,15 +232,20 @@ export default function PrivacyPage() {
             </li>
           </ul>
           <p>
-            Chaque fait porte le pays, déduit de la connexion par Cloudflare, et une{" "}
-            <strong className="text-foreground">empreinte du jour</strong> : un code calculé à partir de ton adresse
-            IP et de ton navigateur avec une clé secrète tirée au hasard chaque jour, et détruite le lendemain. Elle
-            compte les visiteurs d&apos;une journée sans permettre de te reconnaître d&apos;un jour à l&apos;autre.
-            Ton adresse IP n&apos;est pas enregistrée.
+            Chaque fait porte le pays, déduit de la connexion par Cloudflare, et, jusqu&apos;à la fin de sa journée,
+            une <strong className="text-foreground">empreinte du jour</strong> : un code calculé à partir de ton
+            adresse IP et de ton navigateur avec une clé secrète tirée au hasard chaque jour, et détruite le
+            lendemain. Elle compte les visiteurs d&apos;une journée sans permettre de te reconnaître d&apos;un jour à
+            l&apos;autre, et sans garder ton adresse IP. Ce n&apos;est pas pour autant une donnée anonyme : tant
+            qu&apos;elle existe, c&apos;est une donnée pseudonymisée qui te concerne, et tu peux t&apos;y opposer. La
+            journée finie, les visiteurs sont comptés (combien, à quelles étapes, de quels pays, venus de quels sites)
+            et l&apos;empreinte est effacée : il ne reste que ces comptes. Les appels de l&apos;API n&apos;en portent
+            pas.
           </p>
           <p>
-            Ces faits ne servent qu&apos;aux statistiques du site (intérêt légitime, RGPD art. 6.1.f). Ils sont
-            gardés 13 mois ; ceux qui sont liés à ton compte (ses étapes, ses grilles conservées) disparaissent avec
+            Ces faits ne servent qu&apos;aux statistiques du site : suivre son fonctionnement, régler ses limites et
+            l&apos;améliorer (intérêt légitime, RGPD art. 6.1.f). Ils sont gardés 13 mois, de quoi comparer
+            d&apos;une année sur l&apos;autre ; ceux qui sont liés à ton compte (ses étapes, ses grilles conservées) disparaissent avec
             lui. Pour t&apos;y opposer, écris à l&apos;adresse de contact : les faits liés à ton compte seront
             effacés ; les autres ne permettent pas de te retrouver.
           </p>
@@ -235,7 +262,10 @@ export default function PrivacyPage() {
               <strong className="text-foreground">le site d&apos;où tu viens</strong>, son nom seul (par exemple
               « www.google.com »), jamais l&apos;adresse complète, qui peut contenir une recherche ;
             </li>
-            <li><strong className="text-foreground">la langue de ton navigateur</strong> (« fr », « en »…) ;</li>
+            <li>
+              <strong className="text-foreground">la langue de ton navigateur</strong> (« fr », « en »…), telle
+              qu&apos;il l&apos;annonce de lui-même à chaque site : la page ne la lit pas ;
+            </li>
             <li>
               <strong className="text-foreground">l&apos;assistant qui t&apos;a envoyé</strong>, quand un assistant IA a
               préparé le lien (« chatgpt.com ») : le seul élément de l&apos;adresse qui soit gardé, un nom de site,
@@ -249,8 +279,8 @@ export default function PrivacyPage() {
           </ul>
           <p>
             Même connecté, rien ne rattache ces pages vues à ton compte : la balise ne porte aucun cookie ni
-            identifiant, seulement l&apos;empreinte du jour décrite plus haut. Ton adresse IP n&apos;est pas
-            enregistrée. Ces données sont gardées 13 mois, comme les autres faits de mesure (intérêt légitime, RGPD
+            identifiant, seulement l&apos;empreinte du jour décrite plus haut, effacée à la fin de sa journée. Ton
+            adresse IP n&apos;est pas enregistrée dans ces données. Elles sont gardées 13 mois, comme les autres faits de mesure (intérêt légitime, RGPD
             art. 6.1.f), et ne servent qu&apos;à améliorer le site : ni publicité, ni profil, ni recoupement.
           </p>
           <p>
@@ -276,6 +306,12 @@ export default function PrivacyPage() {
             dans son espace réservé. L&apos;e-mail qui le prévient ne recopie pas ton message : il passe donc par le
             prestataire d&apos;envoi sans son contenu. Les messages sont effacés au bout de 12 mois (intérêt
             légitime, RGPD art. 6.1.f), ou plus tôt à ta demande.
+          </p>
+          <p>
+            Un <Link href="/signaler" className={linkClass}>signalement de contenu</Link> garde l&apos;adresse du
+            contenu, tes raisons, ton nom, ton adresse e-mail et ta déclaration de bonne foi, pour le traiter et te
+            répondre, comme le demande le règlement sur les services numériques (RGPD art. 6.1.c). Un accusé de
+            réception part à ton adresse. Il est effacé au bout de 12 mois, comme les messages.
           </p>
         </Section>
 
@@ -308,8 +344,9 @@ export default function PrivacyPage() {
 
         <Section title="Qui y touche">
           <p>
-            L&apos;éditeur, et les prestataires ci-dessous, pour le seul fonctionnement du site. Aucun ne reçoit tes
-            dictionnaires ou tes grilles pour son propre usage.
+            L&apos;éditeur, et les prestataires ci-dessous, pour le seul fonctionnement du site. Ils traitent ces
+            données pour notre compte, dans les limites de leur mission, et sont liés par un contrat conforme à
+            l&apos;article 28 du RGPD. Aucun ne reçoit tes dictionnaires ou tes grilles pour son propre usage.
           </p>
           <ul className="list-disc space-y-1 pl-5">
             {PROCESSORS.map((processor) => (
@@ -319,13 +356,26 @@ export default function PrivacyPage() {
               </li>
             ))}
           </ul>
+          <p>
+            Cloudflare est une société américaine : certaines données techniques peuvent être traitées ou consultées
+            depuis les États-Unis. Ce transfert repose sur la décision d&apos;adéquation du 10 juillet 2023 (cadre de
+            protection des données UE–États-Unis), pour l&apos;entité certifiée, et à défaut sur les clauses
+            contractuelles types de la Commission européenne.
+          </p>
+          <p>
+            Les fournisseurs d&apos;assistants IA (Anthropic, OpenAI, Mistral) ne sont pas nos prestataires et ne
+            reçoivent rien de notre part : ce sont eux qui appellent l&apos;API, pour leur propre compte et sous leur
+            propre responsabilité.
+          </p>
         </Section>
 
         <Section title="Tes droits">
           <p>
             Tu peux consulter tes données dans l&apos;application (Mon compte, Mes grilles, et tes dictionnaires dans Outils), les
-            corriger, les effacer, t&apos;opposer à un traitement ou en demander la limitation, et demander à les
-            recevoir dans un format lisible. Écris à{" "}
+            corriger, les effacer, en demander la limitation, demander à les recevoir dans un format lisible, et
+            t&apos;opposer aux traitements fondés sur l&apos;intérêt légitime : la mesure d&apos;usage, l&apos;empreinte
+            du jour et les journaux techniques (RGPD, art. 15 à 22). Vu ces durées très courtes, une demande sur une
+            grille de plus de 24 heures ne trouvera plus rien à effacer. Écris à{" "}
             <a href={`mailto:${site.contactEmail}`} className={linkClass}>{site.contactEmail}</a>, depuis
             l&apos;adresse de ton compte : la réponse vient sous un mois. Si elle ne te satisfait pas, tu peux
             saisir la <a href="https://www.cnil.fr/fr/plaintes" className={linkClass}>CNIL</a>.

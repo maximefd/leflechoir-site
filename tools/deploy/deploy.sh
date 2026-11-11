@@ -120,35 +120,23 @@ deploy_front() {
 
 sha256() { if command -v sha256sum >/dev/null; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
 
-# Le lexique curé que le curateur exporte sur ce Mac (tous les 500 mots triés) : il part tel quel, sans la
-# colonne des définitions, qui restent sur le Mac. Le sens des mots (ADR 0028) part à côté, dans son propre
-# fichier, affiché avec sa licence (CC BY-SA). Le serveur vérifie l'empreinte, redémarre l'API, et reprend le précédent si elle échoue.
+# Le lexique curé que le curateur exporte sur ce Mac (tous les 500 mots triés) : deux fichiers, jamais fondus en un
+# (avis juridique du 09/11/2026), la liste de mots tirée du DELA (`MOT;forme affichée`) et les fréquences tirées de
+# Lexique (`frequences.csv`). Un ancien export à quatre colonnes est refusé : il mêle les deux couches, et les
+# définitions du Wiktionnaire. Le sens des mots (ADR 0028) part à côté, dans son propre fichier, affiché avec sa
+# licence (CC BY-SA). Le serveur vérifie les empreintes, redémarre l'API, et reprend le précédent si elle échoue.
 deploy_lexicon() {
     source_file="$LEXIQUE_DIR/lexique_cure.csv"
+    frequencies_file="$LEXIQUE_DIR/frequences.csv"
     [ -s "$source_file" ] || die "$source_file absent : le curateur l'écrit tous les 500 mots triés (ou make lexicon-export)"
-    command -v python3 >/dev/null || die "python3 introuvable"
-    work="$(mktemp -d)"
-    trap 'rm -rf "$work"' EXIT
-    lines="$(python3 - "$source_file" "$work/lexique_cure.csv" <<'PY'
-import csv
-import sys
-
-source, target = sys.argv[1], sys.argv[2]
-count = 0
-with open(source, encoding="utf-8", newline="") as f, open(target, "w", encoding="utf-8", newline="") as out:
-    writer = csv.writer(out, delimiter=";", lineterminator="\n")
-    for row in csv.reader(f, delimiter=";"):
-        if not row:
-            continue
-        row = (row + ["", "", "", ""])[:4]
-        row[2] = ""
-        writer.writerow(row)
-        count += 1
-print(count)
-PY
-)"
-    say "Lexique : $lines lignes, exporté le $(date -r "$source_file" '+%d/%m/%Y à %H:%M'). Envoi sur ${DEPLOY_HOST}…"
-    ssh_server "mkdir -p $REMOTE_BASE/lexicon && cat > $REMOTE_BASE/lexicon/lexique_cure.csv.nouveau" < "$work/lexique_cure.csv"
+    [ -s "$frequencies_file" ] && [ "$(head -1 "$source_file" | awk -F';' '{ print NF }')" = 2 ] \
+        || die "$source_file est un export d'avant la séparation des couches (09/11/2026) : make lexicon-export, ou redémarrer le curateur"
+    ssh_server "grep -q frequences $REMOTE_BASE/current/tools/deploy/server.sh" \
+        || die "la version en service ne sait pas recevoir les fréquences à part : make deploy d'abord"
+    lines="$(wc -l < "$source_file" | tr -d ' ')"
+    say "Lexique : $lines mots et $(wc -l < "$frequencies_file" | tr -d ' ') fréquences, exportés le $(date -r "$source_file" '+%d/%m/%Y à %H:%M'). Envoi sur ${DEPLOY_HOST}…"
+    ssh_server "mkdir -p $REMOTE_BASE/lexicon && cat > $REMOTE_BASE/lexicon/lexique_cure.csv.nouveau" < "$source_file"
+    ssh_server "cat > $REMOTE_BASE/lexicon/frequences.csv.nouveau" < "$frequencies_file"
     # Le sens des mots (ADR 0028) : envoyé seulement s'il a changé (environ 40 Mo). Il vient lui aussi du
     # Wiktionnaire, mais le site l'affiche avec sa licence ; make lexicon-sens le reconstruit.
     sens_file="$LEXIQUE_DIR/sens.sqlite"
@@ -164,7 +152,7 @@ PY
     else
         say "Sens des mots : $sens_file absent (make lexicon-sens) ; le site s'en passe."
     fi
-    ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh lexicon $(sha256 "$work/lexique_cure.csv") $sens_sha"
+    ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh lexicon $(sha256 "$source_file") $(sha256 "$frequencies_file") $sens_sha"
     curl -fsS --max-time 20 "$DEPLOY_API_URL/api/status" >/dev/null \
         || die "l'API ne répond pas par $DEPLOY_API_URL : voir docs/PRODUCTION.md"
     say "Lexique en service."

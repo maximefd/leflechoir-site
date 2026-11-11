@@ -58,6 +58,7 @@ const PUBLIC_PAGES = [
   { path: "/legal", title: "Mentions légales | Le Fléchoir", canonical: `${SITE_URL}/legal` },
   { path: "/privacy", title: "Confidentialité | Le Fléchoir", canonical: `${SITE_URL}/privacy` },
   { path: "/terms", title: "Conditions d'utilisation | Le Fléchoir", canonical: `${SITE_URL}/terms` },
+  { path: "/sources", title: "Sources et licences | Le Fléchoir", canonical: `${SITE_URL}/sources` },
 ];
 
 const PRIVATE_PAGES = ["/admin", "/account", "/grids", "/grids/new", "/grids/edit?id=1", "/dictionaries", "/login", "/register",

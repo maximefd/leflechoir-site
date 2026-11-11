@@ -8,11 +8,10 @@ import { Button } from "@/components/ui/button";
 import { GridPlayer } from "@/components/grid/grid-player";
 import { linkClass } from "@/components/legal/section";
 import { apiFetch, hasSession } from "@/lib/api-client";
-import { decodeGrid, fragmentParams, missingClues, savedGridOf, specOf, type GridFile } from "@/lib/grille-api";
+import { decodeGrid, fragmentParams, GRILLE_LINK_KEY, missingClues, savedGridOf, specOf, type GridFile } from "@/lib/grille-api";
 import { withNext } from "@/lib/next-path";
 
-// Le lien de la grille, gardé le temps de l'onglet : il survit au détour par l'inscription ou la connexion
-const KEY = "terminator:grille-api";
+const KEY = GRILLE_LINK_KEY;
 
 const LANGUES: Record<string, string> = { fr: "français", de: "allemand", en: "anglais" };
 
@@ -90,7 +89,9 @@ export function GrillePartagee() {
     }
   };
 
-  const here = typeof window === "undefined" ? "/grille" : `/grille${window.location.hash}`;
+  // Jamais le fragment dans `?next=` : il deviendrait une requête, et la grille partirait au serveur avec le nom de son
+  // auteur (audit des scripts, 09/11/2026). Elle attend dans l'onglet (`sessionStorage`) le retour de la connexion.
+  const here = "/grille";
 
   return (
     <div className="space-y-6">
@@ -139,11 +140,13 @@ export function GrillePartagee() {
         )}
       </section>
 
-      {/* Le texte vient de qui a créé la grille, pas de nous (revue de sécurité du 02/11/2026) : on le dit */}
+      {/* Le texte vient de qui a créé la grille, et la grille ne nous parvient pas (avis juridique du 09/11/2026) :
+          on le dit, et on dit à qui s'adresser */}
       <p className="text-xs text-muted-foreground" data-testid="grille-tiers">
         Cette grille et ses définitions ont été écrites par {grid.author ? grid.author.slice(0, 60) : "son auteur"}, avec
-        l&apos;aide d&apos;une IA et de notre moteur : nous ne les relisons pas.{" "}
-        <Link href="/contact" className={linkClass}>Signaler un contenu</Link>.
+        l&apos;aide d&apos;une IA et de notre moteur. Elle voyage entière dans son lien, que ton navigateur ne nous
+        envoie pas : nous ne la recevons pas et ne pouvons pas la retirer. Si elle te paraît illicite, adresse-toi à la
+        personne qui te l&apos;a envoyée.
       </p>
 
       <p className="text-sm text-muted-foreground">

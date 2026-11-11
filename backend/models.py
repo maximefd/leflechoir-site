@@ -201,6 +201,38 @@ class UsageEvent(db.Model):
     )
 
 
+class DayVisitors(db.Model):
+    """Les visiteurs d'un jour clos, comptés puis oubliés (avis juridique du 08/11/2026 sur l'API ouverte).
+
+    L'empreinte du jour (usage.py) ne survit pas à sa journée : à la clôture, chaque compte qu'elle servait à faire
+    (visiteurs, étapes du parcours, pays, sources des pages vues) est écrit ici, et elle est effacée des événements. Le
+    poste de pilotage additionne ces comptes aux empreintes du jour encore ouvert : mêmes chiffres, aucun identifiant.
+    """
+    __tablename__ = 'day_visitors'
+    day = db.Column(db.Date, primary_key=True)
+    site = db.Column(db.String(10), primary_key=True)
+    # « events », « pages », « funnel:<étape> », « country:<pays> », « referrer:<site d'origine> »
+    key = db.Column(db.String(120), primary_key=True)
+    visitors = db.Column(db.Integer, nullable=False)
+
+
+class MissingWord(db.Model):
+    """Un mot demandé que le lexique ne connaît pas, gardé 90 jours pour la curation (avis du 08/11/2026).
+
+    Rien ne le relie à qui l'a demandé, ni à l'heure : seulement le jour, la langue et le mot. Seuls les mots absents
+    du lexique, d'un seul tenant, sont gardés : pas un nom complet, pas une phrase.
+    """
+    __tablename__ = 'missing_word'
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.Date, nullable=False, index=True)
+    site = db.Column(db.String(10), nullable=False)
+    lang = db.Column(db.String(5), nullable=False)
+    word = db.Column(db.String(40), nullable=False)
+    display = db.Column(db.String(40), nullable=False)
+    # « must » (mot imposé) ou « wish » (mot souhaité)
+    source = db.Column(db.String(10), nullable=False)
+
+
 class VisitorSalt(db.Model):
     """Le sel du jour de l'empreinte des visiteurs : secret, remplacé et détruit chaque jour (ADR 0016).
 
@@ -373,7 +405,7 @@ class ContactMessage(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow(), index=True)
     site = db.Column(db.String(10), nullable=False)
     lang = db.Column(db.String(5), nullable=False)
-    # suggestion, problem, data
+    # suggestion, problem, data ; report : un signalement de contenu (règlement sur les services numériques, art. 16)
     reason = db.Column(db.String(20), nullable=False)
     message = db.Column(db.Text, nullable=False)
     # L'adresse de réponse, facultative
@@ -382,6 +414,8 @@ class ContactMessage(db.Model):
     request_id = db.Column(db.String(64), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True, index=True)
     read_at = db.Column(db.DateTime, nullable=True)
+    # Un signalement : l'adresse du contenu, le nom de qui signale, sa déclaration de bonne foi
+    details = db.Column(db.JSON, nullable=True)
 
 
 class ArticleRating(db.Model):
@@ -512,6 +546,10 @@ class ApiKey(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow())
     last_used_at = db.Column(db.DateTime, nullable=True)
     revoked_at = db.Column(db.DateTime, nullable=True)
+    # L'acceptation des conditions de l'API à la création de la clé (avis du 08/11/2026) : leur version et l'instant.
+    # Le compte est déjà là ; jamais d'adresse IP en base (ADR 0016)
+    terms_version = db.Column(db.String(20), nullable=True)
+    terms_accepted_at = db.Column(db.DateTime, nullable=True)
 
     __table_args__ = (db.Index('ix_api_key_owner', 'owner_site', 'user_id'),)
 

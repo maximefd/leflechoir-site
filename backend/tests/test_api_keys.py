@@ -29,7 +29,7 @@ def verified_headers(client) -> dict:
 
 
 def create(client, headers, name="Mon agent"):
-    return send(client, "post", "/api/account/api-keys", {"name": name}, headers)
+    return send(client, "post", "/api/account/api-keys", {"name": name, "accept_terms": True}, headers)
 
 
 def test_a_key_is_shown_once_and_kept_only_as_its_digest(client):
@@ -48,6 +48,31 @@ def test_a_key_is_shown_once_and_kept_only_as_its_digest(client):
     listed = client.get("/api/account/api-keys", headers=headers).get_json()
     assert listed["keys"] == [{k: v for k, v in body.items() if k != "key"}]
     assert "key" not in listed["keys"][0]
+
+
+def test_a_key_needs_the_terms_accepted_and_keeps_their_version(client, test_app):
+    """Avis du 08/11/2026 : une case non cochée d'avance ; la version et l'instant sont gardés, jamais l'adresse."""
+    headers = verified_headers(client)
+
+    refused = send(client, "post", "/api/account/api-keys", {"name": "Sans case"}, headers)
+    accepted = create(client, headers)
+
+    assert (refused.status_code, refused.get_json()["reason"]) == (400, "terms_not_accepted")
+    key = ApiKey.query.filter_by(id=accepted.get_json()["id"]).one()
+    assert key.terms_version == test_app.config["API_TERMS_VERSION"] and key.terms_accepted_at is not None
+
+
+def test_the_api_terms_version_is_the_one_the_site_shows():
+    """La notice et la page des conditions annoncent la même version (frontend/src/lib/conditions-api.ts)."""
+    import re
+    from pathlib import Path
+
+    from app import DEFAULT_SETTINGS
+
+    source = Path(__file__).resolve().parents[2] / "frontend" / "src" / "lib" / "conditions-api.ts"
+    if not source.exists():
+        pytest.skip("le site n'est pas à côté (image de l'API seule)")
+    assert re.search(r'API_TERMS_VERSION = "([^"]+)"', source.read_text()).group(1) == DEFAULT_SETTINGS["API_TERMS_VERSION"]
 
 
 def test_a_key_needs_a_confirmed_address(client):
