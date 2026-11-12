@@ -54,6 +54,11 @@ const PUBLIC_PAGES = [
     canonical: `${SITE_URL}/mots/${NOMBRES[n - 2]}-lettres`,
   })),
   { path: "/a-propos", title: "Qui fait Le Fléchoir | Le Fléchoir", canonical: `${SITE_URL}/a-propos` },
+  {
+    path: "/mots-fleches-ia",
+    title: "Créer des mots fléchés avec ChatGPT, Claude ou Le Chat | Le Fléchoir",
+    canonical: `${SITE_URL}/mots-fleches-ia`,
+  },
   { path: "/contact", title: "Contact | Le Fléchoir", canonical: `${SITE_URL}/contact` },
   { path: "/legal", title: "Mentions légales | Le Fléchoir", canonical: `${SITE_URL}/legal` },
   { path: "/privacy", title: "Confidentialité | Le Fléchoir", canonical: `${SITE_URL}/privacy` },

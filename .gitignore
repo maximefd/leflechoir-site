@@ -64,3 +64,6 @@ data/layouts/
 # Le connecteur MCP (ADR 0032) : dépendances et construction
 mcp/node_modules/
 mcp/dist/
+
+# Paquets des annuaires (tools/api/paquet-chatgpt.sh)
+/dist/

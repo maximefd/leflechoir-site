@@ -37,7 +37,7 @@ def generate(api: str, width: int, height: int) -> tuple[int, str | None, float]
         except ValueError:
             reason = None
         return error.code, reason, time.monotonic() - start
-    except (urllib.error.URLError, TimeoutError) as error:
+    except OSError as error:  # coupure réseau, délai dépassé (socket.timeout en Python 3.9) : compté, la mesure continue
         return 0, type(error).__name__, time.monotonic() - start
 
 

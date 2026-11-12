@@ -72,6 +72,17 @@ function callerAddress(req: Request): string | undefined {
   return /^[0-9a-fA-F:.]{2,45}$/.test(address) ? address : undefined;
 }
 
+// La preuve de propriété du domaine que demande OpenAI pour l'annuaire de ChatGPT : le jeton seul, en texte brut
+// (OPENAI_APPS_CHALLENGE, donné par le tableau de bord d'OpenAI ; docs/ANNUAIRES.md)
+const openaiChallenge = (process.env.OPENAI_APPS_CHALLENGE ?? "").trim();
+app.get("/.well-known/openai-apps-challenge", (_req: Request, res: Response) => {
+  if (!openaiChallenge) {
+    res.status(404).end();
+    return;
+  }
+  res.type("text/plain").send(openaiChallenge);
+});
+
 // La réserve de fouille de textes et de données (TDMRep du W3C) et les conditions, comme sur l'API : pas
 // d'entraînement commercial d'IA sur ces réponses (conditions de l'API, avis juridique du 08/11/2026)
 const termsUrl = process.env.TERMS_URL ?? "https://leflechoir.fr/terms#api";

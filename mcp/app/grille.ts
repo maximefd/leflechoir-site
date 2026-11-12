@@ -132,9 +132,10 @@ app.ontoolinput = (params) => {
 };
 
 app.ontoolresult = (result) => {
-  // Les dessins et les liens arrivent dans `_meta`, que le modèle ne lit pas
-  const meta = (result._meta ?? {}) as { svg?: Stage["svg"]; links?: Stage["links"] };
-  data = { ...(result.structuredContent ?? {}), svg: meta.svg, links: meta.links } as Stage;
+  // Les dessins, les liens et l'ordre des interfaces arrivent dans `_meta`, que le modèle ne lit pas
+  const meta = (result._meta ?? {}) as Pick<Stage, "svg" | "links" | "createdAt" | "seq">;
+  data = { ...(result.structuredContent ?? {}), svg: meta.svg, links: meta.links, createdAt: meta.createdAt,
+    seq: meta.seq } as Stage;
   if (result.isError && !data.error) {
     const text = result.content?.find((item) => item.type === "text");
     data = { error: { message: text && "text" in text ? text.text : "Error" } };

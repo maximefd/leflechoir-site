@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "le-flechoir": {
+      "type": "streamable-http",
+      "url": "https://mcp.leflechoir.fr/mcp",
+      "auth": { "type": "none" }
+    }
+  }
+}

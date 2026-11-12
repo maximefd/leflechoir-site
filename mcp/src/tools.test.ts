@@ -121,7 +121,7 @@ describe("check_clues", () => {
     expect(text).toContain("Play online: https://site/grille#mode=jouer&g=x");
     expect(result.structuredContent).toMatchObject({ stage: "ready" });
     // Les liens et les dessins pour l'interface seule : le modèle ne lit pas `_meta`
-    expect(result._meta).toEqual({ links: { play: "https://site/grille#mode=jouer&g=x", open: "https://site/grille#g=x" },
+    expect(result._meta).toMatchObject({ links: { play: "https://site/grille#mode=jouer&g=x", open: "https://site/grille#g=x" },
       svg: { puzzle: "<svg>grille</svg>", solution: "<svg>solution</svg>" } });
     expect(JSON.stringify(result.structuredContent)).not.toContain("<svg");
     // Claude et ChatGPT montrent l'interface : le modèle ne recopie pas les liens, longs (essai du 02/11)
@@ -129,7 +129,9 @@ describe("check_clues", () => {
     expect(calls.slice(1).map((call) => call.body)).toMatchObject([
       { format: "svg", view: "puzzle", embed_font: false }, { format: "svg", view: "solution", embed_font: false }]);
     // La clé d'élection : l'interface la plus récente remplace les précédentes
-    expect(result.structuredContent).toMatchObject({ createdAt: expect.any(Number), seq: expect.any(Number) });
+    expect(result._meta).toMatchObject({ createdAt: expect.any(Number), seq: expect.any(Number) });
+    // Aucun horodatage dans ce que lit le modèle (règles des annuaires)
+    expect(result.structuredContent).not.toHaveProperty("createdAt");
   });
 
   it("lists what to fix, and returns no links", async () => {

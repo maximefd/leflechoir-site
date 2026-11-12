@@ -22,6 +22,7 @@ export function GET() {
     lien("Créer une grille à la main", "/grids/new", "l'éditeur : la taille de son choix, les cases définitions où l'on veut, et pour chaque emplacement les mots qui gardent les croisements valides (compte gratuit)."),
     lien("Chercher un mot", "/search", "les lettres connues et un ? par case vide : P??LE donne PERLE, POELE, PELLE…"),
     lien("Mots fléchés du jour", "/jouer", "une nouvelle grille chaque jour, à jouer dans le navigateur, sur téléphone comme sur ordinateur."),
+    lien("Avec ChatGPT, Claude ou Le Chat", "/mots-fleches-ia", `le connecteur ${site.nameAfterDe} pour Claude, ChatGPT et Le Chat (${site.connectorUrl}) : l'assistant écrit les définitions, le moteur construit la grille et les vérifie.`),
     "",
     "## Guide et articles",
     "",

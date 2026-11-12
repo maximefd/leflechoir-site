@@ -212,7 +212,8 @@ export async function checkClues(api: FlechoirApi, gridId: string, clues: Answer
         "",
         "Fix the errors, then call check_clues again with the whole list of pairs.",
       ].join("\n") }],
-      structuredContent: { stage: "check_failed", lang: body.grid?.lang, createdAt: Date.now(), seq: ++callSeq,
+      _meta: { createdAt: Date.now(), seq: ++callSeq },
+      structuredContent: { stage: "check_failed", lang: body.grid?.lang,
         refused: body.clues.flatMap((clue) => clue.findings.filter((finding) => finding.level === "error")
           .map((finding) => ({ answer: clue.answer, message: finding.message }))) },
     };
@@ -240,8 +241,13 @@ export async function checkClues(api: FlechoirApi, gridId: string, clues: Answer
         "draw_grid unless the person asks for an image."];
   return {
     content: [{ type: "text", text: [accepted, ...lines, "", ...next].join("\n") }],
-    structuredContent: { stage: "ready", lang: body.grid?.lang, createdAt: Date.now(), seq: ++callSeq },
-    _meta: { links: body.links, svg: { puzzle: puzzle.ok ? puzzle.text : "", solution: solution.ok ? solution.text : "" } },
+    structuredContent: { stage: "ready", lang: body.grid?.lang },
+    // L'ordre des interfaces (la plus récente remplace les autres) : pour l'interface seule, pas pour le modèle (les
+    // annuaires refusent les horodatages dans les réponses)
+    _meta: {
+      createdAt: Date.now(), seq: ++callSeq, links: body.links,
+      svg: { puzzle: puzzle.ok ? puzzle.text : "", solution: solution.ok ? solution.text : "" },
+    },
   };
 }
 

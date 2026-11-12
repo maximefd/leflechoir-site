@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "fr.leflechoir/le-flechoir",
+  "title": "Le Fléchoir",
+  "description": "Arrowword puzzles (mots fléchés) built around your words; you write the clues, it checks them.",
+  "version": "1.0.0",
+  "websiteUrl": "https://leflechoir.fr/mots-fleches-ia",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.leflechoir.fr/mcp"
+    }
+  ]
+}

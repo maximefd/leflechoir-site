@@ -29,7 +29,12 @@ export const INSTRUCTIONS = [
 
 const Lang = z.enum(["fr", "de", "en"]).describe("Language of the grid: fr (mots fléchés), de (Schwedenrätsel), en");
 
+// Les annotations que demandent les annuaires de Claude et de ChatGPT, explicites sur chaque outil. Lecture seule :
+// aucun outil ne touche un compte ni des données de la personne ; une grille calculée est gardée 24 heures, le temps de
+// la vérifier, puis oubliée. Un monde fermé : notre seul service, pas le web
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
+// Une nouvelle grille à chaque appel (graine tirée au hasard, sauf si elle est donnée)
+const readOnlyNotIdempotent = { ...readOnly, idempotentHint: false };
 
 export function createServer(api: FlechoirApi, appHtml: () => Promise<string>): McpServer {
   const server = new McpServer({ name: "le-flechoir", version: "1.0.0" }, { instructions: INSTRUCTIONS });
@@ -61,7 +66,7 @@ export function createServer(api: FlechoirApi, appHtml: () => Promise<string>): 
       author: z.string().max(60).optional()
         .describe("Optional: the name the person signs the grid with (« Grille de Mamie Jo »); ask them"),
     }),
-    annotations: readOnly,
+    annotations: readOnlyNotIdempotent,
   }, async (args) => createGrid(api.withLanguage(args.lang), args));
 
   registerAppTool(server, "check_clues", {
@@ -105,7 +110,8 @@ export function createServer(api: FlechoirApi, appHtml: () => Promise<string>): 
       mimeType: RESOURCE_MIME_TYPE,
       text: await appHtml(),
       // Rien d'extérieur : l'interface ne charge rien et ne contacte personne ; les liens s'ouvrent par l'assistant
-      _meta: { ui: { prefersBorder: true } },
+      // Ni connexion ni ressource extérieure : la police et les dessins sont dans la page
+      _meta: { ui: { prefersBorder: true, csp: { connectDomains: [], resourceDomains: [] } } },
     }],
   }));
 

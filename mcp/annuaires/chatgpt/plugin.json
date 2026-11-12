@@ -1,0 +1,28 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "le-flechoir",
+  "version": "1.0.0",
+  "description": "Builds arrowword puzzles (French mots fléchés) around the words you choose; the assistant writes the clues, Le Fléchoir builds a valid grid and checks every clue.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Le Fléchoir",
+        "shortDescription": "Arrowword puzzles, your words",
+        "longDescription": "Le Fléchoir builds arrowword puzzles (French « mots fléchés »): grids where the clues sit inside the grid, with arrows pointing to their answers. Language models write good clues but cannot reliably cross words in a grid; Le Fléchoir does that part.\n\nHow it works: you ask for a puzzle, for a birthday, a class, a retirement party or just for fun. The assistant picks the words that make it personal; Le Fléchoir builds a valid grid around them in a few seconds, with every crossing checked and every word a real word, and tells the assistant how many characters fit in each clue cell. The assistant writes the clues; Le Fléchoir checks that each one fits its cell and does not give the answer away, then shows the finished puzzle in the conversation, its solution one click away, with links to play it online or print it as a PDF.\n\nYou choose the size (5 to 15 cells a side), the level (easy, medium or hard), words that must appear, an optional mystery word, and a name to sign the puzzle. Puzzles are in French for now.\n\nNo account needed. The puzzles are yours to use, including commercially. Le Fléchoir keeps a puzzle for 24 hours, the time to check its clues, and never stores the clues or reads your conversations.",
+        "developerName": "Le Fléchoir",
+        "category": "Education",
+        "websiteURL": "https://leflechoir.fr/mots-fleches-ia",
+        "supportURL": "https://leflechoir.fr/contact",
+        "privacyPolicyURL": "https://leflechoir.fr/privacy#api",
+        "termsOfServiceURL": "https://leflechoir.fr/terms#api",
+        "defaultPrompt": [
+          "Crée une grille de mots fléchés 9×9 facile pour l'anniversaire de Léa, avec GATEAU et BOUGIES.",
+          "Fais une grille de mots fléchés sur le jardinage pour ma grand-mère, signée Paul.",
+          "Une grille de mots fléchés difficile de 12 cases sur le cinéma, avec le mot mystère CANNES."
+        ],
+        "logo": "./assets/logo.png"
+      }
+    }
+  },
+  "mcpServers": "./mcp.json"
+}

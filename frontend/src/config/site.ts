@@ -21,6 +21,8 @@ export type SiteConfig = {
   locale: string;
   contactEmail: string;
   securityEmail: string;
+  /** Le connecteur MCP de l'API ouverte (ADR 0032), le même pour toutes les langues */
+  connectorUrl: string;
 };
 
 export const SITES = {
@@ -36,6 +38,7 @@ export const SITES = {
     locale: "fr_FR",
     contactEmail: "contact@leflechoir.fr",
     securityEmail: "securite@leflechoir.fr",
+    connectorUrl: "https://mcp.leflechoir.fr/mcp",
   },
 } satisfies Record<string, SiteConfig>;
 

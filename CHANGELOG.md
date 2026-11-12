@@ -5,6 +5,14 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **L'API ouverte, lot 4 : les annuaires** (ADR 0032 ; à soumettre après l'ouverture, `docs/ANNUAIRES.md`) :
+  - le connecteur aux règles de Claude et de ChatGPT : annotations explicites sur chaque outil, aucun horodatage dans
+    ce que lit le modèle, l'interface déclarée sans ressource extérieure, le jeton de domaine d'OpenAI servi à
+    `/.well-known/openai-apps-challenge` ;
+  - la page `/mots-fleches-ia` : l'adresse du connecteur et comment l'ajouter à Claude, ChatGPT et Le Chat (aussi
+    dans `llms.txt`) ;
+  - le paquet pour l'annuaire de ChatGPT (`tools/api/paquet-chatgpt.sh`) et la fiche du registre MCP
+    (`mcp/server.json`, `tools/api/registre-mcp.sh`, preuve par le DNS).
 - **Les suites de l'avis complémentaire du 09/11/2026** :
   - **le lexique en deux couches** : l'export écrit la liste de mots (`lexique_cure.csv`, `MOT;forme affichée`, du
     DELA) et les fréquences (`frequences.csv`, de Lexique) dans deux fichiers que l'API joint en mémoire ; plus de

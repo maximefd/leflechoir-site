@@ -116,6 +116,8 @@ services:
       # Obligatoires : le connecteur refuse de démarrer sans eux (un « :? » bloquerait aussi les sites sans connecteur)
       API_RELAY_SECRET: ${API_RELAY_SECRET:-}
       MCP_ALLOWED_HOSTS: ${MCP_ALLOWED_HOSTS:-}
+      # Le jeton de vérification du domaine pour l'annuaire de ChatGPT (docs/ANNUAIRES.md) : vide, rien n'est servi
+      OPENAI_APPS_CHALLENGE: ${OPENAI_APPS_CHALLENGE:-}
     # Un petit service : un pic d'appels ne prend pas la mémoire de l'API et du lexique
     mem_limit: 256m
     healthcheck:
