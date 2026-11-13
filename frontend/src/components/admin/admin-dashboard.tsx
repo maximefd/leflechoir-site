@@ -7,6 +7,7 @@ import { DailyColumns, FunnelBars, Legend, RateScale, rateTone, ShareBar, type S
 import {
   dateTime, dayMonth, Empty, Group, Indicator, LEVELS, number, percent, Scroll, seconds, Section, type Level,
 } from "@/components/admin/parts";
+import { ApiGroup, type ApiState } from "@/components/admin/api-group";
 import { ContactInbox } from "@/components/admin/contact-inbox";
 import { RaceGroup, type Race } from "@/components/admin/race-group";
 import { SystemGroup, type SystemState } from "@/components/admin/system-group";
@@ -500,7 +501,7 @@ function AudienceGroup({ audience }: { audience: Audience }) {
   );
 }
 
-function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggestions?: Suggestions; system?: SystemState }) {
+function Dashboard({ stats, suggestions, system, api }: { stats: AdminStats; suggestions?: Suggestions; system?: SystemState; api?: ApiState }) {
   const { thresholds, daily } = stats;
   // Le titre statique est celui de la page 404 (app/admin/page.tsx) : le vrai n'apparaît qu'ici
   useEffect(() => {
@@ -527,7 +528,7 @@ function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggesti
 
       {/* Le détail d'avant le tableau de bord (ADR 0029) : replié, il reste à un clic */}
       <details className="group space-y-10 rounded-lg border p-4 [&[open]>summary]:mb-6">
-        <summary className="cursor-pointer text-lg font-semibold">Tout le détail : seuils, la course, usage, audience, générations, erreurs, système</summary>
+        <summary className="cursor-pointer text-lg font-semibold">Tout le détail : seuils, la course, API, usage, audience, générations, erreurs, système</summary>
         <div className="space-y-10">
           <section aria-label="Seuils de l'ADR 0013" className="grid gap-4 sm:grid-cols-2">
             <Indicator label="Durée p95 des générations réussies (30 jours)" value={seconds(thresholds.p95_ms)}
@@ -543,6 +544,8 @@ function Dashboard({ stats, suggestions, system }: { stats: AdminStats; suggesti
           </section>
 
           <RaceGroup race={stats.race} />
+
+          <ApiGroup api={api} />
 
 
           <Group id="usage" title="Usage">
@@ -809,6 +812,13 @@ export function AdminDashboard() {
     queryFn: () => apiFetch("/api/admin/system"),
   });
 
+  const api = useQuery<ApiState>({
+    queryKey: ["admin-api"],
+    enabled: stats.isSuccess,
+    retry: false,
+    queryFn: () => apiFetch("/api/admin/api"),
+  });
+
   if (isLoading || (isAuthenticated && stats.isPending)) {
     return <main className="container mx-auto p-4 py-16 text-center text-muted-foreground md:p-8">Chargement…</main>;
   }
@@ -822,5 +832,5 @@ export function AdminDashboard() {
       </main>
     );
   }
-  return <Dashboard stats={stats.data} suggestions={suggestions.data} system={system.data} />;
+  return <Dashboard stats={stats.data} suggestions={suggestions.data} system={system.data} api={api.data} />;
 }

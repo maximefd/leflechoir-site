@@ -1608,7 +1608,7 @@
   {
    "at": "2026-10-01T15:20:48Z",
    "format": "6x6",
-   "layout": "6x6-002",
+   "layout": null,
    "outcome": "grid",
    "duration_ms": 34,
    "must": 0

@@ -1,0 +1,338 @@
+{
+ "periods": [
+  {
+   "label": "Aujourd'hui",
+   "days": 1,
+   "requests": 10,
+   "grids": 8,
+   "success": 1.0,
+   "failures": 0,
+   "quota": 1,
+   "closed": 0,
+   "invalid": 1,
+   "mcp": 5,
+   "http": 3,
+   "keyed": 3,
+   "queue_p95_ms": 2226,
+   "duration_p95_ms": 3813,
+   "link_views": 3
+  },
+  {
+   "label": "7 jours",
+   "days": 7,
+   "requests": 119,
+   "grids": 88,
+   "success": 0.88,
+   "failures": 12,
+   "quota": 15,
+   "closed": 0,
+   "invalid": 4,
+   "mcp": 74,
+   "http": 14,
+   "keyed": 10,
+   "queue_p95_ms": 2406,
+   "duration_p95_ms": 3719,
+   "link_views": 15
+  },
+  {
+   "label": "30 jours",
+   "days": 30,
+   "requests": 162,
+   "grids": 118,
+   "success": 0.8939393939393939,
+   "failures": 14,
+   "quota": 17,
+   "closed": 9,
+   "invalid": 4,
+   "mcp": 96,
+   "http": 22,
+   "keyed": 16,
+   "queue_p95_ms": 2406,
+   "duration_p95_ms": 3719,
+   "link_views": 30
+  }
+ ],
+ "daily": [
+  {
+   "day": "2026-10-15",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-16",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-17",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-18",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-19",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-20",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-21",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-22",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-23",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-24",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-25",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-26",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-27",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-28",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-29",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-30",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-10-31",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-11-01",
+   "mcp": 0,
+   "http": 0,
+   "refused": 0
+  },
+  {
+   "day": "2026-11-02",
+   "mcp": 6,
+   "http": 1,
+   "refused": 0
+  },
+  {
+   "day": "2026-11-03",
+   "mcp": 7,
+   "http": 4,
+   "refused": 1
+  },
+  {
+   "day": "2026-11-04",
+   "mcp": 0,
+   "http": 0,
+   "refused": 9
+  },
+  {
+   "day": "2026-11-05",
+   "mcp": 6,
+   "http": 1,
+   "refused": 1
+  },
+  {
+   "day": "2026-11-06",
+   "mcp": 6,
+   "http": 2,
+   "refused": 1
+  },
+  {
+   "day": "2026-11-07",
+   "mcp": 11,
+   "http": 1,
+   "refused": 3
+  },
+  {
+   "day": "2026-11-08",
+   "mcp": 6,
+   "http": 1,
+   "refused": 2
+  },
+  {
+   "day": "2026-11-09",
+   "mcp": 9,
+   "http": 2,
+   "refused": 2
+  },
+  {
+   "day": "2026-11-10",
+   "mcp": 10,
+   "http": 3,
+   "refused": 0
+  },
+  {
+   "day": "2026-11-11",
+   "mcp": 14,
+   "http": 1,
+   "refused": 6
+  },
+  {
+   "day": "2026-11-12",
+   "mcp": 16,
+   "http": 3,
+   "refused": 0
+  },
+  {
+   "day": "2026-11-13",
+   "mcp": 5,
+   "http": 3,
+   "refused": 1
+  }
+ ],
+ "assistants": [
+  {
+   "assistant": "claude",
+   "requests": 74,
+   "grids": 55
+  },
+  {
+   "assistant": "chatgpt",
+   "requests": 43,
+   "grids": 34
+  },
+  {
+   "assistant": "api",
+   "requests": 31,
+   "grids": 22
+  },
+  {
+   "assistant": "lechat?",
+   "requests": 14,
+   "grids": 7
+  }
+ ],
+ "outcomes": [
+  {
+   "outcome": "grid",
+   "category": "grid",
+   "count": 118
+  },
+  {
+   "outcome": "quota_minute",
+   "category": "quota",
+   "count": 12
+  },
+  {
+   "outcome": "no_solution",
+   "category": "failure",
+   "count": 11
+  },
+  {
+   "outcome": "api_paused",
+   "category": "closed",
+   "count": 9
+  },
+  {
+   "outcome": "quota_day",
+   "category": "quota",
+   "count": 5
+  },
+  {
+   "outcome": "size_out_of_range",
+   "category": "invalid",
+   "count": 4
+  },
+  {
+   "outcome": "must_words",
+   "category": "failure",
+   "count": 3
+  }
+ ],
+ "formats": [
+  {
+   "format": "10x13",
+   "grids": 42
+  },
+  {
+   "format": "9x9",
+   "grids": 27
+  },
+  {
+   "format": "13x16",
+   "grids": 23
+  },
+  {
+   "format": "7x9",
+   "grids": 13
+  },
+  {
+   "format": "15x15",
+   "grids": 13
+  }
+ ],
+ "sources": [
+  {
+   "source": "claude.ai",
+   "views": 19
+  },
+  {
+   "source": "chatgpt.com",
+   "views": 9
+  },
+  {
+   "source": "chat.mistral.ai",
+   "views": 2
+  }
+ ],
+ "keys": {
+  "active": 2,
+  "revoked": 0,
+  "created_30d": 1,
+  "used_7d": 1
+ }
+}

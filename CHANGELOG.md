@@ -5,6 +5,17 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **L'API ouverte dans le poste de pilotage et le bilan du lundi** (ADR 0032, point 10 ; fin du lot 5) : une rubrique
+  « API ouverte » dans `/admin` (`GET /api/admin/api`) :
+  - les demandes de grille et leurs issues ;
+  - les voies (connecteur ou API HTTP) et les assistants ;
+  - les refus de quota ou d'API fermée ;
+  - l'attente dans la file, les formats ;
+  - les clés (des comptes seulement) ;
+  - les arrivées par un lien d'assistant.
+
+  Le bilan du lundi a son paragraphe « API ouverte ». Rien de neuf n'est mesuré. `make seed-demo` en tire des
+  exemples fictifs.
 - **L'API ouverte, lot 5 : les développeurs** (ADR 0032), après un retour du 13/11/2026 (« aucune page ne documente
   ton API ») :
   - la page `/developpeurs` : une grille en quatre appels curl, les routes, les réglages, la clé et les quotas, les

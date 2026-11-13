@@ -61,7 +61,7 @@ def admin_headers(test_app, client):
 
 
 def test_the_admin_space_has_routes(test_app):
-    assert admin_routes(test_app) == ["/api/admin/contact", "/api/admin/contact/<int:message_id>",
+    assert admin_routes(test_app) == ["/api/admin/api", "/api/admin/contact", "/api/admin/contact/<int:message_id>",
                                       "/api/admin/stats", "/api/admin/suggestions", "/api/admin/system",
                                       "/api/admin/tableau"]
 

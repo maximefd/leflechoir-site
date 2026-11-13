@@ -30,6 +30,7 @@ from flask import current_app
 from flask.cli import AppGroup
 from sqlalchemy.exc import IntegrityError
 
+import api_stats
 import seo
 import stats
 import system_samples
@@ -262,6 +263,8 @@ def weekly_body(now: datetime) -> str:
         line("Erreurs (4xx et 5xx)", "errors"),
         line("  dont 5xx", "server_errors"),
     ]
+
+    lines += ["", *api_stats.render_week(now)]
 
     messages = ContactMessage.query.filter(ContactMessage.site == config["SITE"])
     unread = messages.filter(ContactMessage.read_at.is_(None)).count()

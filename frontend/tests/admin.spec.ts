@@ -40,6 +40,8 @@ const stats = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-st
 const system = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-system.json"), "utf-8"));
 // Et pour `GET /api/admin/tableau` (`backend/tests/test_seo.py`), tiré du même jeu fictif
 const tableau = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-tableau.json"), "utf-8"));
+// Et pour `GET /api/admin/api` (`backend/tests/test_api_stats.py`), du même jeu fictif
+const api = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-api.json"), "utf-8"));
 // Et pour `GET /api/admin/contact` (`backend/tests/test_contact.py`)
 const inbox = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "admin-contact.json"), "utf-8"));
 const suggestions = {
@@ -62,6 +64,7 @@ async function asAdmin(page: Page, baseURL: string | undefined, server: unknown 
   await page.route("**/api/admin/suggestions", (route) => route.fulfill({ json: suggestions }));
   await page.route("**/api/admin/system", (route) => route.fulfill({ json: server }));
   await page.route("**/api/admin/contact", (route) => route.fulfill({ json: inbox }));
+  await page.route("**/api/admin/api", (route) => route.fulfill({ json: api }));
   await page.route("**/api/admin/tableau?*", (route) => {
     const days = Number(new URL(route.request().url()).searchParams.get("jours"));
     return route.fulfill({ json: { ...tableau, days } });
@@ -152,6 +155,20 @@ test("l'administrateur suit la course, semaine par semaine, avec sa tendance", a
   for (const name of ["Parties jouées", "Grilles publiées", "Avis reçus"]) {
     await expect(table.getByRole("row", { name: `${name} à venir` })).toBeVisible();
   }
+});
+
+test("l'administrateur suit l'API ouverte : voies, assistants, refus, clés et liens d'assistant", async ({ page, baseURL }) => {
+  await asAdmin(page, baseURL);
+
+  const group = page.locator("section").filter({ has: page.getByRole("heading", { name: "API ouverte", exact: true }) });
+  await expect(group.getByText("Grilles rendues (30 jours)")).toBeVisible();
+  await expect(group.getByText("Clés actives")).toBeVisible();
+  const table = group.getByRole("region", { name: "Chiffres de l'API par période" });
+  await expect(table.getByRole("row").filter({ hasText: "par le connecteur" })).toContainText(String(api.periods[1].mcp));
+  await expect(group.getByRole("img", { name: /^Grilles rendues\. / })).toBeVisible();
+  await expect(group.getByRole("row").filter({ hasText: "Claude" }).first()).toBeVisible();
+  await expect(group.getByText("(se dit tel, non vérifié)")).toBeVisible();
+  await expect(group.getByText("claude.ai", { exact: true })).toBeVisible();
 });
 
 test("l'administrateur lit l'état du serveur et le journal des alertes", async ({ page, baseURL }) => {

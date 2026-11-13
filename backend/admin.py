@@ -23,6 +23,7 @@ from jwt.exceptions import PyJWTError
 from sqlalchemy import func
 
 import alerts
+import api_stats
 import seo
 import stats
 import suggestions
@@ -72,6 +73,12 @@ def dashboard():
     if days not in DASHBOARD_DAYS:
         return jsonify({"error": "Période inconnue : 7, 30 ou 90 jours.", "reason": "unknown_period"}), 400
     return jsonify({"days": days, **stats.dashboard(days), "seo": seo.summary(days)})
+
+
+@admin_bp.get("/api")
+def api_usage():
+    """L'API ouverte (ADR 0032, point 10) : demandes, voies, assistants, refus, file, clés, arrivées par lien."""
+    return jsonify(api_stats.summary())
 
 
 @admin_bp.get("/system")

@@ -266,6 +266,51 @@ def _visit_events(rng: random.Random, start: datetime, site: str, lang: str, inc
     return visit.events + pages
 
 
+# L'API ouverte (ADR 0032) : la voie et l'assistant d'une demande, puis son issue
+API_WAYS = ((("mcp", "claude"), 45), (("mcp", "chatgpt"), 25), (("mcp", "lechat?"), 8), (("api", None), 22))
+API_OUTCOMES = ((("grid", 200), 82), (("no_solution", 422), 4), (("quota_minute", 429), 6), (("quota_day", 429), 3),
+                (("size_out_of_range", 400), 3), (("must_words", 422), 2))
+API_FORMATS = (("10x13", 40), ("9x9", 25), ("13x16", 15), ("7x9", 12), ("15x15", 8))
+LINK_SOURCES = (("claude.ai", 50), ("chatgpt.com", 35), ("chat.mistral.ai", 15))
+
+
+def _api_events(rng: random.Random, days: int, now: datetime, site: str, lang: str) -> list[dict]:
+    """Les demandes de grille de l'API et les arrivées par un lien d'assistant, tirées à part : les autres événements ne
+    bougent pas. Une vraie demande de l'API n'a pas d'empreinte ; celles-ci en portent une fictive, pour que la commande
+    sache les effacer."""
+    today = datetime.combine(now.date(), datetime.min.time())
+    events = []
+    for days_ago in range(min(days, 12) - 1, -1, -1):  # l'API est ouverte depuis peu
+        day = today - timedelta(days=days_ago)
+        closed = days_ago == 9  # un jour de pause du disjoncteur
+        for _ in range(round(rng.uniform(4, 9) * (1 + (12 - days_ago) / 6))):
+            at = day + timedelta(seconds=rng.uniform(0, 86400))
+            (client, assistant), (outcome, status) = _weighted(rng, API_WAYS), _weighted(rng, API_OUTCOMES)
+            if closed:
+                outcome, status = "api_paused", 503
+            computed = outcome in ("grid", "no_solution", "must_words")
+            duration = rng.randint(300, 4000) if computed else rng.randint(1, 6)
+            events.append({
+                "created_at": at, "kind": "generation", "outcome": outcome, "status": status, "route": "/v1/grids",
+                "duration_ms": duration, "cpu_ms": duration if computed else 1, "words": None,
+                "site": site, "lang": lang, "country": None, "user_id": None,
+                "visitor": DEMO_PREFIX + f"{rng.getrandbits(112):028x}",
+                "data": {"client": client, "assistant": assistant, "keyed": client == "api" and rng.random() < 0.6,
+                         "format": _weighted(rng, API_FORMATS),
+                         **({"queued_ms": rng.randint(20, 2500)} if computed else {})},
+            })
+        for _ in range(rng.randint(1, 5)):
+            events.append({
+                "created_at": day + timedelta(seconds=rng.uniform(0, 86400)), "kind": "page", "outcome": "view",
+                "status": 204, "route": "/api/audience", "duration_ms": 4, "cpu_ms": 1, "words": None,
+                "site": site, "lang": lang, "country": "FR", "user_id": None,
+                "visitor": DEMO_PREFIX + f"{rng.getrandbits(112):028x}",
+                "data": {"path": "/grid", "referrer": "", "browser_lang": "fr", "visible_ms": rng.randint(20_000, 400_000),
+                         "source": _weighted(rng, LINK_SOURCES)},
+            })
+    return events
+
+
 def generate(days: int = DEFAULT_DAYS, seed: int = DEFAULT_SEED, now: datetime | None = None,
              site: str = "fr", lang: str = "fr") -> list[dict]:
     """Les événements fictifs des `days` derniers jours, dans l'ordre : mêmes arguments, mêmes événements."""
@@ -282,6 +327,7 @@ def generate(days: int = DEFAULT_DAYS, seed: int = DEFAULT_SEED, now: datetime |
             hour = rng.choices(range(24), weights=HOUR_WEIGHTS)[0]
             start = day + timedelta(hours=hour, seconds=rng.uniform(0, 3600))
             events.extend(_visit_events(rng, start, site, lang, incident=days_ago == INCIDENT_DAYS_AGO))
+    events.extend(_api_events(random.Random(f"api-{seed}"), days, now, site, lang))
     # Rien dans le futur : la journée en cours s'arrête à maintenant
     return sorted((event for event in events if event["created_at"] <= now), key=lambda event: event["created_at"])
 
