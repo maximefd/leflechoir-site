@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 import { PageRubrique } from "@/components/layout/page-rubrique";
 import { LIENS_AIDE, LIENS_CREER } from "@/components/layout/rubriques";
 import { LienPrepare } from "@/components/grille-api/lien-prepare";
+import { LIEN_PREPARE_TEXTE } from "@/content/lien-prepare";
 
 // Une page de navigation, sans texte à elle : hors des moteurs (le guide /creer-des-mots-fleches porte la requête),
 // mais ses liens se suivent
@@ -19,11 +20,7 @@ export default function CreerPage() {
           <LienPrepare />
           {/* Pour un assistant IA qui ouvre la page sans JavaScript : ce que fait le lien préparé */}
           <noscript>
-            <p className="mb-6">
-              Avec des paramètres (lang, taille, mots, mystere, niveau), cette page prépare le générateur de mots fléchés
-              avec ces mots : la personne y voit ce qui a été compris, puis lance sa grille. Exemple :
-              /creer?lang=fr&amp;taille=10x10&amp;mots=gateau,bougie,cadeau&amp;mystere=MAMIE&amp;niveau=facile
-            </p>
+            <p className="mb-6">{LIEN_PREPARE_TEXTE}</p>
           </noscript>
         </>
       }

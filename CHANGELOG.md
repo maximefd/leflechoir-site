@@ -5,6 +5,16 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **L'API ouverte, lot 5 : les développeurs** (ADR 0032), après un retour du 13/11/2026 (« aucune page ne documente
+  ton API ») :
+  - la page `/developpeurs` : une grille en quatre appels curl, les routes, les réglages, la clé et les quotas, les
+    erreurs et leurs codes `reason`, le fichier de grille ;
+  - la spécification OpenAPI 3.1 à `/v1/openapi.json`, tirée des modèles des routes ; la notice (`GET /v1`) la cite ;
+  - les clés d'API dans « Mon compte » : créer (conditions cochées à la main, clé montrée une fois), lister, révoquer ;
+  - le lien préparé décrit à tous les endroits que lit un assistant (`llms.txt`, `/grid`, `/mots-fleches-ia`) ; il
+    comprend `taille=petite`, `moyenne` ou `grande`, comme les boutons du générateur ; il ouvre le générateur et lance
+    la grille sans clic (plus d'écran « voici ce que j'ai compris » : les réglages se lisent dans le formulaire) ;
+  - le pied de page mène au connecteur (« Avec une IA ») et à l'API.
 - **L'API ouverte, lot 4 : les annuaires** (ADR 0032 ; à soumettre après l'ouverture, `docs/ANNUAIRES.md`) :
   - le connecteur aux règles de Claude et de ChatGPT : annotations explicites sur chaque outil, aucun horodatage dans
     ce que lit le modèle, l'interface déclarée sans ressource extérieure, le jeton de domaine d'OpenAI servi à
@@ -109,6 +119,9 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   n'est plus écrit en dur dans le code du site ni dans le relevé SEO, et un test y veille.
 
 ### Corrigé
+- **Alertes de nuit** : le processus de génération de l'API ne prévient plus Sentry quand la base est injoignable
+  moins de deux minutes (le redémarrage de nuit du serveur, à 04:30, en levait deux par redémarrage) ; au-delà, une
+  alerte par panne. Les autres erreurs partent toujours tout de suite.
 - **Grille du jour** : le panneau « Bravo » vient à l'écran même quand la page ajoute au-dessus la réussite et la
   série ; il restait 64 px sous l'écran sur la grille du 3 novembre (le défilement attend deux images).
 

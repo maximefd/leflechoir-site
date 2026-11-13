@@ -37,6 +37,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, Validation
 from werkzeug.exceptions import HTTPException
 
 import alerts
+import api_openapi
 import grid_file
 import usage
 from api_keys import authenticate
@@ -657,6 +658,8 @@ def notice():
                            "(Authorization: Bearer flk_…), created in the account page of the website, valid for "
                            "every language."),
         "messages": "Every error has a stable « reason »; its « message » follows Accept-Language (en, fr, de).",
+        "documentation": f"{config['FRONTEND_URL'].rstrip('/')}/developpeurs",
+        "openapi": f"{request.host_url.rstrip('/')}/v1/openapi.json",
         "license": (f"Grids are free to use, including commercially. Every drawing is signed « made with the "
                     f"{_signature()} API »; "
                     f"attribution appreciated. Terms: {config['FRONTEND_URL'].rstrip('/')}/terms#api"),
@@ -677,6 +680,14 @@ def limits():
     now = _utcnow()
     return jsonify({"keyed": g.api_key is not None, "limits": _limits(g.api_key), "used": _usage_of(g.api_key, now),
                     "time_budget_s": current_app.config["API_TIME_BUDGET_S"]}), 200
+
+
+@api_v1_bp.route("/openapi.json", methods=["GET"])
+def openapi():
+    """La spécification OpenAPI 3.1 (api_openapi.py), pour les générateurs de clients et les assistants."""
+    config = current_app.config
+    return jsonify(api_openapi.spec(request.host_url.rstrip("/"), config["FRONTEND_URL"].rstrip("/"),
+                                    config["API_TERMS_VERSION"])), 200
 
 
 def _normalized_words(words: list[str], code: str) -> tuple[list[str], list[str]]:

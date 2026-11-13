@@ -59,6 +59,7 @@ const PUBLIC_PAGES = [
     title: "Créer des mots fléchés avec ChatGPT, Claude ou Le Chat | Le Fléchoir",
     canonical: `${SITE_URL}/mots-fleches-ia`,
   },
+  { path: "/developpeurs", title: "L'API pour les développeurs | Le Fléchoir", canonical: `${SITE_URL}/developpeurs` },
   { path: "/contact", title: "Contact | Le Fléchoir", canonical: `${SITE_URL}/contact` },
   { path: "/legal", title: "Mentions légales | Le Fléchoir", canonical: `${SITE_URL}/legal` },
   { path: "/privacy", title: "Confidentialité | Le Fléchoir", canonical: `${SITE_URL}/privacy` },
@@ -160,6 +161,12 @@ test("llms.txt présente le site aux assistants IA : ses outils, ses pages et sa
   // Que des liens vers le site lui-même, aucun brouillon
   for (const [, url] of body.matchAll(/\]\((.*?)\)/g)) expect(url.startsWith(`${SITE_URL}/`), url).toBe(true);
   expect(body).not.toContain("ecrire-une-definition-de-mots-fleches");
+  // Retour du 13/11/2026 : un assistant doit trouver seul le lien préparé, le connecteur et l'API
+  expect(body).toContain("## Pour un assistant IA");
+  expect(body).toContain(`${SITE_URL}/creer?taille=moyenne&mots=`);
+  expect(body).toContain("https://mcp.leflechoir.fr/mcp");
+  expect(body).toContain("https://api.leflechoir.fr/v1/openapi.json");
+  expect(body).toContain(`(${SITE_URL}/developpeurs)`);
 });
 
 test("la page « Qui fait le site » se trouve depuis le pied de page, avec ses données structurées", async ({ page }) => {

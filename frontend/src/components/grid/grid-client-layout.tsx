@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { AlertTriangle, Check, Grid3x3, Loader2, RefreshCw } from "lucide-react";
 import { AccountBenefits } from "@/components/account/account-benefits";
 import { PrintGrid } from "@/components/grid/print-grid";
@@ -15,7 +16,9 @@ import { DifficultyPanel, FitNotice, SizeAdvice, type Difficulty } from "@/compo
 import { DictionaryPicker } from "@/components/grid/dictionary-picker";
 import { SaveGrid, type SavedRef } from "@/components/grid/save-grid";
 import { loadLastGrid, storeLastGrid } from "@/lib/last-grid";
+import { readPreparedLink, type PreparedLink } from "@/lib/grille-api";
 import { mysteryProblem } from "@/lib/mystery";
+import { PRESETS } from "@/lib/tailles";
 
 /** La grille est là, mais le mot mystère n'a pas pu y être écrit : il manque des lettres (#218). */
 type MysteryError = { error: string; reason: string; missing: string[] };
@@ -30,12 +33,6 @@ const sizeKey = (size: GridSize) => `${size.width}x${size.height}`;
  */
 const SIDES = { min: 5, max: 20 };
 const isSide = (side: number) => Number.isInteger(side) && side >= SIDES.min && side <= SIDES.max;
-/** Trois tailles d'un clic (#220, retour de l'auteur du 06/10/2026) ; toute autre taille passe par « Taille libre ». */
-const PRESETS: (GridSize & { name: string })[] = [
-  { name: "Petite", width: 7, height: 9 },
-  { name: "Moyenne", width: 10, height: 13 },
-  { name: "Grande", width: 13, height: 16 },
-];
 const DEFAULT_SIZE = { width: "10", height: "13" };
 
 /** Où en est la recherche (#209, #220) : de quoi faire avancer la barre, sans montrer de grille intermédiaire. */
@@ -304,6 +301,19 @@ function SearchProgress({ search }: { search: Search }) {
  * La demande et la dernière grille sont gardées dans le navigateur (`last-grid`) : on peut aller se
  * connecter et revenir la conserver.
  */
+const LANGUES: Record<string, string> = { de: "allemand", en: "anglais" };
+
+/** Ce que le lien préparé n'a pas pu suivre, dit plutôt que passé sous silence : la grille part quand même. Le niveau
+ * n'en fait pas partie : le générateur du site choisit ses mots lui-même, et les assistants le donnent presque toujours. */
+function announce(link: PreparedLink) {
+  const notes: string[] = [];
+  if (link.lang && link.lang !== "fr") {
+    notes.push(`Le lien demande une grille en ${LANGUES[link.lang] ?? link.lang} : ce site fait des grilles en français.`);
+  }
+  if (link.ignored.length) notes.push(`Pas compris, donc laissé de côté : ${link.ignored.join(", ")}.`);
+  if (notes.length) toast.info(notes.join(" "), { duration: 12_000 });
+}
+
 export function GridClientLayout() {
   const [entries, setEntries] = useState<WordEntry[]>([]);
   const [sizeFields, setSizeFields] = useState(DEFAULT_SIZE);
@@ -328,11 +338,32 @@ export function GridClientLayout() {
   const [mysteryError, setMysteryError] = useState<MysteryError | null>(null);
   const resultRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  // Arrivé par un lien préparé : la grille se lance seule, dès que ses mots sont rangés (obligatoires ou souhaités)
+  const [launch, setLaunch] = useState(false);
+  // Le lien lu une fois : l'adresse est nettoyée aussitôt, et l'effet de montage peut repasser (mode strict de React)
+  const preparedRef = useRef<PreparedLink | null | undefined>(undefined);
 
   // Lu après le montage : le stockage n'existe pas au rendu statique, et l'y lire casserait l'hydratation
   useEffect(() => {
+    const first = preparedRef.current === undefined;
+    if (first) preparedRef.current = readPreparedLink(window.location.search);
+    const link = preparedRef.current;
     const last = loadLastGrid();
-    if (last) {
+    if (link) {
+      // Le lien préparé (ADR 0032) l'emporte sur la grille gardée : c'est une nouvelle demande. Ses mots passent
+      // par le même tri que ceux qu'on tape (« pending ») ; l'adresse est nettoyée pour qu'un rechargement ne relance
+      // pas la grille, sauf `utm_source`, que la mesure lit au départ de la page.
+      if (link.size) setSizeFields({ width: String(link.size.width), height: String(link.size.height) });
+      setEntries(link.words.map((text, index) => ({ id: `lien-${index}-${text}`, text, required: false, pending: true })));
+      setMystery(link.mystery);
+      setMysteryOpen(Boolean(link.mystery));
+      if (first) {
+        announce(link);
+        const source = new URLSearchParams(window.location.search).get("utm_source");
+        window.history.replaceState(null, "", source ? `${window.location.pathname}?utm_source=${encodeURIComponent(source)}` : window.location.pathname);
+      }
+      setLaunch(true);
+    } else if (last) {
       if (last.size) setSizeFields({ width: String(last.size.width), height: String(last.size.height) });
       setEntries(last.entries);
       setDictionaryIds(last.dictionaryIds);
@@ -453,8 +484,8 @@ export function GridClientLayout() {
     return () => { cancelled = true; };
   }, [entries, sizeLabel]);
 
-  const generate = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const generate = async (event?: React.FormEvent) => {
+    event?.preventDefault();
     if (!size || mysteryHint) return;
     setIsGenerating(true);
     setFailure(null);
@@ -522,6 +553,15 @@ export function GridClientLayout() {
 
   // Une recherche en cours s'arrête si la page est quittée
   useEffect(() => () => streamRef.current?.abort(), []);
+
+  // Le lien préparé : un seul départ, une fois les mots du lien rangés, sans clic (demande de l'auteur du 13/11/2026)
+  useEffect(() => {
+    if (!launch || !restored || entries.some((entry) => entry.pending)) return;
+    setLaunch(false);
+    void generate();
+    // `generate` lit l'état du rendu en cours : c'est celui qu'on veut, et il change à chaque rendu
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [launch, restored, entries]);
 
   return (
     <main className="container mx-auto p-4 md:p-8">

@@ -24,6 +24,7 @@ const FIXED_PATHS = [
   "/mots",
   "/a-propos",
   "/mots-fleches-ia",
+  "/developpeurs",
   "/contact",
   "/legal",
   "/privacy",

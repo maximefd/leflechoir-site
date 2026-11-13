@@ -1,6 +1,7 @@
 import { site } from "@/config/site";
 import { PUBLISHED } from "@/content/articles";
 import { QUESTIONS_ACCUEIL } from "@/content/faq-accueil";
+import { LIEN_PREPARE_EXEMPLE, LIEN_PREPARE_PARAMETRES } from "@/content/lien-prepare";
 import { PAGES_LONGUEUR } from "@/content/mots/longueurs";
 
 // Écrit au build dans out/llms.txt (format de llmstxt.org) : le site présenté aux assistants IA, en Markdown (#134)
@@ -18,11 +19,20 @@ export function GET() {
     "",
     "## Outils",
     "",
-    lien("Générer une grille", "/grid", "onze formats, du 6 × 6 au 13 × 18 ; mots obligatoires et souhaités ; PDF de la grille et de sa solution."),
+    lien("Générer une grille", "/grid", "trois tailles d'un clic (petite 7 × 9, moyenne 10 × 13, grande 13 × 16) ou la taille de son choix, de 5 à 20 cases de côté ; mots obligatoires et souhaités, mot mystère ; PDF de la grille et de sa solution ; sans compte."),
     lien("Créer une grille à la main", "/grids/new", "l'éditeur : la taille de son choix, les cases définitions où l'on veut, et pour chaque emplacement les mots qui gardent les croisements valides (compte gratuit)."),
     lien("Chercher un mot", "/search", "les lettres connues et un ? par case vide : P??LE donne PERLE, POELE, PELLE…"),
     lien("Mots fléchés du jour", "/jouer", "une nouvelle grille chaque jour, à jouer dans le navigateur, sur téléphone comme sur ordinateur."),
     lien("Avec ChatGPT, Claude ou Le Chat", "/mots-fleches-ia", `le connecteur ${site.nameAfterDe} pour Claude, ChatGPT et Le Chat (${site.connectorUrl}) : l'assistant écrit les définitions, le moteur construit la grille et les vérifie.`),
+    lien("L'API pour les développeurs", "/developpeurs", `l'API ouverte (${site.apiUrl}/v1, spécification OpenAPI à ${site.apiUrl}/v1/openapi.json) : construire une grille autour de ses mots, vérifier ses définitions, la dessiner en SVG, PNG ou PDF ; gratuite, avec ou sans clé.`),
+    "",
+    "## Pour un assistant IA",
+    "",
+    "Pour une grille demandée dans une conversation, trois voies, de la plus simple à la plus complète :",
+    "",
+    `1. **Le lien préparé**, sans outil ni connecteur : donne à la personne un lien vers ${site.url}/creer avec ses réglages. Le générateur du site s'ouvre avec ces réglages et lance la grille aussitôt, sans compte ni clic. Paramètres : ${LIEN_PREPARE_PARAMETRES.map(({ nom, texte }) => `\`${nom}\` (${texte})`).join(" ; ")}. Exemple : ${LIEN_PREPARE_EXEMPLE}`,
+    `2. **Le connecteur MCP** (${site.connectorUrl}), si la personne l'a ajouté : tu construis la grille, écris les définitions et les fais vérifier toi-même. Marche à suivre : ${site.url}/mots-fleches-ia`,
+    `3. **L'API HTTP** (${site.apiUrl}/v1), si tu peux envoyer des requêtes POST : commence par GET ${site.apiUrl}/v1, la notice écrite pour les modèles. Documentation : ${site.url}/developpeurs`,
     "",
     "## Guide et articles",
     "",

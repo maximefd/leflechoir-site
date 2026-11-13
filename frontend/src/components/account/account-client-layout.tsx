@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { apiFetch } from "@/lib/api-client";
 import { site } from "@/config/site";
 import { MySuggestions } from "@/components/suggestions/my-suggestions";
+import { ApiKeys } from "@/components/account/api-keys";
 
 type Account = {
   email: string; email_verified: boolean; dictionaries: number; words: number; grids: number; reussites?: number;
@@ -133,6 +134,8 @@ export function AccountClientLayout() {
       </div>
 
       <MySuggestions />
+
+      {account.data ? <ApiKeys emailVerified={account.data.email_verified} /> : null}
 
       <section className="space-y-4 rounded-lg border border-destructive/40 p-6">
         <div>

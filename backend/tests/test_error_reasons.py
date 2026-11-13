@@ -14,7 +14,9 @@ from tests.helpers import send
 
 BACKEND = Path(__file__).resolve().parents[1]
 # Des dictionnaires qui ont une clé « error » sans être une réponse d'erreur
-NOT_ERROR_RESPONSES = {("seo.py", "sync_error")}
+NOT_ERROR_RESPONSES = {("seo.py", "sync_error"),
+                       # Le champ « error » du schéma OpenAPI d'une génération (api_openapi.py) : une description
+                       ("api_openapi.py", "When failed")}
 
 
 def _error_dicts_without_reason():

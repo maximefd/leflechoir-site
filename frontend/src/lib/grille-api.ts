@@ -1,3 +1,4 @@
+import { tailleNommee } from "@/lib/tailles";
 import type { MiniGridSpec } from "@/lib/mini-grid";
 
 /**
@@ -114,8 +115,10 @@ const LEVELS: Record<string, "easy" | "medium" | "hard"> = {
 };
 const KEYS = ["lang", "taille", "size", "mots", "words", "mystere", "mystery", "niveau", "level"];
 
-/** « 10x10 », « 10×10 », « 10 x 10 » : une taille de 5 à 20 cases de côté, ou rien. */
+/** « 10x10 », « 10×10 », « 10 x 10 » : une taille de 5 à 20 cases de côté ; ou « petite », « moyenne », « grande ». */
 function sizeOf(text: string): PreparedLink["size"] {
+  const named = tailleNommee(text);
+  if (named) return { width: named.width, height: named.height };
   const match = /^(\d{1,2})\s*[x×X*]\s*(\d{1,2})$/.exec(text.trim());
   if (!match) return null;
   const [width, height] = [Number(match[1]), Number(match[2])];

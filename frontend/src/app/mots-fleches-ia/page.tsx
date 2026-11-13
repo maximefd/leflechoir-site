@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 import Link from "next/link";
 import { linkClass, Section } from "@/components/legal/section";
 import { site } from "@/config/site";
+import { LIEN_PREPARE_EXEMPLE } from "@/content/lien-prepare";
 import { publicPage } from "@/lib/seo";
 
 /**
@@ -98,6 +99,19 @@ export default function MotsFlechesIaPage() {
             vérifier, et jamais ses définitions (<Link href="/privacy#api" className={linkClass}>confidentialité</Link>,{" "}
             <Link href="/terms#api" className={linkClass}>conditions</Link>). Les grilles sont à toi, y compris pour un
             usage commercial.
+          </p>
+        </Section>
+
+        <Section title="Sans connecteur" id="sans-connecteur">
+          <p>
+            Ton assistant peut aussi te donner un lien qui prépare le générateur du site avec tes mots : demande-lui
+            « un lien de grille {site.nameAfterDe} ». Le générateur du site s&apos;ouvre avec tes mots et lance la grille aussitôt. Par
+            exemple :
+          </p>
+          <p className="break-all rounded-md border bg-secondary/20 p-3 font-mono text-sm text-foreground">{LIEN_PREPARE_EXEMPLE}</p>
+          <p>
+            Pour un programme, l&apos;API fait tout cela sans assistant :{" "}
+            <Link href="/developpeurs" className={linkClass}>l&apos;API pour les développeurs</Link>.
           </p>
         </Section>
 

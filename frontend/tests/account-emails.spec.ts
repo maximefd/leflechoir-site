@@ -49,12 +49,29 @@ test("le lien reçu à l'inscription confirme l'adresse", async ({ page }) => {
   const email = await registerAccount(page, "confirmation");
   await page.goto("/account");
   await expect(page.getByText("pas encore confirmée")).toBeVisible();
+  // Une clé d'API se rattache à une adresse confirmée
+  await expect(page.getByTestId("cles-api")).toContainText("Confirme d'abord ton adresse e-mail pour créer une clé.");
 
   await page.goto(await linkFromMail(page, email, "/verify-email"));
   await expect(page.getByRole("status")).toHaveText("Adresse confirmée.");
 
   await page.goto("/account");
   await expect(page.getByText("Adresse confirmée.")).toBeVisible();
+
+  // Puis la clé d'API (lot 5) : les conditions cochées à la main, la clé montrée une seule fois, révocable
+  const cles = page.getByTestId("cles-api");
+  await cles.getByLabel("Nom de la clé (ton application)").fill("Essai e2e");
+  await expect(cles.getByRole("button", { name: "Créer une clé" })).toBeDisabled();
+  await cles.getByTestId("cle-conditions").check();
+  await cles.getByRole("button", { name: "Créer une clé" }).click();
+  await expect(cles.getByTestId("cle-creee")).toContainText(/flk_[A-Za-z0-9_-]{20,}/);
+  await expect(cles.getByTestId("liste-cles")).toContainText("Essai e2e");
+  await expect(cles.getByTestId("liste-cles")).toContainText("pas encore servie");
+
+  await page.reload();
+  await expect(cles.getByTestId("cle-creee")).toHaveCount(0);
+  await cles.getByRole("button", { name: "Révoquer" }).click();
+  await expect(cles.getByText("Aucune clé pour l'instant.")).toBeVisible();
 });
 
 test("un mot de passe oublié se change par le lien reçu, une seule fois", async ({ page }) => {

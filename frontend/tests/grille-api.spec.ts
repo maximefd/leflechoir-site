@@ -99,20 +99,27 @@ test("un lien abîmé ne casse pas la page", async ({ page }) => {
   await expect(page.getByTestId("grille-absente")).toContainText("Ce lien est abîmé");
 });
 
-test("le lien préparé d'une IA : ce qui est compris, un « & » oublié compris quand même, puis le générateur", async ({ page }) => {
+test("le lien préparé d'une IA : un « & » oublié compris quand même, et la grille lancée sans clic", async ({ page }) => {
   // Le lien tel que Le Chat l'a écrit le 27/10/2026 : « mystere » collé aux mots faute de « & »
   await page.goto("/creer?lang=fr&taille=10x10&mots=grandmere,Léo,Jade,cadeau,gateau,bougie,mystere=anniversaire&niveau=facile&utm_source=chat.mistral.ai");
 
-  const bloc = page.getByTestId("lien-prepare");
-  await expect(bloc).toContainText("10 × 10 cases");
-  await expect(page.getByTestId("lien-mots")).toHaveText("grandmere, Léo, Jade, cadeau, gateau, bougie");
-  await expect(page.getByTestId("lien-mystere")).toHaveText("anniversaire");
-  await expect(page.getByTestId("lien-ignore")).toHaveCount(0);
+  // Tout droit au générateur, l'adresse nettoyée (sauf la source, pour la mesure) : recharger ne relance rien
+  await expect(page).toHaveURL(/\/grid\?utm_source=chat\.mistral\.ai$/);
+  await expect(page.getByText(/^cadeau$/i).first()).toBeVisible();
+  await expect(page.getByLabel("Largeur")).toHaveValue("10");
+  await expect(page.getByLabel("Hauteur")).toHaveValue("10");
+  // La grille part seule, sans qu'on touche « Générer la grille »
+  await expect(page.getByRole("button", { name: "Générer une autre grille" })).toBeEnabled({ timeout: 60_000 });
+});
 
-  await page.getByTestId("lien-preparer").click();
+test("le lien préparé comprend les tailles du générateur par leur nom : « moyenne » vaut 10 × 13", async ({ page }) => {
+  // La demande du retour du 13/11/2026 : « une grille moyenne, comprenant le mot Eric »
+  await page.goto("/creer?taille=moyenne&mots=Eric");
 
   await expect(page).toHaveURL(/\/grid$/);
-  await expect(page.getByText(/^cadeau$/i).first()).toBeVisible();
+  await expect(page.getByLabel("Largeur")).toHaveValue("10");
+  await expect(page.getByLabel("Hauteur")).toHaveValue("13");
+  await expect(page.getByText(/^Eric$/i).first()).toBeVisible();
 });
 
 test("sans paramètres, /creer reste le carrefour « Créer une grille »", async ({ page }) => {

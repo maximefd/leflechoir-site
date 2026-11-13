@@ -2,6 +2,8 @@
 
 import { type Metadata } from 'next';
 import { GridClientLayout } from '@/components/grid/grid-client-layout'; // On importe notre nouveau composant
+import Link from 'next/link';
+import { LIEN_PREPARE_TEXTE } from '@/content/lien-prepare';
 import { publicPage } from '@/lib/seo';
 
 // Ce fichier est maintenant un Composant Serveur, il peut exporter les métadonnées.
@@ -14,5 +16,22 @@ export const metadata: Metadata = publicPage({
 
 export default function GridPage() {
   // Son seul travail est de rendre le composant client qui contient toute la logique.
-  return <GridClientLayout />;
+  return (
+    <>
+      <GridClientLayout />
+      {/* Pour qui vient avec un assistant IA (retour du 13/11/2026 : Claude, sur cette page, n'a trouvé ni l'API ni le lien
+          préparé). Le texte complet du lien est dans le HTML, replié : l'assistant qui lit la page le trouve. */}
+      <aside className="container mx-auto max-w-4xl px-4 pb-8 text-sm text-muted-foreground" data-testid="avec-une-ia">
+        <p>
+          Avec ChatGPT, Claude ou Le Chat : <Link href="/mots-fleches-ia" className="underline underline-offset-2 hover:text-foreground">ajoute
+          le connecteur</Link>, ou demande à ton assistant un lien de grille.{" "}
+          <Link href="/developpeurs" className="underline underline-offset-2 hover:text-foreground">L&apos;API pour les développeurs</Link>.
+        </p>
+        <details className="mt-2">
+          <summary className="cursor-pointer">Le lien de grille, pour ton assistant</summary>
+          <p className="mt-1 break-all">{LIEN_PREPARE_TEXTE}</p>
+        </details>
+      </aside>
+    </>
+  );
 }

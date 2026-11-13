@@ -23,6 +23,12 @@ export function Footer() {
           <Link href="/mots" className="hover:text-primary">
             Listes de mots
           </Link>
+          <Link href="/mots-fleches-ia" className="hover:text-primary">
+            Avec une IA
+          </Link>
+          <Link href="/developpeurs" className="hover:text-primary">
+            API
+          </Link>
           <Link href="/a-propos" className="hover:text-primary">
             Qui fait le site
           </Link>

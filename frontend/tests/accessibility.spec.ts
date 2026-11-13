@@ -33,6 +33,7 @@ const PAGES = [
   { path: "/login", name: "connexion" },
   { path: "/register", name: "inscription" },
   { path: "/account", name: "mon compte (invité)" },
+  { path: "/developpeurs", name: "l'API pour les développeurs" },
   { path: "/contact", name: "contact" },
   { path: "/privacy", name: "confidentialité" },
   { path: "/terms", name: "conditions d'utilisation" },

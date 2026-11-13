@@ -150,6 +150,35 @@ def test_the_notice_tells_a_model_everything_it_needs(api_app, client):
     assert notice["clues"]["max_chars_half_cell"] < notice["clues"]["max_chars_full_cell"]
 
 
+def test_the_notice_points_to_the_documentation_and_the_specification(api_app, client):
+    notice = client.get("/v1", headers=AGENT).get_json()
+    assert notice["documentation"].endswith("/developpeurs")
+    assert notice["openapi"].endswith("/v1/openapi.json")
+
+
+def test_the_openapi_specification_covers_every_route_and_the_real_schemas(api_app, client):
+    """Chaque route de /v1 est décrite, et les corps viennent des modèles des routes : ils ne peuvent pas s'écarter."""
+    response = client.get("/v1/openapi.json", headers=AGENT)
+    assert response.status_code == 200
+    spec = response.get_json()
+    assert spec["openapi"].startswith("3.1")
+    rules = {rule.rule.replace("<public_id>", "{id}") for rule in api_app.url_map.iter_rules()
+             if rule.rule.startswith("/v1") and "<path:" not in rule.rule}
+    assert {rule.rstrip("/") or "/v1" for rule in rules} == set(spec["paths"])
+    schemas = spec["components"]["schemas"]
+    create = schemas["CreateGridRequest"]
+    assert {"lang", "width", "height", "level", "required_words", "preferred_words", "mystery_word",
+            "author"} <= set(create["properties"])
+    assert create["additionalProperties"] is False
+    assert "rows" in schemas["GridFileIn"]["properties"]
+    for path in spec["paths"].values():
+        for operation in path.values():
+            for answer in operation["responses"].values():
+                for media in answer.get("content", {}).values():
+                    ref = media["schema"].get("$ref")
+                    assert ref is None or ref.rsplit("/", 1)[1] in schemas
+
+
 def test_the_answers_carry_the_terms_and_the_mining_reservation(api_app, client):
     """Avis du 08/11/2026 : la version des conditions dans la notice et chaque réponse, et la réserve de fouille de
     textes et de données au format TDMRep (lisible par machine)."""
