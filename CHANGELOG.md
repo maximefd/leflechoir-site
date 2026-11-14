@@ -5,7 +5,7 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
-- **Brouillon d'article : « Pourquoi les IA ratent leurs mots fléchés »** (titre de travail, `draft: true`) : l'essai
+- **Article publié : « Pourquoi les IA ratent leurs mots fléchés »** (14/11/2026, titre validé par l'auteur) : l'essai
   du 14/11/2026, une même grille 7 × 7 demandée à ChatGPT, Gemini, Mistral Vibe, Claude et Copilot, mesurée case par
   case (une seule grille juste, aucune juste et serrée), puis au moteur par l'API ouverte (16 mots sur 16, 33
   croisements justes sur 33, en moins d'une seconde). L'article explique pourquoi elles ratent et comment une IA

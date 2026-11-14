@@ -4,15 +4,13 @@ import { articleAvecTexte } from "@/content/articles/avec-texte";
 import { specFromGeneration } from "@/lib/mini-grid";
 
 /**
- * Brouillon rédigé pour l'auteur, à relire ; le titre est un titre de travail, l'auteur choisit le final.
- * Tous les chiffres viennent de l'essai du 14/11/2026 : les réponses brutes des assistants, leur mesure par
- * `python -m tools.articles mesurer` et le tableau daté sont dans `data/essais-ia/2026-11/` (privé). À vérifier
- * avant publication : le nom affiché du modèle de Gemini (noté « Flashlite » pendant l'essai). Le texte se
- * reprend dans la page, au téléphone (ADR 0027).
+ * Publié le 14/11/2026 ; titre et nom des modèles validés par l'auteur. Tous les chiffres viennent de l'essai du
+ * 14/11/2026 : les réponses brutes des assistants, leur mesure par `python -m tools.articles mesurer` et le tableau
+ * daté sont dans `data/essais-ia/2026-11/` (privé). Le texte se reprend dans la page, au téléphone (ADR 0027).
  */
 export const article = articleAvecTexte("pourquoi-les-ia-ratent-leurs-mots-fleches", texte, {
   published: "2026-11-14",
-  draft: true,
+  draft: false,
   related: ["generer", "guide", "mystere"],
   // Les grilles telles que les assistants les ont rendues (data/essais-ia/2026-11/chatgpt.txt et claude.txt) ; les
   // mots faux sont ceux que la mesure n'a trouvés dans aucun lexique

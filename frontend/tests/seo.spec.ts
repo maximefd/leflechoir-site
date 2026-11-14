@@ -142,6 +142,7 @@ test("le sitemap liste les pages publiques, et elles seules", async ({ request }
   });
   expect(urls).toEqual([
     ...attendues,
+    `${SITE_URL}/articles/pourquoi-les-ia-ratent-leurs-mots-fleches`,
     `${SITE_URL}/articles/mots-fleches-dans-le-monde`,
     ...dates.map((date) => `${SITE_URL}/jouer/${date}`),
   ]);
