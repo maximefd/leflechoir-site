@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { ArticleEditor } from "@/components/articles/article-editor";
 import { ForceRating } from "@/components/articles/force-rating";
+import { GrilleIllustree } from "@/components/articles/grille-illustree";
 import { MiniGridGame } from "@/components/articles/mini-grid-game";
 import { linkClass } from "@/components/legal/section";
 import { site } from "@/config/site";
@@ -98,6 +99,9 @@ export function ArticleView({ article }: { article: Article }) {
                 <h2 id={id} className="scroll-mt-32 pt-6 text-2xl font-semibold text-foreground">{title}</h2>
                 {body}
               </section>
+              {article.illustrations
+                ?.filter((illustration) => illustration.after === id)
+                .map((illustration) => <GrilleIllustree key={illustration.titre} illustration={illustration} />)}
               {id === gridAfter && grid}
             </Fragment>
           ))}

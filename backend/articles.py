@@ -25,6 +25,7 @@ ARTICLE_SLUGS = frozenset({
     "ecrire-une-definition-de-mots-fleches",
     "pourquoi-les-mots-fleches-reviennent",
     "mots-fleches-dans-le-monde",
+    "pourquoi-les-ia-ratent-leurs-mots-fleches",
 })
 
 

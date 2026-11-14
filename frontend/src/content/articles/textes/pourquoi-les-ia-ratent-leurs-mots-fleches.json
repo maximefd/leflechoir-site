@@ -1,0 +1,73 @@
+{
+  "title": "Pourquoi les IA ratent leurs mots fléchés (et comment elles ont fini par appeler notre moteur)",
+  "description": "J’ai demandé une grille de mots fléchés 7 × 7 à cinq assistants IA et j’ai vérifié chaque case. Une seule tient debout, et ce n’est pas vraiment une grille.",
+  "chapo": "Les assistants IA écrivent des poèmes, des lettres de motivation et des recettes. Alors je leur ai demandé une petite grille de mots fléchés, la même à chacun, puis j’ai vérifié chaque case. Le résultat est instructif, et parfois très drôle.",
+  "sections": [
+    {
+      "id": "l-essai",
+      "title": "L’essai",
+      "paragraphs": [
+        "Le 14 novembre 2026, j’ai ouvert cinq assistants dans leur version gratuite, chacun dans une conversation neuve, sans aucun outil branché : ChatGPT, Gemini, Mistral Vibe (le nouveau nom du Chat de Mistral), Claude et Copilot. À chacun, j’ai collé exactement la même demande : une grille de mots fléchés de 7 colonnes sur 7 lignes, en français, avec ses définitions, la grille sous forme de tableau et, pour chaque définition, la case où commence la réponse et son sens.",
+        "J’ai gardé la première réponse de chacun, sans relancer ni corriger. Puis j’ai passé les cinq réponses à un petit programme qui ne fait qu’une chose : relire la grille case par case. Il prend chaque suite de lettres, de gauche à droite puis de haut en bas, et regarde si c’est un mot du dictionnaire. Il vérifie aussi que chaque réponse annoncée est bien là où l’assistant dit l’avoir mise.",
+        "Une précision avant les résultats : 7 × 7, c’est minuscule. Une grille de cahier de jeux fait souvent trois ou quatre fois plus de cases. Je n’ai pas cherché à piéger qui que ce soit, j’ai demandé le plus petit exercice qui ressemble encore à une vraie grille."
+      ]
+    },
+    {
+      "id": "ce-qu-elles-ont-rendu",
+      "title": "Ce qu’elles ont rendu",
+      "paragraphs": [
+        "**ChatGPT** (GPT-5, une vingtaine de secondes) a écrit cinq mots justes, l’un sous l’autre : CAPTE, ILE, CHAT, TIGRE et MER, plus PLAGE à la verticale. Tout le reste ne va pas. Les autres colonnes donnent AIHIM, TETRR et CT, et les deux dernières lignes sont entièrement vides : 20 lettres sur 49 cases. Sur 17 croisements, 5 seulement tombent sur deux vrais mots.",
+        "**Gemini** (Flash Lite, 3 secondes) a fait l’inverse : une grille bien remplie, 39 lettres, mais 10 suites sur 18 ne sont pas des mots, comme REMERNT, MENUANE ou URAGE. Ses définitions annoncent des mots qui ne peuvent pas être là : REMERCIEMENT, douze lettres, dans une ligne qui en compte sept, ou ROME et AMARRER au même endroit. Il invente même du vocabulaire : MERO, « gros poisson de mer », c’est le mérou avec une lettre en moins.",
+        "**Mistral Vibe** (avec le modèle GLM 3.5, sept minutes pour répondre) a rendu une grille presque propre, à une lettre près. Sa première ligne dit SOPALE au lieu d’OPALE, et la colonne qui devait donner LAC donne AAC. Ce qui m’a fait sourire, c’est sa conclusion : selon lui, « les mots se croisent correctement ». Justement, ce sont les deux croisements faux.",
+        "**Copilot** (GPT-5, 3 secondes) est le seul à avoir tenté une vraie grille serrée, sans case perdue. Mais 8 suites sur 20 sont du charabia : STYLOL, ANETNEC, ZMLOET. Une définition résume l’effort : « Chat domestique (vertical) », pour un mot qui s’écrit CARAVEL.",
+        "**Claude** (Opus, 35 secondes) est le seul à rendre une grille juste : STADES, LAITON et DIABLE à l’horizontale, SALADE, AMIRAL et ETOILE à la verticale, neuf croisements, tous bons. Chapeau. Sauf qu’en regardant de plus près, c’est une grille de mots croisés très aérée, pas une grille de mots fléchés. Sur 22 cases noires, 16 ne peuvent porter aucune définition, et deux lettres sur trois n’appartiennent qu’à un seul mot. Claude a trouvé la solution en contournant la difficulté. Sa grille est reproduite ci-dessous.",
+        "Au total : une grille juste sur cinq, et aucune qui soit à la fois juste et serrée, comme celles des cahiers de mots fléchés."
+      ]
+    },
+    {
+      "id": "ce-qu-elles-font-bien",
+      "title": "Ce qu’elles font bien",
+      "paragraphs": [
+        "Je ne veux pas être injuste : tout n’est pas à jeter, loin de là. Les mots qu’elles choisissent sont presque toujours de vrais mots, bien orthographiés, et souvent dans un thème cohérent. Les définitions de ChatGPT et de Claude sont exactes : « Alliage de cuivre et de zinc » pour LAITON, il n’y a rien à redire.",
+        "Et elles vont vite. Trois secondes pour Gemini et Copilot, à peine plus pour les autres. Pour trouver des idées de mots sur un thème, ou dix façons de définir un mot, un assistant est un excellent compagnon de travail.",
+        "Leur défaut, côté définitions, est plutôt une affaire de style. Elles écrivent des définitions de dictionnaire : 21 à 28 caractères en moyenne, quatre mots environ, du genre « Étendue de sable au bord de l’eau ». Dans une grille de mots fléchés, la définition doit tenir dans une case, et elle est bien meilleure quand elle joue : « Se prend serré », pour CAFÉ, en dit moins et amuse plus. Quelques-unes sont franchement fausses, comme ME, « pronom personnel pluriel », chez Gemini. Mais le vrai problème n’est pas là : il est dans la grille elle-même."
+      ]
+    },
+    {
+      "id": "pourquoi-elles-ratent",
+      "title": "Pourquoi elles ratent",
+      "paragraphs": [
+        "Un assistant IA écrit sa réponse comme on parle : un morceau après l’autre, de gauche à droite, sans jamais revenir en arrière pour corriger ce qui est déjà écrit. Pour une lettre, un poème ou une recette, c’est parfait, parce que chaque phrase n’a besoin que de celles qui la précèdent.",
+        "Une grille, c’est tout le contraire. Chaque lettre appartient à deux mots à la fois, un horizontal et un vertical. Quand l’assistant écrit la première ligne, il fixe déjà le début de sept mots verticaux qu’il n’a pas encore choisis. Et quand il arrive à la troisième ligne, il est trop tard : il ne peut pas reprendre la première. C’est exactement ce qu’on voit dans la grille de ChatGPT, ci-dessous : chaque ligne est juste, et les colonnes sont fausses.",
+        "Il y a une deuxième difficulté, plus discrète : ces modèles ne voient pas vraiment les lettres une par une, mais des morceaux de mots. Placer le C de CHAT dans la bonne case, puis vérifier qu’il commence aussi le mot vertical en dessous, leur demande un effort qu’ils ne font pas naturellement. D’où les lettres en trop, comme le S de SOPALE, et les coordonnées qui ne correspondent pas à la grille.",
+        "Enfin, une grille juste ne se devine pas : elle se cherche. Il faut essayer un mot, voir ce qu’il impose aux croisements, revenir en arrière quand ça bloque, et recommencer des milliers de fois, en piochant dans un dictionnaire de plusieurs centaines de milliers de mots. Prendre son temps ne suffit pas : Mistral Vibe a mis sept minutes à répondre, pour une lettre de trop. Réfléchir n’est pas chercher, et les plus prudentes s’en sortent en évitant les croisements, comme Claude."
+      ]
+    },
+    {
+      "id": "le-meme-essai-avec-le-moteur",
+      "title": "Le même essai avec le moteur du site",
+      "paragraphs": [
+        "Le même jour, j’ai fait la même demande au moteur qui remplit les grilles du site, par son interface ouverte aux programmes : une grille de 7 sur 7, en français, sans autre réglage. La réponse est arrivée en moins d’une seconde, attente comprise.",
+        "Je l’ai passée au même programme de vérification. Résultat : 16 suites, 16 vrais mots ; 33 croisements, 33 justes ; aucune case noire inutile, et seulement 6 lettres sur 39 qui n’appartiennent qu’à un seul mot. C’est une vraie grille de mots fléchés, avec une case pour chaque définition.",
+        "Le moteur a lui aussi ses limites, et je préfère les dire. Il ne cherche pas de mots jolis par lui-même : au niveau moyen, il a placé RASSIED, ERRAS ou ITERA, des formes de verbes qu’on ne croise pas tous les jours. Surtout, il n’écrit aucune définition. Ce n’est pas un oubli : c’est le partage des rôles."
+      ]
+    },
+    {
+      "id": "quand-l-ia-appelle-le-moteur",
+      "title": "Quand une IA appelle le moteur",
+      "paragraphs": [
+        "Au fond, l’essai montre deux métiers différents. Choisir des mots, sentir un thème, trouver dix manières de définir un mot : les IA le font bien, et vite. Faire tenir quarante-neuf cases ensemble, c’est un travail de recherche patiente, celui d’un moteur. Le plus simple est donc de les faire travailler ensemble : l’IA est l’auteur, le moteur est le constructeur.",
+        "Depuis le 12 novembre 2026, c’est possible. Un assistant peut appeler le moteur de trois façons. La plus confortable est le connecteur, à ajouter une fois pour toutes dans Claude, ChatGPT ou Mistral Vibe : l’assistant demande la grille, la reçoit juste, écrit les définitions, et le site vérifie qu’elles tiennent dans leurs cases et ne donnent pas la réponse. Je raconte comment l’ajouter sur la page [mots fléchés avec une IA](/mots-fleches-ia).",
+        "Sans rien installer, un assistant peut aussi écrire un lien préparé, avec la taille, les mots souhaités et le mot mystère : en cliquant, tu arrives sur [le générateur](/grid) déjà réglé, et la grille se fait toute seule. Et pour ceux qui programment, la page [développeurs](/developpeurs) explique comment demander une grille en quatre appels.",
+        "C’est un peu la conclusion de l’essai : plutôt que de demander à une IA de faire semblant d’être un moteur, il vaut mieux lui en donner un. Elle garde ce qu’elle fait de mieux, les idées et les mots, et la grille devient juste du premier coup."
+      ]
+    },
+    {
+      "id": "une-grille-faite-a-deux",
+      "title": "Une grille faite à deux",
+      "paragraphs": [
+        "Pour finir, voici une petite grille faite exactement comme je le propose. Le moteur l’a remplie en une seconde, au niveau facile, avec ROBOT imposé et quelques mots du thème souhaités. Les définitions, je les ai demandées à une IA, Claude, puis le site les a vérifiées : elles tiennent dans leurs cases et ne donnent pas la réponse. Chacun son métier, et la grille est juste."
+      ]
+    }
+  ]
+}

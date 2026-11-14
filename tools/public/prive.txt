@@ -69,3 +69,7 @@ docs/ETUDE-INTERNATIONAL.md
 docs/adr/0031-reprise-de-l-international.md
 docs/adr/0032-api-ouverte.md
 docs/juridique
+# L'article sur les assistants IA (feat/article-ia) : les réponses brutes des assistants, la vérification qui lit le
+# lexique, et les tableaux de résultats sont du travail privé, jamais dans le dépôt public
+data/essais-ia
+tools/articles

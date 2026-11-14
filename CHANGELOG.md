@@ -5,6 +5,20 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Brouillon d'article : « Pourquoi les IA ratent leurs mots fléchés »** (titre de travail, `draft: true`) : l'essai
+  du 14/11/2026, une même grille 7 × 7 demandée à ChatGPT, Gemini, Mistral Vibe, Claude et Copilot, mesurée case par
+  case (une seule grille juste, aucune juste et serrée), puis au moteur par l'API ouverte (16 mots sur 16, 33
+  croisements justes sur 33, en moins d'une seconde). L'article explique pourquoi elles ratent et comment une IA
+  appelle le moteur (connecteur, lien préparé, API). Deux grilles ratées de l'essai l'illustrent (ChatGPT, Claude),
+  dessinées avec leurs mots faux et leurs cases inutiles (`GrilleIllustree`, champ `illustrations` des articles). Sa
+  petite grille (6 × 6, niveau facile) vient de l'API ouverte ; ses définitions sont écrites par une IA et acceptées
+  par `POST /v1/clues/check`.
+- **L'article sur les assistants IA, phase 1 : l'essai et sa mesure** (branche `feat/article-ia`, privé) : la consigne
+  de test, identique pour tous les assistants (`python -m tools.articles consigne`), et le script qui lit une réponse
+  brute et mesure la taille réelle de la grille, les suites de lettres qui sont des mots (lexique curé, puis base
+  complète), les croisements justes et les définitions placées là où elles le disent
+  (`python -m tools.articles mesurer`). Il lit aussi un fichier de grille de l'API, et une saisie à la main en secours.
+  Réponses et résultats dans `data/essais-ia/`, hors du dépôt public.
 - **L'API ouverte dans le poste de pilotage et le bilan du lundi** (ADR 0032, point 10 ; fin du lot 5) : une rubrique
   « API ouverte » dans `/admin` (`GET /api/admin/api`) :
   - les demandes de grille et leurs issues ;

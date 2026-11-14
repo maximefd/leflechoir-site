@@ -1,4 +1,5 @@
 import { isValidElement, type ReactNode } from "react";
+import type { Illustration } from "@/lib/grille-illustree";
 import type { MiniGridSpec } from "@/lib/mini-grid";
 
 /**
@@ -39,6 +40,8 @@ export type Article = {
   sections: ArticleSection[];
   /** La petite grille de l'article, jouée après la section `after` (à la fin si absente) */
   grid: { title: string; spec: MiniGridSpec; after?: string };
+  /** Des grilles à regarder, pas à jouer (une grille ratée d'un essai, par exemple), chacune après sa section */
+  illustrations?: Illustration[];
   related: RelatedFeature[];
 };
 
