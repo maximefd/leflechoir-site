@@ -12,7 +12,7 @@ test("la page des mots fléchés avec une IA donne l'adresse du connecteur et la
   await expect(page.getByRole("link", { name: "conditions", exact: true })).toHaveAttribute("href", "/terms#api");
   // Sans connecteur : le lien préparé, et l'API pour un programme
   await expect(page.getByRole("heading", { name: "Sans connecteur" })).toBeVisible();
-  await expect(page.getByText(/\/creer\?taille=moyenne&mots=/)).toBeVisible();
+  await expect(page.getByText(/\/grid\?taille=moyenne&mots=/)).toBeVisible();
   await expect(page.getByRole("link", { name: "l'API pour les développeurs" })).toHaveAttribute("href", "/developpeurs");
 });
 
@@ -44,5 +44,7 @@ test("le générateur dit aux visiteurs venus avec un assistant comment s'en ser
   const bloc = page.getByTestId("avec-une-ia");
   await expect(bloc.getByRole("link", { name: "ajoute le connecteur" })).toHaveAttribute("href", "/mots-fleches-ia");
   // Le lien préparé est dans la page, replié, pour l'assistant qui la lit
-  await expect(bloc.locator("details")).toContainText("/creer");
+  await expect(bloc.locator("details")).toContainText("/grid?");
+  // Et un exemple à vue (essai du 15/11/2026)
+  await expect(bloc).toContainText("/grid?taille=moyenne&mots=eric,velo");
 });

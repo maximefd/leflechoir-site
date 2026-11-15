@@ -5,6 +5,19 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Le lien préparé part de `/grid`** (essai de découverte du 15/11/2026 : ChatGPT, qui avait trouvé le site, a
+  donné le générateur et quatre étapes à faire à la main) :
+  - `/grid?taille=moyenne&mots=eric,velo` lance la grille comme `/creer?…`, qui y mène toujours ; `llms.txt`,
+    `/developpeurs`, `/mots-fleches-ia` et `/grid` donnent maintenant l'adresse de `/grid` ;
+  - `/grid` montre un exemple à vue, sa description le cite, et l'accueil répond à « ChatGPT ou Claude peuvent-ils me
+    préparer une grille ? » (aussi dans `llms.txt` et les données structurées) ;
+  - la notice de `/v1` et la spécification OpenAPI donnent l'adresse publique en https (`API_PUBLIC_URL`, à défaut
+    `OIDC_REDIRECT_BASE`) ; la notice nomme les tailles du site (petite 7 × 9, moyenne 10 × 13) et dit que la grande
+    (13 × 16) dépasse la limite de l'API ; `llms.txt` donne cette limite de 15 cases.
+- **Le cadre de maintenance** (ADR 0035, `docs/MAINTENANCE.md`, privé) : Claude fait la maintenance, l'auteur
+  transmet les retours et essaie ; six critères pour reconnaître une évolution ; trois niveaux d'urgence ; un message
+  le mardi soir et un bilan par mois ; sept rituels dans `docs/maintenance/rituels.csv`, leur journal en ajout seul, et
+  `make maintenance` (ce qui est dû, stock de grilles du jour), `make maintenance-fait`, `make maintenance-bilan`.
 - **Les grilles du jour du 29 novembre au 12 décembre**, au format du téléphone (6 × 9, 6 × 10), sans force annoncée ;
   cinq à mot mystère (SAPIN, TELETHON, NICOLAS pour la Saint-Nicolas, LUMIERES pour la fête de Lyon, NEIGE). Le stock
   court jusqu'au 12 décembre.

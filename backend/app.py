@@ -184,6 +184,9 @@ DEFAULT_SETTINGS = dict(
     OIDC_MICROSOFT_CLIENT_ID='',
     OIDC_MICROSOFT_CLIENT_SECRET='',
     OIDC_REDIRECT_BASE='',
+    # L'adresse publique de l'API (https://api.leflechoir.fr), donnée dans la notice de /v1 et la spécification OpenAPI :
+    # derrière le tunnel, l'API se voit en http. À défaut, OIDC_REDIRECT_BASE (la même adresse), puis celle de la requête
+    API_PUBLIC_URL='',
     # Le site que sert cette API et sa langue (ADR 0017) : chaque événement d'usage les porte (usage.py)
     SITE='fr',
     SITE_LANG='fr',
@@ -308,6 +311,8 @@ def _load_config_from_env() -> dict:
         OIDC_MICROSOFT_CLIENT_ID=os.environ.get('OIDC_MICROSOFT_CLIENT_ID', '').strip(),
         OIDC_MICROSOFT_CLIENT_SECRET=os.environ.get('OIDC_MICROSOFT_CLIENT_SECRET', '').strip(),
         OIDC_REDIRECT_BASE=os.environ.get('OIDC_REDIRECT_BASE', '').strip(),
+        API_PUBLIC_URL=(os.environ.get('API_PUBLIC_URL', '').strip()
+                        or os.environ.get('OIDC_REDIRECT_BASE', '').strip()),
         SITE=os.environ.get('SITE', '').strip() or DEFAULT_SETTINGS['SITE'],
         SITE_LANG=os.environ.get('SITE_LANG', '').strip() or DEFAULT_SETTINGS['SITE_LANG'],
         MAIL_FROM=os.environ.get('MAIL_FROM') or DEFAULT_MAIL_FROM,

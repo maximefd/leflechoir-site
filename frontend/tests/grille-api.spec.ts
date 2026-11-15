@@ -122,6 +122,16 @@ test("le lien préparé comprend les tailles du générateur par leur nom : « m
   await expect(page.getByText(/^Eric$/i).first()).toBeVisible();
 });
 
+test("le lien préparé marche aussi sur /grid, l'adresse qu'une IA donne d'elle-même", async ({ page }) => {
+  // Essai du 15/11/2026 : ChatGPT a renvoyé vers /grid ; le même lien y lance la grille
+  await page.goto("/grid?taille=moyenne&mots=Eric&utm_source=chatgpt.com");
+
+  await expect(page).toHaveURL(/\/grid\?utm_source=chatgpt\.com$/);
+  await expect(page.getByLabel("Largeur")).toHaveValue("10");
+  await expect(page.getByLabel("Hauteur")).toHaveValue("13");
+  await expect(page.getByText(/^Eric$/i).first()).toBeVisible();
+});
+
 test("sans paramètres, /creer reste le carrefour « Créer une grille »", async ({ page }) => {
   await page.goto("/creer");
 

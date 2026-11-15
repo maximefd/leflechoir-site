@@ -164,7 +164,8 @@ test("llms.txt présente le site aux assistants IA : ses outils, ses pages et sa
   expect(body).not.toContain("ecrire-une-definition-de-mots-fleches");
   // Retour du 13/11/2026 : un assistant doit trouver seul le lien préparé, le connecteur et l'API
   expect(body).toContain("## Pour un assistant IA");
-  expect(body).toContain(`${SITE_URL}/creer?taille=moyenne&mots=`);
+  expect(body).toContain(`${SITE_URL}/grid?taille=moyenne&mots=`);
+  expect(body).toContain("### ChatGPT ou Claude peuvent-ils me préparer une grille de mots fléchés ?");
   expect(body).toContain("https://mcp.leflechoir.fr/mcp");
   expect(body).toContain("https://api.leflechoir.fr/v1/openapi.json");
   expect(body).toContain(`(${SITE_URL}/developpeurs)`);

@@ -62,6 +62,10 @@ MAX_REQUIRED_WORDS = 10
 MAX_PREFERRED_WORDS = 60
 # Les formats conseillés, ceux qui réussissent le mieux dans le budget de l'API
 RECOMMENDED_FORMATS = [(8, 8), (10, 10), (9, 12), (12, 12), (12, 15)]
+# Les tailles nommées du site (lien préparé, /grid) : une IA qui lit les deux doit retrouver les mêmes (essai du
+# 15/11/2026). La grande (13 × 16) dépasse MAX_SIDE : elle reste au site, par le lien.
+NAMED_FORMATS = {"petite": (7, 9), "moyenne": (10, 13)}
+SITE_ONLY_FORMATS = {"grande": (13, 16)}
 JOB_ID_PREFIX = "gen_"
 # Ce qu'un client attend avant de redemander l'état d'une génération qui n'a pas fini
 POLL_AFTER_S = 2
@@ -642,6 +646,11 @@ def notice():
         "levels": LEVELS,
         "formats": {"min_side": MIN_SIDE, "max_side": MAX_SIDE,
                     "recommended": [{"width": width, "height": height} for width, height in RECOMMENDED_FORMATS],
+                    "named": {name: {"width": width, "height": height}
+                              for name, (width, height) in NAMED_FORMATS.items()},
+                    "website_only": {name: {"width": width, "height": height,
+                                            "note": f"Wider than {MAX_SIDE}: only through the website link."}
+                                     for name, (width, height) in SITE_ONLY_FORMATS.items()},
                     "max_required_words": MAX_REQUIRED_WORDS, "max_preferred_words": MAX_PREFERRED_WORDS,
                     "mystery_word_letters": {"min": MIN_LETTERS, "max": MAX_LETTERS}},
         "clues": {"max_chars_full_cell": clue_capacity("right", False),
@@ -659,7 +668,7 @@ def notice():
                            "every language."),
         "messages": "Every error has a stable « reason »; its « message » follows Accept-Language (en, fr, de).",
         "documentation": f"{config['FRONTEND_URL'].rstrip('/')}/developpeurs",
-        "openapi": f"{request.host_url.rstrip('/')}/v1/openapi.json",
+        "openapi": f"{_public_url()}/v1/openapi.json",
         "license": (f"Grids are free to use, including commercially. Every drawing is signed « made with the "
                     f"{_signature()} API »; "
                     f"attribution appreciated. Terms: {config['FRONTEND_URL'].rstrip('/')}/terms#api"),
@@ -682,11 +691,16 @@ def limits():
                     "time_budget_s": current_app.config["API_TIME_BUDGET_S"]}), 200
 
 
+def _public_url() -> str:
+    """L'adresse publique de l'API : derrière le tunnel, la requête arrive en http (essai du 15/11/2026)."""
+    return (current_app.config.get("API_PUBLIC_URL") or request.host_url).rstrip("/")
+
+
 @api_v1_bp.route("/openapi.json", methods=["GET"])
 def openapi():
     """La spécification OpenAPI 3.1 (api_openapi.py), pour les générateurs de clients et les assistants."""
     config = current_app.config
-    return jsonify(api_openapi.spec(request.host_url.rstrip("/"), config["FRONTEND_URL"].rstrip("/"),
+    return jsonify(api_openapi.spec(_public_url(), config["FRONTEND_URL"].rstrip("/"),
                                     config["API_TERMS_VERSION"])), 200
 
 

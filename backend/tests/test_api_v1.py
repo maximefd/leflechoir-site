@@ -156,6 +156,25 @@ def test_the_notice_points_to_the_documentation_and_the_specification(api_app, c
     assert notice["openapi"].endswith("/v1/openapi.json")
 
 
+def test_the_notice_and_the_specification_give_the_public_https_address(api_app, client):
+    """Derrière le tunnel, la requête arrive en http : l'adresse publique vient de la configuration (15/11/2026)."""
+    api_app.config["API_PUBLIC_URL"] = "https://api.exemple.fr/"
+    try:
+        assert client.get("/v1", headers=AGENT).get_json()["openapi"] == "https://api.exemple.fr/v1/openapi.json"
+        assert client.get("/v1/openapi.json").get_json()["servers"] == [{"url": "https://api.exemple.fr"}]
+    finally:
+        api_app.config["API_PUBLIC_URL"] = ""
+
+
+def test_the_notice_names_the_sizes_of_the_website(api_app, client):
+    """Petite et moyenne, comme sur le site ; la grande dépasse la limite de l'API et reste au site."""
+    formats = client.get("/v1", headers=AGENT).get_json()["formats"]
+    assert formats["named"]["moyenne"] == {"width": 10, "height": 13}
+    assert all(max(size["width"], size["height"]) <= formats["max_side"] for size in formats["named"].values())
+    assert max(formats["website_only"]["grande"]["width"], formats["website_only"]["grande"]["height"]) > \
+        formats["max_side"]
+
+
 def test_the_openapi_specification_covers_every_route_and_the_real_schemas(api_app, client):
     """Chaque route de /v1 est décrite, et les corps viennent des modèles des routes : ils ne peuvent pas s'écarter."""
     response = client.get("/v1/openapi.json", headers=AGENT)

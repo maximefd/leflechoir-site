@@ -73,3 +73,8 @@ docs/juridique
 # lexique, et les tableaux de résultats sont du travail privé, jamais dans le dépôt public
 data/essais-ia
 tools/articles
+# Le cadre de maintenance (ADR 0035) : la veille parle de la concurrence, le journal et les bilans sont du travail privé
+docs/MAINTENANCE.md
+docs/maintenance
+docs/adr/0035-cadre-de-maintenance.md
+tools/maintenance

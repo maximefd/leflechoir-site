@@ -81,6 +81,8 @@ services:
       OIDC_MICROSOFT_CLIENT_ID: ${OIDC_MICROSOFT_CLIENT_ID:-}
       OIDC_MICROSOFT_CLIENT_SECRET: ${OIDC_MICROSOFT_CLIENT_SECRET:-}
       OIDC_REDIRECT_BASE: ${OIDC_REDIRECT_BASE:-}
+      # L'adresse publique de l'API dans la notice de /v1 et la spécification ; à défaut, OIDC_REDIRECT_BASE
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-}
       TRUST_PROXY_HOPS: "0"
       # Capacité (ADR 0013) : deux générations à la fois, un worker de plus pour le reste
       GENERATION_MAX_CONCURRENT: ${GENERATION_MAX_CONCURRENT:-2}

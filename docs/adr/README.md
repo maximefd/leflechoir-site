@@ -36,6 +36,7 @@ Chaque décision structurante du projet est consignée dans un court document : 
 | [0032](0032-api-ouverte.md) | Une API ouverte aux assistants IA : génération de grilles, clés, priorité au site, sécurité | Proposée |
 | [0033](0033-un-site-de-plus.md) | Un site de plus : profils de déploiement, un projet Compose par site, le nom écrit une seule fois | Proposée |
 | [0034](0034-connexions-google-et-microsoft.md) | Se connecter avec Google ou Microsoft : OpenID Connect côté API, sans SDK, rattachement par adresse certifiée seulement | Proposée |
+| [0035](0035-cadre-de-maintenance.md) | Le cadre de maintenance : Claude la fait ; six critères pour en sortir ; rituels et journal dans le dépôt ; un message le lundi, un bilan par mois | Proposée |
 
 ## Modèle
 

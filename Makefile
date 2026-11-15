@@ -10,7 +10,7 @@ TOOLS_RUN := docker run --rm -v "$(CURDIR)":/repo -w /repo -e PYTHONDONTWRITEBYT
 SITE ?= fr
 export SITE
 
-.PHONY: help setup assistant-ranges dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report livrer verifier deploy-config \
+.PHONY: help setup assistant-ranges dev-api dev-front test test-backend test-tools test-e2e lint-backend lint-frontend bench bench-load layouts-check db-backup db-restore-check stats seed-demo system-tick test-alert weekly-report livrer verifier deploy-config maintenance maintenance-fait maintenance-bilan \
 	deploy deploy-api deploy-front deploy-lexicon rollback deploy-status suggestions-pull \
 	lexicon-download lexicon-build lexicon-export lexicon-sens lexicon-stats listes \
 	curator curator-bg curator-stop curator-logs curator-check curator-urls \
@@ -195,3 +195,13 @@ weekly-report: ## Envoie le bilan de la semaine maintenant (en local : dans Mail
 db-restore-check: ## Restaure FILE=backups/... dans une base jetable et compte les lignes (la base en service n'est pas touchée)
 	@test -n "$(FILE)" || (echo "Usage : make db-restore-check FILE=backups/terminator-....dump" && exit 1)
 	tools/db/restore-check.sh "$(FILE)"
+
+maintenance: ## Point de maintenance (ADR 0035) : rituels dus ou en retard, stock de grilles du jour
+	python3 -m tools.maintenance
+
+maintenance-fait: ## Note un rituel fait dans le journal : R=veille [NOTE="…"]
+	@test -n "$(R)" || (echo "Usage : make maintenance-fait R=<id> [NOTE=\"…\"] (ids : docs/maintenance/rituels.csv)" && exit 1)
+	python3 -m tools.maintenance fait "$(R)" --note "$(NOTE)"
+
+maintenance-bilan: ## Crée le bilan du mois (docs/maintenance/bilans/AAAA-MM.md) ; MOIS=2026-11 pour un autre
+	python3 -m tools.maintenance bilan $(MOIS)

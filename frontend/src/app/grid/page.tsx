@@ -3,7 +3,7 @@
 import { type Metadata } from 'next';
 import { GridClientLayout } from '@/components/grid/grid-client-layout'; // On importe notre nouveau composant
 import Link from 'next/link';
-import { LIEN_PREPARE_TEXTE } from '@/content/lien-prepare';
+import { LIEN_PREPARE_COURT, LIEN_PREPARE_TEXTE } from '@/content/lien-prepare';
 import { publicPage } from '@/lib/seo';
 
 // Ce fichier est maintenant un Composant Serveur, il peut exporter les métadonnées.
@@ -11,7 +11,7 @@ export const metadata: Metadata = publicPage({
   path: "/grid",
   title: "Générer une grille",
   description:
-    "Choisis un format de grille et les mots que tu veux y voir : le moteur génère la grille avec des mots qui se croisent, puis tu écris les définitions et exportes en PDF.",
+    "Choisis un format de grille et les mots que tu veux y voir : le moteur génère la grille avec des mots qui se croisent, puis tu écris les définitions et exportes en PDF. Un lien comme /grid?taille=moyenne&mots=eric,velo la lance tout de suite.",
 });
 
 export default function GridPage() {
@@ -26,6 +26,11 @@ export default function GridPage() {
           Avec ChatGPT, Claude ou Le Chat : <Link href="/mots-fleches-ia" className="underline underline-offset-2 hover:text-foreground">ajoute
           le connecteur</Link>, ou demande à ton assistant un lien de grille.{" "}
           <Link href="/developpeurs" className="underline underline-offset-2 hover:text-foreground">L&apos;API pour les développeurs</Link>.
+        </p>
+        {/* Essai du 15/11/2026 : ChatGPT a donné cette page et des étapes à la main ; l'exemple à vue lui montre le lien */}
+        <p className="mt-2 break-all">
+          Un lien comme <span className="font-mono text-foreground">{LIEN_PREPARE_COURT}</span> ouvre le générateur avec
+          ces mots et lance la grille, sans compte ni clic.
         </p>
         <details className="mt-2">
           <summary className="cursor-pointer">Le lien de grille, pour ton assistant</summary>

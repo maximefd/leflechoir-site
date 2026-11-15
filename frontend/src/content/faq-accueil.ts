@@ -21,6 +21,18 @@ export const QUESTIONS_ACCUEIL: QuestionFaq[] = [
       { texte: "Le guide pas à pas", href: "/creer-des-mots-fleches" },
     ],
   },
+  // Ajoutée le 15/11/2026 (essai de découverte : ChatGPT a donné le générateur et des étapes à la main, pas le lien)
+  {
+    question: "ChatGPT ou Claude peuvent-ils me préparer une grille de mots fléchés ?",
+    reponse:
+      `Oui : il suffit qu’ils te donnent un lien vers le générateur avec tes mots, par exemple ${site.url}/grid?taille=moyenne&mots=eric,velo. ` +
+      `Le lien ouvre ${site.name} et lance la grille aussitôt, sans compte. ` +
+      `Avec le connecteur ${site.nameAfterDe}, l’assistant construit aussi la grille et écrit ses définitions dans la conversation.`,
+    liens: [
+      { texte: "Générer une grille", href: "/grid" },
+      { texte: "Avec une IA", href: "/mots-fleches-ia" },
+    ],
+  },
   {
     question: "Comment les pros construisent-ils des mots fléchés ?",
     reponse:
