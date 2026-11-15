@@ -5,6 +5,9 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Les grilles du jour du 29 novembre au 12 décembre**, au format du téléphone (6 × 9, 6 × 10), sans force annoncée ;
+  cinq à mot mystère (SAPIN, TELETHON, NICOLAS pour la Saint-Nicolas, LUMIERES pour la fête de Lyon, NEIGE). Le stock
+  court jusqu'au 12 décembre.
 - **Se connecter avec Google ou Microsoft** (cap du 26/10/2026, étape 3 ; ADR 0034) :
   - « Continuer avec Google / Microsoft » sur la connexion et l'inscription, par OpenID Connect côté API (PKCE,
     `state`, `nonce`, jeton vérifié), sans SDK ni script du fournisseur ;
@@ -13,7 +16,9 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   - « Mon compte » relie ou délie un fournisseur, et un compte sans mot de passe reconfirme chez son fournisseur
     avant sa suppression ;
   - page de confidentialité et registre RGPD (traitement 18), gestes de l'auteur dans PRODUCTION.md : sans clés,
-    aucun bouton n'apparaît.
+    aucun bouton n'apparaît ;
+  - l'écran propose d'abord « Continuer avec Google » ou « Continuer avec ton adresse e-mail », puis le formulaire ;
+  - en ligne le 15/11/2026 avec **Google seulement** : Microsoft attend un annuaire Entra (abonnement Azure).
 - **Article publié : « Pourquoi les IA ratent leurs mots fléchés »** (14/11/2026, titre validé par l'auteur) : l'essai
   du 14/11/2026, une même grille 7 × 7 demandée à ChatGPT, Gemini, Mistral Vibe, Claude et Copilot, mesurée case par
   case (une seule grille juste, aucune juste et serrée), puis au moteur par l'API ouverte (16 mots sur 16, 33

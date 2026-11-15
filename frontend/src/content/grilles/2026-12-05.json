@@ -1,0 +1,924 @@
+{
+  "date": "2026-12-05",
+  "request": {
+    "size": {
+      "width": 6,
+      "height": 9
+    },
+    "seed": 261509,
+    "quality": "best",
+    "geometry": "sur_mesure",
+    "frequency_mode": "exact",
+    "mystery_word": "TELETHON"
+  },
+  "response": {
+    "grid": {
+      "cells": [
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 0
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 3,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 0
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 5,
+          "y": 0
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 1
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 2,
+          "y": 1
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 1
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 3,
+          "y": 2
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 4,
+          "y": 2
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 2
+        },
+        {
+          "char": "D",
+          "is_black": false,
+          "x": 0,
+          "y": 3
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 1,
+          "y": 3
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 2,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 5,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 1,
+          "y": 4
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 2,
+          "y": 4
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 4
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 5,
+          "y": 4
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 0,
+          "y": 5
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 1,
+          "y": 5
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 2,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 5
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 4,
+          "y": 5
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 6
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 1,
+          "y": 6
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 2,
+          "y": 6
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 3,
+          "y": 6
+        },
+        {
+          "char": "U",
+          "is_black": false,
+          "x": 4,
+          "y": 6
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 6
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 0,
+          "y": 7
+        },
+        {
+          "char": "H",
+          "is_black": false,
+          "x": 1,
+          "y": 7
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 2,
+          "y": 7
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 3,
+          "y": 7
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 7
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 8
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 8
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 2,
+          "y": 8
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 3,
+          "y": 8
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 4,
+          "y": 8
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 8
+        }
+      ],
+      "clues": [
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 9,
+          "slot_id": 0,
+          "text": "AEROLITHE",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 1,
+          "text": "ORNEE",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 2,
+          "text": "OSE",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 3,
+          "text": "LEPRES",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 8,
+          "slot_id": 4,
+          "text": "PERINEAL",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 5,
+          "text": "ETE",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 6,
+          "text": "RENTE",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 7,
+          "text": "DOREE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 8,
+          "text": "LIE",
+          "x": 1,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 5,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 9,
+          "text": "MESSE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 10,
+          "text": "LIN",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 5,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 11,
+          "text": "LE",
+          "x": 4,
+          "y": 5
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 4,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 4,
+          "slot_id": 12,
+          "text": "LUES",
+          "x": 4,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 13,
+          "text": "TETUS",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 3,
+          "cell_y": 5,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 14,
+          "text": "TRI",
+          "x": 3,
+          "y": 6
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 15,
+          "text": "PHARES",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 16,
+          "text": "ELISE",
+          "x": 1,
+          "y": 8
+        }
+      ],
+      "fill_ratio": 1.0,
+      "geometry": "sur_mesure",
+      "height": 9,
+      "layout": "sur-mesure",
+      "must_words": [],
+      "mystery": {
+        "cells": [
+          {
+            "x": 4,
+            "y": 2
+          },
+          {
+            "x": 3,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 1
+          },
+          {
+            "x": 5,
+            "y": 8
+          },
+          {
+            "x": 3,
+            "y": 6
+          },
+          {
+            "x": 1,
+            "y": 7
+          },
+          {
+            "x": 5,
+            "y": 0
+          },
+          {
+            "x": 2,
+            "y": 5
+          }
+        ],
+        "seed": 261509,
+        "word": "TELETHON"
+      },
+      "seed": 261509,
+      "statistics": {
+        "attempts": 1,
+        "cache_stats": {
+          "hits": 0,
+          "misses": 0
+        },
+        "metrics": {
+          "backtracks": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "candidates_tested": 33,
+          "fc_checks": 33,
+          "fc_skips": 16,
+          "recursive_calls": 18
+        },
+        "placement_history": [
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 1,
+            "score": 43,
+            "slot_id": 7,
+            "word": "DOREE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 2,
+            "score": 33,
+            "slot_id": 5,
+            "word": "ETE"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 3,
+            "score": 47,
+            "slot_id": 1,
+            "word": "ORNEE"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 4,
+            "score": 48,
+            "slot_id": 6,
+            "word": "RENTE"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 5,
+            "score": 27,
+            "slot_id": 2,
+            "word": "OSE"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 6,
+            "score": 51,
+            "slot_id": 3,
+            "word": "LEPRES"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 7,
+            "score": 21,
+            "slot_id": 10,
+            "word": "LIN"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 8,
+            "score": 27,
+            "slot_id": 8,
+            "word": "LIE"
+          },
+          {
+            "direction": "down",
+            "length": 9,
+            "order": 9,
+            "score": 71,
+            "slot_id": 0,
+            "word": "AEROLITHE"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 10,
+            "score": 45,
+            "slot_id": 9,
+            "word": "MESSE"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 11,
+            "score": 42,
+            "slot_id": 15,
+            "word": "PHARES"
+          },
+          {
+            "direction": "down",
+            "length": 8,
+            "order": 12,
+            "score": 67,
+            "slot_id": 4,
+            "word": "PERINEAL"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 13,
+            "score": 41,
+            "slot_id": 13,
+            "word": "TETUS"
+          },
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 14,
+            "score": 23,
+            "slot_id": 14,
+            "word": "TRI"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 15,
+            "score": 48,
+            "slot_id": 16,
+            "word": "ELISE"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 16,
+            "score": 33,
+            "slot_id": 12,
+            "word": "LUES"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 17,
+            "score": 19,
+            "slot_id": 11,
+            "word": "LE"
+          }
+        ]
+      },
+      "width": 6,
+      "wish_ratio": 0.0,
+      "words": [
+        {
+          "direction": "down",
+          "id": 0,
+          "score": 71,
+          "source": "common",
+          "text": "AEROLITHE",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 1,
+          "score": 47,
+          "source": "common",
+          "text": "ORNEE",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 2,
+          "score": 27,
+          "source": "common",
+          "text": "OSE",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "direction": "across",
+          "id": 3,
+          "score": 51,
+          "source": "common",
+          "text": "LEPRES",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 4,
+          "score": 67,
+          "source": "common",
+          "text": "PERINEAL",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 5,
+          "score": 33,
+          "source": "common",
+          "text": "ETE",
+          "x": 4,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 6,
+          "score": 48,
+          "source": "common",
+          "text": "RENTE",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "direction": "across",
+          "id": 7,
+          "score": 43,
+          "source": "common",
+          "text": "DOREE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 8,
+          "score": 27,
+          "source": "common",
+          "text": "LIE",
+          "x": 1,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 9,
+          "score": 45,
+          "source": "common",
+          "text": "MESSE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 10,
+          "score": 21,
+          "source": "common",
+          "text": "LIN",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 11,
+          "score": 19,
+          "source": "common",
+          "text": "LE",
+          "x": 4,
+          "y": 5
+        },
+        {
+          "direction": "down",
+          "id": 12,
+          "score": 33,
+          "source": "common",
+          "text": "LUES",
+          "x": 4,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 13,
+          "score": 41,
+          "source": "common",
+          "text": "TETUS",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "direction": "down",
+          "id": 14,
+          "score": 23,
+          "source": "common",
+          "text": "TRI",
+          "x": 3,
+          "y": 6
+        },
+        {
+          "direction": "across",
+          "id": 15,
+          "score": 42,
+          "source": "common",
+          "text": "PHARES",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 16,
+          "score": 48,
+          "source": "common",
+          "text": "ELISE",
+          "x": 1,
+          "y": 8
+        }
+      ]
+    }
+  },
+  "clues": {
+    "AEROLITHE": "Tombé du ciel",
+    "DOREE": "Comme une croûte de pain",
+    "ELISE": "Pour elle, Beethoven",
+    "ETE": "Juillet et août",
+    "LE": "Article",
+    "LEPRES": "Maladies d’autrefois",
+    "LIE": "Fond de bouteille",
+    "LIN": "Fibre des draps",
+    "LUES": "Parcourues des yeux",
+    "MESSE": "Rite du dimanche",
+    "ORNEE": "Parée",
+    "OSE": "Culotté",
+    "PERINEAL": "Du bas du bassin",
+    "PHARES": "Ils éclairent la côte",
+    "RENTE": "Revenu régulier",
+    "TETUS": "Têtes de mule",
+    "TRI": "Sélection"
+  }
+}

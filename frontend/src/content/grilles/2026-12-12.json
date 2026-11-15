@@ -1,0 +1,952 @@
+{
+  "date": "2026-12-12",
+  "request": {
+    "size": {
+      "width": 6,
+      "height": 10
+    },
+    "seed": 261512,
+    "quality": "best",
+    "geometry": "sur_mesure",
+    "frequency_mode": "exact"
+  },
+  "response": {
+    "grid": {
+      "cells": [
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 1,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 0
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 3,
+          "y": 0
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 0
+        },
+        {
+          "char": "O",
+          "is_black": false,
+          "x": 5,
+          "y": 0
+        },
+        {
+          "char": "D",
+          "is_black": false,
+          "x": 0,
+          "y": 1
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 1,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 2,
+          "y": 1
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 1
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 5,
+          "y": 1
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 2
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 4,
+          "y": 2
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 2
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 0,
+          "y": 3
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 1,
+          "y": 3
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 2,
+          "y": 3
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 3,
+          "y": 3
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 5,
+          "y": 3
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 1,
+          "y": 4
+        },
+        {
+          "char": "G",
+          "is_black": false,
+          "x": 2,
+          "y": 4
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 4
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 5,
+          "y": 4
+        },
+        {
+          "char": "H",
+          "is_black": false,
+          "x": 0,
+          "y": 5
+        },
+        {
+          "char": "A",
+          "is_black": false,
+          "x": 1,
+          "y": 5
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 2,
+          "y": 5
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 5
+        },
+        {
+          "char": "N",
+          "is_black": false,
+          "x": 4,
+          "y": 5
+        },
+        {
+          "char": "G",
+          "is_black": false,
+          "x": 5,
+          "y": 5
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 6
+        },
+        {
+          "char": "L",
+          "is_black": false,
+          "x": 1,
+          "y": 6
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 2,
+          "y": 6
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 3,
+          "y": 6
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 4,
+          "y": 6
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 5,
+          "y": 6
+        },
+        {
+          "char": "T",
+          "is_black": false,
+          "x": 0,
+          "y": 7
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 7
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 2,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 3,
+          "y": 7
+        },
+        {
+          "char": "M",
+          "is_black": false,
+          "x": 4,
+          "y": 7
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 7
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 0,
+          "y": 8
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 1,
+          "y": 8
+        },
+        {
+          "char": "",
+          "is_black": true,
+          "x": 2,
+          "y": 8
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 3,
+          "y": 8
+        },
+        {
+          "char": "I",
+          "is_black": false,
+          "x": 4,
+          "y": 8
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 8
+        },
+        {
+          "char": "R",
+          "is_black": false,
+          "x": 0,
+          "y": 9
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 1,
+          "y": 9
+        },
+        {
+          "char": "P",
+          "is_black": false,
+          "x": 2,
+          "y": 9
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 3,
+          "y": 9
+        },
+        {
+          "char": "S",
+          "is_black": false,
+          "x": 4,
+          "y": 9
+        },
+        {
+          "char": "E",
+          "is_black": false,
+          "x": 5,
+          "y": 9
+        }
+      ],
+      "clues": [
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 0,
+          "text": "NIAT",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 7,
+          "slot_id": 1,
+          "text": "ITEREES",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_droite_bas",
+          "cell_x": 4,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 2,
+          "text": "OSE",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 0,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 3,
+          "text": "DIETES",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 2,
+          "cell_y": 0,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 7,
+          "slot_id": 4,
+          "text": "EMIGRER",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 5,
+          "text": "AME",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 2,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 6,
+          "text": "ETIRE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 4,
+          "cell_y": 2,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 7,
+          "slot_id": 7,
+          "text": "ENNEMIS",
+          "x": 4,
+          "y": 3
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 1,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "right",
+          "length": 4,
+          "slot_id": 8,
+          "text": "GENA",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 5,
+          "cell_y": 3,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 9,
+          "text": "AGREEE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 4,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 10,
+          "text": "HARENG",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 1,
+          "cell_y": 4,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 5,
+          "slot_id": 11,
+          "text": "ALESE",
+          "x": 1,
+          "y": 5
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "right",
+          "length": 5,
+          "slot_id": 12,
+          "text": "LESER",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 6,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 3,
+          "slot_id": 13,
+          "text": "TER",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 3,
+          "cell_y": 7,
+          "direction": "across",
+          "exit": "right",
+          "length": 2,
+          "slot_id": 14,
+          "text": "ME",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "arrow": "droite",
+          "cell_x": 2,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "right",
+          "length": 3,
+          "slot_id": 15,
+          "text": "RIE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "arrow": "bas",
+          "cell_x": 3,
+          "cell_y": 7,
+          "direction": "down",
+          "exit": "bottom",
+          "length": 2,
+          "slot_id": 16,
+          "text": "RE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "arrow": "coudee_bas_droite",
+          "cell_x": 0,
+          "cell_y": 8,
+          "direction": "across",
+          "exit": "bottom",
+          "length": 6,
+          "slot_id": 17,
+          "text": "REPESE",
+          "x": 0,
+          "y": 9
+        }
+      ],
+      "fill_ratio": 1.0,
+      "geometry": "sur_mesure",
+      "height": 10,
+      "layout": "sur-mesure",
+      "must_words": [],
+      "seed": 261512,
+      "statistics": {
+        "attempts": 2,
+        "cache_stats": {
+          "hits": 0,
+          "misses": 0
+        },
+        "metrics": {
+          "backtracks": 240,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "candidates_tested": 924,
+          "fc_checks": 812,
+          "fc_skips": 545,
+          "recursive_calls": 320,
+          "repairs": 51
+        },
+        "placement_history": [
+          {
+            "direction": "down",
+            "length": 3,
+            "order": 1,
+            "score": 27,
+            "slot_id": 2,
+            "word": "OSE"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 2,
+            "score": 52,
+            "slot_id": 3,
+            "word": "DIETES"
+          },
+          {
+            "direction": "down",
+            "length": 4,
+            "order": 3,
+            "score": 31,
+            "slot_id": 0,
+            "word": "NIAT"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 4,
+            "score": 49,
+            "slot_id": 6,
+            "word": "ETIRE"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 5,
+            "score": 28,
+            "slot_id": 13,
+            "word": "TER"
+          },
+          {
+            "direction": "down",
+            "length": 5,
+            "order": 6,
+            "score": 49,
+            "slot_id": 11,
+            "word": "ALESE"
+          },
+          {
+            "direction": "across",
+            "length": 5,
+            "order": 7,
+            "score": 48,
+            "slot_id": 12,
+            "word": "LESER"
+          },
+          {
+            "direction": "down",
+            "length": 7,
+            "order": 8,
+            "score": 70,
+            "slot_id": 1,
+            "word": "ITEREES"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 9,
+            "score": 25,
+            "slot_id": 5,
+            "word": "AME"
+          },
+          {
+            "direction": "down",
+            "length": 7,
+            "order": 10,
+            "score": 54,
+            "slot_id": 4,
+            "word": "EMIGRER"
+          },
+          {
+            "direction": "across",
+            "length": 4,
+            "order": 11,
+            "score": 30,
+            "slot_id": 8,
+            "word": "GENA"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 12,
+            "score": 39,
+            "slot_id": 10,
+            "word": "HARENG"
+          },
+          {
+            "direction": "down",
+            "length": 6,
+            "order": 13,
+            "score": 57,
+            "slot_id": 9,
+            "word": "AGREEE"
+          },
+          {
+            "direction": "across",
+            "length": 6,
+            "order": 14,
+            "score": 58,
+            "slot_id": 17,
+            "word": "REPESE"
+          },
+          {
+            "direction": "down",
+            "length": 7,
+            "order": 15,
+            "score": 59,
+            "slot_id": 7,
+            "word": "ENNEMIS"
+          },
+          {
+            "direction": "across",
+            "length": 3,
+            "order": 16,
+            "score": 29,
+            "slot_id": 15,
+            "word": "RIE"
+          },
+          {
+            "direction": "down",
+            "length": 2,
+            "order": 17,
+            "score": 21,
+            "slot_id": 16,
+            "word": "RE"
+          },
+          {
+            "direction": "across",
+            "length": 2,
+            "order": 18,
+            "score": 16,
+            "slot_id": 14,
+            "word": "ME"
+          }
+        ]
+      },
+      "width": 6,
+      "wish_ratio": 0.0,
+      "words": [
+        {
+          "direction": "down",
+          "id": 0,
+          "score": 31,
+          "source": "common",
+          "text": "NIAT",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 1,
+          "score": 70,
+          "source": "common",
+          "text": "ITEREES",
+          "x": 3,
+          "y": 0
+        },
+        {
+          "direction": "down",
+          "id": 2,
+          "score": 27,
+          "source": "common",
+          "text": "OSE",
+          "x": 5,
+          "y": 0
+        },
+        {
+          "direction": "across",
+          "id": 3,
+          "score": 52,
+          "source": "common",
+          "text": "DIETES",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "direction": "down",
+          "id": 4,
+          "score": 54,
+          "source": "common",
+          "text": "EMIGRER",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "direction": "across",
+          "id": 5,
+          "score": 25,
+          "source": "common",
+          "text": "AME",
+          "x": 1,
+          "y": 2
+        },
+        {
+          "direction": "across",
+          "id": 6,
+          "score": 49,
+          "source": "common",
+          "text": "ETIRE",
+          "x": 0,
+          "y": 3
+        },
+        {
+          "direction": "down",
+          "id": 7,
+          "score": 59,
+          "source": "common",
+          "text": "ENNEMIS",
+          "x": 4,
+          "y": 3
+        },
+        {
+          "direction": "across",
+          "id": 8,
+          "score": 30,
+          "source": "common",
+          "text": "GENA",
+          "x": 2,
+          "y": 4
+        },
+        {
+          "direction": "down",
+          "id": 9,
+          "score": 57,
+          "source": "common",
+          "text": "AGREEE",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "direction": "across",
+          "id": 10,
+          "score": 39,
+          "source": "common",
+          "text": "HARENG",
+          "x": 0,
+          "y": 5
+        },
+        {
+          "direction": "down",
+          "id": 11,
+          "score": 49,
+          "source": "common",
+          "text": "ALESE",
+          "x": 1,
+          "y": 5
+        },
+        {
+          "direction": "across",
+          "id": 12,
+          "score": 48,
+          "source": "common",
+          "text": "LESER",
+          "x": 1,
+          "y": 6
+        },
+        {
+          "direction": "across",
+          "id": 13,
+          "score": 28,
+          "source": "common",
+          "text": "TER",
+          "x": 0,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 14,
+          "score": 16,
+          "source": "common",
+          "text": "ME",
+          "x": 4,
+          "y": 7
+        },
+        {
+          "direction": "across",
+          "id": 15,
+          "score": 29,
+          "source": "common",
+          "text": "RIE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "direction": "down",
+          "id": 16,
+          "score": 21,
+          "source": "common",
+          "text": "RE",
+          "x": 3,
+          "y": 8
+        },
+        {
+          "direction": "across",
+          "id": 17,
+          "score": 58,
+          "source": "common",
+          "text": "REPESE",
+          "x": 0,
+          "y": 9
+        }
+      ]
+    }
+  },
+  "clues": {
+    "AGREEE": "Approuvée",
+    "ALESE": "Protège le matelas",
+    "AME": "Esprit",
+    "DIETES": "Régimes",
+    "EMIGRER": "Quitter son pays",
+    "ENNEMIS": "Adversaires",
+    "ETIRE": "Allonge",
+    "GENA": "Dérangea",
+    "HARENG": "Poisson saur",
+    "ITEREES": "Répétées",
+    "LESER": "Faire du tort",
+    "ME": "Moi",
+    "NIAT": "Contestât",
+    "OSE": "Brave",
+    "RE": "Note",
+    "REPESE": "Vérifie sur la balance",
+    "RIE": "Qu’elle s’esclaffe",
+    "TER": "Train express régional"
+  }
+}
