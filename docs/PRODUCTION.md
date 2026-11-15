@@ -258,6 +258,36 @@ Le connecteur ([ADR 0032](adr/0032-api-ouverte.md)) est ce que les assistants (C
 
 Pour l'arrêter : vider `MCP_ALLOWED_HOSTS` (les déploiements suivants ne le démarrent plus), puis, sur le serveur, `docker rm -f leflechoir-mcp-1`.
 
+## Connexions Google et Microsoft (une fois par fournisseur)
+
+« Continuer avec Google » et « Continuer avec Microsoft » ([ADR 0034](adr/0034-connexions-google-et-microsoft.md)) n'apparaissent que si l'API a l'identifiant et la clé du fournisseur. On crée un client par fournisseur, avec les adresses de retour du site **et** du développement : le même client sert à l'essai sur le Mac, puis en production.
+
+**Google** ([console.cloud.google.com](https://console.cloud.google.com)) :
+1. En haut, le sélecteur de projet → *Nouveau projet* → nom `Le Fléchoir` → *Créer*.
+2. *Menu* → *Google Auth Platform* → *Branding* (l'écran de consentement) → *Commencer* : nom de l'application (le nom du site), adresse d'assistance, *Audience* : **Externe**, adresse de contact, *Créer*.
+3. Toujours dans *Branding* : page d'accueil `https://leflechoir.fr`, règles de confidentialité `https://leflechoir.fr/privacy`, conditions `https://leflechoir.fr/terms`, domaine autorisé `leflechoir.fr` → *Enregistrer*.
+4. *Accès aux données* → *Ajouter ou supprimer des niveaux d'accès* : cocher seulement `openid` et `…/auth/userinfo.email` → *Mettre à jour* → *Enregistrer*.
+5. *Audience* → *Publier l'application* → *Confirmer* : sans cela, seuls les comptes de test peuvent se connecter. Avec ces deux seuls accès, Google ne demande pas de vérification.
+6. *Clients* → *Créer un client* → type **Application Web** → nom `API` → *URI de redirection autorisés* :
+   - `https://api.leflechoir.fr/api/auth/oidc/google/callback`
+   - `http://localhost:5001/api/auth/oidc/google/callback`
+
+   → *Créer*. Copier l'**ID client** et le **code secret**.
+
+**Microsoft** ([entra.microsoft.com](https://entra.microsoft.com)) — il faut un annuaire Entra ; un compte Microsoft personnel en reçoit un avec l'abonnement Azure gratuit :
+1. *Identité* → *Applications* → *Inscriptions d'applications* → *Nouvelle inscription* : nom (le nom du site), *Types de comptes pris en charge* : **Comptes dans un annuaire organisationnel et comptes Microsoft personnels**, *URI de redirection* : plateforme **Web**, `https://api.leflechoir.fr/api/auth/oidc/microsoft/callback` → *Inscrire*. Copier l'**ID d'application (client)**.
+2. *Authentification* → *Ajouter un URI* : `http://localhost:5001/api/auth/oidc/microsoft/callback` → *Enregistrer*.
+3. *Certificats et secrets* → *Nouveau secret client* → description `API`, expiration **24 mois** → *Ajouter*. Copier la **valeur** tout de suite (elle ne se réaffiche pas). Noter la date d'expiration : à renouveler avant.
+4. *Configuration des jetons* → *Ajouter une revendication facultative* → type **ID** → cocher `email` et `xms_edov` → *Ajouter* (accepter l'ajout de l'autorisation Microsoft Graph `email`). Sans `xms_edov`, une adresse d'organisation n'est jamais tenue pour certifiée.
+5. *Personnalisation et propriétés* : URL de la page d'accueil, des conditions et de la confidentialité, comme pour Google. Tant que l'éditeur n'est pas « vérifié » (il faut un compte du programme partenaires de Microsoft), l'écran de connexion affiche « non vérifié » : la connexion marche quand même.
+
+**Les clés** :
+- Sur le Mac, pour l'essai local, dans `.env` : `OIDC_GOOGLE_CLIENT_ID=…`, `OIDC_GOOGLE_CLIENT_SECRET=…`, `OIDC_MICROSOFT_CLIENT_ID=…`, `OIDC_MICROSOFT_CLIENT_SECRET=…`, puis `docker compose up -d api` : les boutons apparaissent sur `http://localhost:3000/login`.
+- Sur le serveur, dans `/opt/leflechoir/.env.production`, les mêmes quatre lignes et `OIDC_REDIRECT_BASE=https://api.leflechoir.fr`, puis `make deploy-api`. Vérifier : `https://api.leflechoir.fr/api/auth/providers` répond `{"providers":["google","microsoft"]}`.
+- Un autre site ([ADR 0033](adr/0033-un-site-de-plus.md)) ajoute ses propres adresses de retour aux deux clients, et met les mêmes clés dans son `.env.production`, avec son `OIDC_REDIRECT_BASE`.
+
+Pour couper un fournisseur : vider sa clé dans `.env.production`, puis `make deploy-api`. Son bouton disparaît ; les comptes créés par lui gardent leurs données, et « Mot de passe oublié » leur permet d'entrer.
+
 ## Le test de charge de l'API, avant l'ouverture (une fois)
 
 La question ([ADR 0032](adr/0032-api-ouverte.md), lot 3) : **un pic d'appels à l'API change-t-il ce que voient les visiteurs du site ?** On remplit la file de l'API sans ouvrir ses routes, et on mesure pendant ce temps les générations du site. À faire en heure creuse : une vingtaine de minutes.

@@ -71,6 +71,10 @@ RATE_LIMITED_ENDPOINTS = {
     "auth.verify_email": "RATELIMIT_LOGIN",
     "auth.register": "RATELIMIT_REGISTER",
     "auth.refresh": "RATELIMIT_REFRESH",
+    # Les connexions Google et Microsoft (ADR 0034) : chaque retour appelle le fournisseur ; le plafond de la connexion
+    "oidc.start": "RATELIMIT_LOGIN",
+    "oidc.callback": "RATELIMIT_LOGIN",
+    "oidc.ticket": "RATELIMIT_LOGIN",
     "main.search_words": "RATELIMIT_SEARCH",
     # Le sens des mots (ADR 0028) : public, une demande par grille affichée
     "sens.senses": "RATELIMIT_SENS",

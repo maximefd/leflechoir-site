@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -22,10 +22,29 @@ import { apiFetch } from "@/lib/api-client";
 import { site } from "@/config/site";
 import { MySuggestions } from "@/components/suggestions/my-suggestions";
 import { ApiKeys } from "@/components/account/api-keys";
+import { AccountConnections, goToProvider, type AccountIdentity } from "@/components/account/connexions";
+import { PROVIDER_LABELS, providerMessage, type Provider } from "@/components/auth/fournisseurs";
 
 type Account = {
   email: string; email_verified: boolean; dictionaries: number; words: number; grids: number; reussites?: number;
+  has_password?: boolean; identities?: AccountIdentity[];
 };
+
+/** Le retour d'un fournisseur (ADR 0034) : `?relie=`, `?confirme=` ou `?erreur=`, lu une fois puis effacé de l'adresse */
+function useProviderReturn(): Provider | null {
+  const [confirmed, setConfirmed] = useState<Provider | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const linked = params.get("relie") as Provider | null;
+    const reason = params.get("erreur");
+    if (linked && linked in PROVIDER_LABELS) toast.success(`Ton compte ${PROVIDER_LABELS[linked]} est relié.`);
+    if (reason) toast.error(providerMessage(reason));
+    const again = params.get("confirme") as Provider | null;
+    if (again && again in PROVIDER_LABELS) setConfirmed(again);
+    if (linked || reason || again) window.history.replaceState(null, "", window.location.pathname);
+  }, []);
+  return confirmed;
+}
 
 function count(value: number, singular: string, plural: string) {
   return `${value} ${value > 1 ? plural : singular}`;
@@ -48,6 +67,11 @@ export function AccountClientLayout() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirming, setConfirming] = useState(false);
+  // Un compte sans mot de passe vient de se reconnecter chez son fournisseur : la suppression est ouverte cinq minutes
+  const reconfirmed = useProviderReturn();
+  useEffect(() => {
+    if (reconfirmed) setConfirming(true);
+  }, [reconfirmed]);
 
   const account = useQuery<Account>({
     queryKey: ["account"],
@@ -135,17 +159,35 @@ export function AccountClientLayout() {
 
       <MySuggestions />
 
+      {account.data ? (
+        <AccountConnections hasPassword={account.data.has_password ?? true} identities={account.data.identities ?? []} />
+      ) : null}
+
       {account.data ? <ApiKeys emailVerified={account.data.email_verified} /> : null}
 
       <section className="space-y-4 rounded-lg border border-destructive/40 p-6">
         <div>
           <h2 className="text-lg font-semibold">Supprimer mon compte</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Ton adresse e-mail, ton mot de passe, tes dictionnaires, leurs mots et tes grilles conservées
-            sont effacés. C&apos;est <strong className="text-foreground">définitif</strong> : rien ne pourra être
+            Ton adresse e-mail, ton mot de passe, tes connexions Google ou Microsoft, tes dictionnaires, leurs
+            mots et tes grilles conservées sont effacés. C&apos;est <strong className="text-foreground">définitif</strong> : rien ne pourra être
             récupéré.
           </p>
         </div>
+        {account.data && account.data.has_password === false ? (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Ton compte n&apos;a pas de mot de passe : pour confirmer que c&apos;est bien toi, reconnecte-toi chez
+              ton fournisseur, puis confirme la suppression ici.
+            </p>
+            {(account.data.identities ?? []).slice(0, 1).map((identity) => (
+              <Button key={identity.provider} variant="destructive"
+                onClick={() => goToProvider(identity.provider, "reauth").catch((error: Error) => toast.error(error.message))}>
+                Reconfirmer avec {PROVIDER_LABELS[identity.provider]}…
+              </Button>
+            ))}
+          </div>
+        ) : (
         <form
           className="space-y-3"
           onSubmit={(event) => {
@@ -168,6 +210,7 @@ export function AccountClientLayout() {
             Supprimer mon compte…
           </Button>
         </form>
+        )}
       </section>
 
       <Dialog open={confirming} onOpenChange={setConfirming}>

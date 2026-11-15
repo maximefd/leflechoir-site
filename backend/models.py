@@ -27,9 +27,26 @@ class User(db.Model):
     
     dictionaries = db.relationship('Dictionary', backref='user', lazy='selectin', cascade="all, delete-orphan")
     grids = db.relationship('SavedGrid', backref='user', lazy='selectin', cascade="all, delete-orphan")
+    identities = db.relationship('Identity', backref='user', lazy='selectin', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.email}>"
+
+
+class Identity(db.Model):
+    """Un compte Google ou Microsoft relié à un compte du site ([ADR 0034](../docs/adr/0034-connexions-google-et-microsoft.md)).
+
+    Seuls le fournisseur et l'identifiant qu'il donne à la personne pour notre site (`sub`) sont gardés : ni nom, ni
+    photo, ni jeton du fournisseur. L'adresse e-mail reste celle du compte (`User.email`).
+    """
+    __tablename__ = 'identite'
+    __table_args__ = (db.UniqueConstraint('provider', 'subject', name='uq_identite_provider_subject'),)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    provider = db.Column(db.String(20), nullable=False)  # « google », « microsoft »
+    subject = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow())
+    last_used_at = db.Column(db.DateTime, nullable=True)
 
 class Dictionary(db.Model):
     __tablename__ = 'dictionary'

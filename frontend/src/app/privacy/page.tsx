@@ -37,7 +37,7 @@ export default function PrivacyPage() {
   return (
     <main className="container mx-auto max-w-3xl p-4 md:p-8">
       <h1 className="text-3xl font-bold">Confidentialité</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 9 novembre 2026</p>
+      <p className="mt-2 text-sm text-muted-foreground">Dernière mise à jour : 14 novembre 2026</p>
 
       <div className="mt-8 space-y-8 text-muted-foreground">
         <p className="rounded-lg border bg-secondary/20 p-4 text-foreground">
@@ -86,6 +86,38 @@ export default function PrivacyPage() {
             Pourquoi : pour te fournir le service que tu demandes en créant un compte (RGPD, art. 6.1.b). Tes
             recherches et les grilles que tu génères sans les conserver ne sont pas enregistrées. En invité, rien
             ne l&apos;est, sauf les mots que tu choisis de signaler ou de proposer (juste en dessous).
+          </p>
+        </Section>
+
+        <Section title="Si tu te connectes avec Google ou Microsoft" id="connexions">
+          <p>
+            Le bouton « Continuer avec Google » (ou Microsoft) t&apos;envoie sur la page de connexion du fournisseur,
+            puis te ramène ici. Le site ne charge aucun de leurs scripts. Le fournisseur nous transmet alors :
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              <strong className="text-foreground">un identifiant</strong> qu&apos;il t&apos;attribue pour notre
+              site seulement : il est conservé, avec le nom du fournisseur et les dates où tu l&apos;as relié et
+              utilisé pour la dernière fois, pour reconnaître ton compte aux connexions suivantes ;
+            </li>
+            <li>
+              <strong className="text-foreground">ton adresse e-mail</strong>, et s&apos;il en garantit la
+              possession : elle devient celle de ton compte, ou te mène au compte qui la porte déjà, mais seulement si
+              le fournisseur la garantit. Sinon, un compte qui la porte ne s&apos;ouvre jamais par ce chemin.
+            </li>
+          </ul>
+          <p>
+            Rien d&apos;autre n&apos;est demandé ni gardé : ni ton nom, ni ta photo, ni tes contacts, ni aucun accès
+            à ton compte Google ou Microsoft. Un compte ouvert ainsi n&apos;a pas de mot de passe : tu peux en choisir
+            un avec « Mot de passe oublié ? ». Tu peux délier un fournisseur depuis « Mon compte » ; le supprimer efface
+            aussi ces identifiants. Pourquoi : pour te fournir le service que tu demandes (RGPD, art. 6.1.b).
+          </p>
+          <p>
+            Google et Microsoft savent, eux, que tu te connectes à notre site : ils le traitent pour leur propre compte,
+            selon leurs propres règles de confidentialité (
+            <a href="https://policies.google.com/privacy" className={linkClass} rel="noopener noreferrer">Google</a>,{" "}
+            <a href="https://privacy.microsoft.com/fr-fr/privacystatement" className={linkClass} rel="noopener noreferrer">Microsoft</a>
+            ). Ils ne sont pas nos prestataires.
           </p>
         </Section>
 
@@ -227,7 +259,8 @@ export default function PrivacyPage() {
             </li>
             <li>
               les <strong className="text-foreground">étapes d&apos;un compte</strong> (inscription, confirmation,
-              connexion, suppression), les <strong className="text-foreground">grilles conservées</strong> et les{" "}
+              connexion, suppression, et pour une connexion ou une inscription par Google ou Microsoft, lequel des
+              deux), les <strong className="text-foreground">grilles conservées</strong> et les{" "}
               <strong className="text-foreground">erreurs</strong> (la page et le code d&apos;erreur).
             </li>
           </ul>

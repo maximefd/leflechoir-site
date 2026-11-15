@@ -87,8 +87,14 @@ class ResetPasswordRequest(EmailLinkRequest):
 
 
 class AccountDeletionRequest(ApiModel):
-    # Le mot de passe, redemandé : un jeton volé ne doit pas suffire à effacer un compte
-    password: Annotated[str, Field(min_length=1, max_length=128)]
+    # Le mot de passe, redemandé : un jeton volé ne doit pas suffire à effacer un compte. Un compte sans mot de passe
+    # reconfirme chez son fournisseur à la place (oidc.recently_confirmed, ADR 0034)
+    password: Annotated[str, Field(max_length=128)] = ""
+
+
+class OidcTicketRequest(ApiModel):
+    # Relier un fournisseur au compte connecté, ou s'y reconnecter avant de supprimer le compte (ADR 0034)
+    intent: Literal["link", "reauth"]
 
 
 # --- Dictionnaires personnels ---

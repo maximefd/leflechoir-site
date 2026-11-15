@@ -35,6 +35,7 @@ Chaque décision structurante du projet est consignée dans un court document : 
 | [0031](0031-reprise-de-l-international.md) | Reprise de l'international : le socle d'abord, puis l'allemand (document privé) | Proposée |
 | [0032](0032-api-ouverte.md) | Une API ouverte aux assistants IA : génération de grilles, clés, priorité au site, sécurité | Proposée |
 | [0033](0033-un-site-de-plus.md) | Un site de plus : profils de déploiement, un projet Compose par site, le nom écrit une seule fois | Proposée |
+| [0034](0034-connexions-google-et-microsoft.md) | Se connecter avec Google ou Microsoft : OpenID Connect côté API, sans SDK, rattachement par adresse certifiée seulement | Proposée |
 
 ## Modèle
 

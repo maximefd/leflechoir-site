@@ -5,6 +5,15 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Ajouté
+- **Se connecter avec Google ou Microsoft** (cap du 26/10/2026, étape 3 ; ADR 0034) :
+  - « Continuer avec Google / Microsoft » sur la connexion et l'inscription, par OpenID Connect côté API (PKCE,
+    `state`, `nonce`, jeton vérifié), sans SDK ni script du fournisseur ;
+  - table additive `identite` (fournisseur et identifiant seulement) ;
+  - rattachement à un compte existant par une adresse que le fournisseur certifie, jamais autrement ;
+  - « Mon compte » relie ou délie un fournisseur, et un compte sans mot de passe reconfirme chez son fournisseur
+    avant sa suppression ;
+  - page de confidentialité et registre RGPD (traitement 18), gestes de l'auteur dans PRODUCTION.md : sans clés,
+    aucun bouton n'apparaît.
 - **Article publié : « Pourquoi les IA ratent leurs mots fléchés »** (14/11/2026, titre validé par l'auteur) : l'essai
   du 14/11/2026, une même grille 7 × 7 demandée à ChatGPT, Gemini, Mistral Vibe, Claude et Copilot, mesurée case par
   case (une seule grille juste, aucune juste et serrée), puis au moteur par l'API ouverte (16 mots sur 16, 33

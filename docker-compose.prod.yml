@@ -74,6 +74,13 @@ services:
       API_RUNNER: ${API_RUNNER:-}
       # La clé du connecteur MCP (service mcp) : ses appels comptent pour l'assistant qui les relaie, pas pour une adresse
       API_RELAY_SECRET: ${API_RELAY_SECRET:-}
+      # Se connecter avec Google ou Microsoft (ADR 0034) : un fournisseur sans identifiant ni clé n'a pas de bouton.
+      # OIDC_REDIRECT_BASE : l'adresse publique de l'API (derrière le tunnel, elle se voit en http)
+      OIDC_GOOGLE_CLIENT_ID: ${OIDC_GOOGLE_CLIENT_ID:-}
+      OIDC_GOOGLE_CLIENT_SECRET: ${OIDC_GOOGLE_CLIENT_SECRET:-}
+      OIDC_MICROSOFT_CLIENT_ID: ${OIDC_MICROSOFT_CLIENT_ID:-}
+      OIDC_MICROSOFT_CLIENT_SECRET: ${OIDC_MICROSOFT_CLIENT_SECRET:-}
+      OIDC_REDIRECT_BASE: ${OIDC_REDIRECT_BASE:-}
       TRUST_PROXY_HOPS: "0"
       # Capacité (ADR 0013) : deux générations à la fois, un worker de plus pour le reste
       GENERATION_MAX_CONCURRENT: ${GENERATION_MAX_CONCURRENT:-2}

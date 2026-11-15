@@ -32,6 +32,7 @@ from layout_catalog import (available_formats, catalog, fit_by_format, format_sl
                             suggest_layouts_for)
 from layout_catalog import list_layouts as catalog_entries
 from auth import password_matches
+import oidc
 from schemas import (
     AccountDeletionRequest,
     BlankGridRequest,
@@ -1051,6 +1052,10 @@ def get_self():
         "grids": len(user.grids),
         "reussites": GridSuccess.query.filter_by(user_id=user.id).count(),
         "api_keys": owned_by(user).filter(ApiKey.revoked_at.is_(None)).count(),
+        # Les façons d'entrer (ADR 0034) : un mot de passe, et les fournisseurs reliés
+        "has_password": oidc.has_password(user),
+        "identities": [{"provider": identity.provider, "created_at": identity.created_at.isoformat()}
+                       for identity in sorted(user.identities, key=lambda identity: identity.created_at)],
     }), 200
 
 
@@ -1061,12 +1066,16 @@ def delete_self():
     """Supprime définitivement le compte de l'utilisateur et toutes ses données.
 
     Le mot de passe est redemandé : avec le jeton seul, quiconque l'aurait volé (le jeton vit dans le
-    navigateur) pourrait effacer le compte. Un mauvais mot de passe répond 403 et non 401 : le frontend
+    navigateur) pourrait effacer le compte. Un compte sans mot de passe se reconnecte à la place chez son
+    fournisseur, dans les cinq minutes (ADR 0034). Un mauvais mot de passe répond 403 et non 401 : le frontend
     lit un 401 comme une session expirée et déconnecterait l'utilisateur.
     """
     user = get_current_user()
     payload = parse_body(AccountDeletionRequest)
-    if not password_matches(user.password, payload.password):
+    confirmed = (payload.password and password_matches(user.password, payload.password)) or oidc.recently_confirmed(user)
+    if not confirmed:
+        if not oidc.has_password(user) and not payload.password:
+            return jsonify({"error": "Reconfirme d'abord ta connexion.", "reason": "reauth_required"}), 403
         return jsonify({"error": "Mot de passe incorrect.", "reason": "wrong_password"}), 403
     # Suppression via l'ORM : la cascade User -> Dictionary -> PersonalWord efface aussi
     # dictionnaires et mots (une suppression SQL en masse laissait les mots orphelins).
@@ -1084,4 +1093,5 @@ def delete_self():
     usage.describe("account", "delete")
     response = jsonify({"message": "Ton compte et toutes tes données ont été supprimés avec succès."})
     unset_jwt_cookies(response)  # les jetons d'un compte supprimé sont refusés : autant effacer les cookies
+    oidc.forget_reauth(response)
     return response, 200

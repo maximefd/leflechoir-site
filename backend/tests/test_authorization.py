@@ -64,6 +64,8 @@ def test_search_only_returns_the_callers_personal_words(client, test_app, small_
     ("post", "/api/auth/email/resend"),
     ("get", "/api/reussites"),
     ("post", "/api/reussites"),
+    ("post", "/api/auth/oidc/google/ticket"),
+    ("delete", "/api/auth/identities/google"),
 ])
 def test_protected_routes_require_authentication(client, method, path):
     response = send(client, method, path)

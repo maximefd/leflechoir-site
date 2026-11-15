@@ -8,6 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from models import db
 from auth import bcrypt, auth_bp
+from oidc import oidc_bp
 from routes import MAX_QUALITY_BUDGET_S, main_bp
 from extensions import jwt, migrate
 from security import init_rate_limiting, register_error_handlers, register_jwt_callbacks, register_security_headers
@@ -175,6 +176,14 @@ DEFAULT_SETTINGS = dict(
     # E-mails du compte (mailer.py, ADR 0014) : « console » écrit le message dans le journal au lieu de l'envoyer
     MAIL_BACKEND='console',
     SITE_NAME=DEFAULT_SITE_NAME,  # Objet et texte des e-mails
+    # Connexions Google et Microsoft (oidc.py, ADR 0034) : un fournisseur sans identifiant ni clé n'a pas de bouton.
+    # OIDC_REDIRECT_BASE : l'adresse publique de l'API (https://api.leflechoir.fr), où revient le fournisseur ; à
+    # défaut, celle de la requête (le développement).
+    OIDC_GOOGLE_CLIENT_ID='',
+    OIDC_GOOGLE_CLIENT_SECRET='',
+    OIDC_MICROSOFT_CLIENT_ID='',
+    OIDC_MICROSOFT_CLIENT_SECRET='',
+    OIDC_REDIRECT_BASE='',
     # Le site que sert cette API et sa langue (ADR 0017) : chaque événement d'usage les porte (usage.py)
     SITE='fr',
     SITE_LANG='fr',
@@ -294,6 +303,11 @@ def _load_config_from_env() -> dict:
         LOG_FORMAT=log_format,
         MAIL_BACKEND=mail_backend,
         SITE_NAME=os.environ.get('SITE_NAME', '').strip() or DEFAULT_SITE_NAME,
+        OIDC_GOOGLE_CLIENT_ID=os.environ.get('OIDC_GOOGLE_CLIENT_ID', '').strip(),
+        OIDC_GOOGLE_CLIENT_SECRET=os.environ.get('OIDC_GOOGLE_CLIENT_SECRET', '').strip(),
+        OIDC_MICROSOFT_CLIENT_ID=os.environ.get('OIDC_MICROSOFT_CLIENT_ID', '').strip(),
+        OIDC_MICROSOFT_CLIENT_SECRET=os.environ.get('OIDC_MICROSOFT_CLIENT_SECRET', '').strip(),
+        OIDC_REDIRECT_BASE=os.environ.get('OIDC_REDIRECT_BASE', '').strip(),
         SITE=os.environ.get('SITE', '').strip() or DEFAULT_SETTINGS['SITE'],
         SITE_LANG=os.environ.get('SITE_LANG', '').strip() or DEFAULT_SETTINGS['SITE_LANG'],
         MAIL_FROM=os.environ.get('MAIL_FROM') or DEFAULT_MAIL_FROM,
@@ -427,6 +441,7 @@ def create_app(test_config=None):
     register_security_headers(app)
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(oidc_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(audience_bp)
