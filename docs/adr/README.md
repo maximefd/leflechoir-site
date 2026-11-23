@@ -37,6 +37,7 @@ Chaque décision structurante du projet est consignée dans un court document : 
 | [0033](0033-un-site-de-plus.md) | Un site de plus : profils de déploiement, un projet Compose par site, le nom écrit une seule fois | Proposée |
 | [0034](0034-connexions-google-et-microsoft.md) | Se connecter avec Google ou Microsoft : OpenID Connect côté API, sans SDK, rattachement par adresse certifiée seulement | Proposée |
 | [0035](0035-cadre-de-maintenance.md) | Le cadre de maintenance : Claude la fait ; six critères pour en sortir ; rituels et journal dans le dépôt ; un message le lundi, un bilan par mois | Proposée |
+| [0036](0036-pages-de-mots-hors-des-moteurs.md) | Les pages de mots en `noindex, follow` (un interrupteur, `MOTS_INDEXES`) ; un `<lastmod>` par page du sitemap, tiré de git | Acceptée |
 
 ## Modèle
 

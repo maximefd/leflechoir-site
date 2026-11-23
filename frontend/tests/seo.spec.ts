@@ -1,5 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 /**
@@ -10,25 +9,6 @@ import { expect, test } from "@playwright/test";
  */
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://leflechoir.fr").replace(/\/+$/, "");
 
-/**
- * Les pages « commençant par » et « finissant par » des longueurs qui en ont : les effectifs du catalogue
- * (`make listes`) disent lesquelles existent. Initiales d'abord, puis terminaisons, comme dans le sitemap.
- */
-const CATALOGUE: {
-  listes: { slug: string; initiales: { lettre: string; total: number }[]; terminaisons: { fin: string; total: number }[] }[];
-} = JSON.parse(
-  readFileSync(join(__dirname, "../src/content/mots/catalogue.json"), "utf-8"),
-);
-const combinaisons = (slug: string) => {
-  const liste = CATALOGUE.listes.find((entree) => entree.slug === slug);
-  return [
-    // Moins de cinq mots : la page existe, mais hors du sitemap (MIN_MOTS_INDEXES)
-    ...(liste?.initiales ?? []).filter(({ total }) => total >= 5)
-      .map(({ lettre }) => `${SITE_URL}/mots/${slug}/commencant-par-${lettre.toLowerCase()}`),
-    ...(liste?.terminaisons ?? []).filter(({ total }) => total >= 5)
-      .map(({ fin }) => `${SITE_URL}/mots/${slug}/finissant-par-${fin.toLowerCase()}`),
-  ];
-};
 const NOMBRES = ["deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
 
 const PUBLIC_PAGES = [
@@ -42,17 +22,6 @@ const PUBLIC_PAGES = [
   },
   { path: "/jouer", title: "Mots fléchés du jour, gratuits et en ligne | Le Fléchoir", canonical: `${SITE_URL}/jouer` },
   { path: "/articles", title: "Articles sur les mots fléchés | Le Fléchoir", canonical: `${SITE_URL}/articles` },
-  { path: "/mots", title: "Listes de mots pour les mots fléchés | Le Fléchoir", canonical: `${SITE_URL}/mots` },
-  ...[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
-    path: `/mots/${NOMBRES[n - 2]}-lettres`,
-    title:
-      n <= 3
-        ? `Mots de ${n} lettres pour les mots fléchés | Le Fléchoir`
-        : n === 10
-          ? "Mot de 10 lettres commençant ou finissant par | Le Fléchoir"
-          : `Mot de ${n} lettres commençant par, finissant par | Le Fléchoir`,
-    canonical: `${SITE_URL}/mots/${NOMBRES[n - 2]}-lettres`,
-  })),
   { path: "/a-propos", title: "Qui fait Le Fléchoir | Le Fléchoir", canonical: `${SITE_URL}/a-propos` },
   {
     path: "/mots-fleches-ia",
@@ -65,6 +34,25 @@ const PUBLIC_PAGES = [
   { path: "/privacy", title: "Confidentialité | Le Fléchoir", canonical: `${SITE_URL}/privacy` },
   { path: "/terms", title: "Conditions d'utilisation | Le Fléchoir", canonical: `${SITE_URL}/terms` },
   { path: "/sources", title: "Sources et licences | Le Fléchoir", canonical: `${SITE_URL}/sources` },
+];
+
+/**
+ * Les pages de mots : publiques (titre, canonique, aperçu), mais hors des moteurs depuis le 20/11/2026
+ * (MOTS_INDEXES, lib/seo.ts) : `noindex, follow`, et absentes du sitemap.
+ */
+const MOTS_PAGES = [
+  { path: "/mots", title: "Listes de mots pour les mots fléchés | Le Fléchoir", canonical: `${SITE_URL}/mots` },
+  ...[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
+    path: `/mots/${NOMBRES[n - 2]}-lettres`,
+    title:
+      n <= 3
+        ? `Mots de ${n} lettres pour les mots fléchés | Le Fléchoir`
+        : n === 10
+          ? "Mot de 10 lettres commençant ou finissant par | Le Fléchoir"
+          : `Mot de ${n} lettres commençant par, finissant par | Le Fléchoir`,
+    canonical: `${SITE_URL}/mots/${NOMBRES[n - 2]}-lettres`,
+  })),
+  { path: "/mots/cinq-lettres/commencant-par-a", title: /^Mots de 5 lettres commençant par A/, canonical: `${SITE_URL}/mots/cinq-lettres/commencant-par-a` },
 ];
 
 const PRIVATE_PAGES = ["/admin", "/account", "/grids", "/grids/new", "/grids/edit?id=1", "/dictionaries", "/login", "/register",
@@ -80,6 +68,16 @@ for (const { path, title, canonical } of PUBLIC_PAGES) {
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", `${SITE_URL}/og.png`);
     await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
     expect(await page.title()).not.toContain("Terminator");
+  });
+}
+
+for (const { path, title, canonical } of MOTS_PAGES) {
+  test(`${path} : publique mais en noindex, follow`, async ({ page }) => {
+    await page.goto(path);
+
+    await expect(page).toHaveTitle(title);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", canonical);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, follow");
   });
 }
 
@@ -134,18 +132,27 @@ test("le sitemap liste les pages publiques, et elles seules", async ({ request }
     .filter((date) => date <= jour)
     .sort((a, b) => b.localeCompare(a));
 
-  // Les pages, puis les articles publiés (les brouillons restent dehors), puis les grilles à jouer
-  // (les pages « commençant par » et « finissant par » suivent l'outil de leur longueur)
-  const attendues = PUBLIC_PAGES.flatMap(({ canonical }) => {
-    const slug = canonical.match(/\/mots\/((?:deux|trois|quatre|cinq|six|sept|huit|neuf|dix)-lettres)$/)?.[1];
-    return slug ? [canonical, ...combinaisons(slug)] : [canonical];
-  });
+  // Les pages, puis les articles publiés (les brouillons restent dehors), puis les grilles à jouer ; aucune page de
+  // mots (MOTS_INDEXES)
   expect(urls).toEqual([
-    ...attendues,
+    ...PUBLIC_PAGES.map(({ canonical }) => canonical),
     `${SITE_URL}/articles/pourquoi-les-ia-ratent-leurs-mots-fleches`,
     `${SITE_URL}/articles/mots-fleches-dans-le-monde`,
     ...dates.map((date) => `${SITE_URL}/jouer/${date}`),
   ]);
+});
+
+test("le sitemap date chaque page (lastmod), sans date à venir", async ({ request }) => {
+  const body = await (await request.get("/sitemap.xml")).text();
+  const entrees = [...body.matchAll(/<url>\s*<loc>(.*?)<\/loc>([\s\S]*?)<\/url>/g)];
+
+  expect(entrees.length).toBeGreaterThan(PUBLIC_PAGES.length);
+  for (const [, url, reste] of entrees) {
+    const lastmod = reste.match(/<lastmod>(.*?)<\/lastmod>/)?.[1];
+    // Une page fixe : la date du dernier commit qui l'a touchée (scripts/dates-des-pages.mjs)
+    expect(lastmod, url).toMatch(/^\d{4}-\d{2}-\d{2}/);
+    expect(Date.parse(lastmod ?? ""), url).toBeLessThanOrEqual(Date.now());
+  }
 });
 
 test("llms.txt présente le site aux assistants IA : ses outils, ses pages et sa FAQ, avec des adresses absolues", async ({ request }) => {

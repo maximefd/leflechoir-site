@@ -102,6 +102,8 @@ deploy_front() {
     # Le frontend du commit, pas celui du dossier de travail ; et jamais dans frontend/, où tourne peut-être
     # le serveur de développement (CLAUDE.md)
     git archive --format=tar HEAD frontend | tar -x -C "$work"
+    # Les dates des pages pour le sitemap (<lastmod>) : l'archive n'a pas l'historique git, on les écrit d'ici
+    (cd frontend && node scripts/dates-des-pages.mjs "$work/frontend/src/content/dates-des-pages.json")
     (
         cd "$work/frontend"
         pnpm install --frozen-lockfile --silent

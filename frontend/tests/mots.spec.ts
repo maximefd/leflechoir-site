@@ -79,31 +79,15 @@ test("les listes de mots sont dans la rubrique Outils de l'en-tête", async ({ p
   await expect(page.getByRole("banner").getByRole("link", { name: "Outils" })).toHaveAttribute("aria-current", "page");
 });
 
-test("les pages de mots sont dans le sitemap, après /mots, chaque outil suivi de ses combinaisons", async ({ request }) => {
+test("les pages de mots sont hors du sitemap (MOTS_INDEXES, depuis le 20/11/2026), mais toujours en ligne", async ({ page, request }) => {
   const body = await (await request.get("/sitemap.xml")).text();
   const urls = [...body.matchAll(/<loc>(.*?)<\/loc>/g)].map(([, url]) => url);
 
-  const debut = urls.indexOf(`${SITE_URL}/mots`);
-  expect(debut).toBeGreaterThan(-1);
-  expect(urls.slice(debut, debut + 3)).toEqual([
-    `${SITE_URL}/mots`, `${SITE_URL}/mots/deux-lettres`, `${SITE_URL}/mots/deux-lettres/commencant-par-a`,
-  ]);
-  expect(urls).toContain(`${SITE_URL}/mots/cinq-lettres/commencant-par-a`);
-  expect(urls).toContain(`${SITE_URL}/mots/cinq-lettres/finissant-par-ez`);
-  expect(urls).toContain(`${SITE_URL}/mots/six-lettres/finissant-par-eur`);
-  // Les combinaisons suivent leur outil
-  expect(urls.indexOf(`${SITE_URL}/mots/cinq-lettres/commencant-par-a`)).toBe(urls.indexOf(`${SITE_URL}/mots/cinq-lettres`) + 1);
-});
-
-test("le sitemap date les listes de mots (lastmod : la date de génération des listes)", async ({ request }) => {
-  const body = await (await request.get("/sitemap.xml")).text();
-  const entrees = new Map(
-    [...body.matchAll(/<url>\s*<loc>(.*?)<\/loc>([\s\S]*?)<\/url>/g)].map(([, url, reste]) => [url, reste] as const),
-  );
-
-  for (const chemin of ["/mots", "/mots/cinq-lettres", "/mots/cinq-lettres/finissant-par-ez", "/mots/six-lettres/commencant-par-a", "/mots/deux-lettres", "/mots/huit-lettres"]) {
-    expect(entrees.get(`${SITE_URL}${chemin}`), chemin).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}/);
+  expect(urls.filter((url) => /\/mots(\/|$)/.test(url))).toEqual([]);
+  // Le guide pour les assistants IA n'est pas une page de mots : il reste
+  expect(urls).toContain(`${SITE_URL}/mots-fleches-ia`);
+  for (const chemin of ["/mots", "/mots/cinq-lettres", "/mots/six-lettres/finissant-par-eur"]) {
+    await page.goto(chemin);
+    await expect(page.locator('meta[name="robots"]'), chemin).toHaveAttribute("content", "noindex, follow");
   }
-  // 9 et 10 lettres ont désormais leur liste, donc leur date
-  expect(entrees.get(`${SITE_URL}/mots/neuf-lettres`)).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}/);
 });

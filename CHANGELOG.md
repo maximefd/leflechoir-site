@@ -4,6 +4,18 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 
 ## [Non publié]
 
+### Modifié
+- **Les pages de mots hors des moteurs** (ADR 0036, demande du 20/11/2026) : `/mots` et toutes les listes passent en
+  `noindex, follow` et sortent du sitemap ; elles restent en ligne, dans le menu et dans `llms.txt`. Un interrupteur,
+  `MOTS_INDEXES` (`lib/seo.ts`), les remet.
+- **Le sitemap date chaque page** : `<lastmod>` du dernier commit qui a touché la page (`scripts/dates-des-pages.mjs`,
+  lancé avant `next dev` et `next build`, et par `make deploy` qui construit sans historique git) ; `/articles` et
+  `/jouer` gardent aussi la date de leur contenu. `/mots-fleches-ia` rejoint les pages principales (priorité 0,8).
+
+### Sécurité
+- **Next.js 15.5.29** (et `eslint-config-next`) : trois failles modérées de 15.5.28 (GHSA-pc58-hwjq-p385 et deux
+  autres), relevées par `pnpm audit`.
+
 ### Ajouté
 - **Le lien préparé part de `/grid`** (essai de découverte du 15/11/2026 : ChatGPT, qui avait trouvé le site, a
   donné le générateur et quatre étapes à faire à la main) :

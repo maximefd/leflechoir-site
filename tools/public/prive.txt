@@ -78,3 +78,5 @@ docs/MAINTENANCE.md
 docs/maintenance
 docs/adr/0035-cadre-de-maintenance.md
 tools/maintenance
+# Les pages de mots hors des moteurs (ADR 0036) : stratégie de référencement
+docs/adr/0036-pages-de-mots-hors-des-moteurs.md

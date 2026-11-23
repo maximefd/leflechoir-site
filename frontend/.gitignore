@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# les dates des pages du sitemap (scripts/dates-des-pages.mjs), écrites avant dev et build
+/src/content/dates-des-pages.json
+
 # production
 /build
 

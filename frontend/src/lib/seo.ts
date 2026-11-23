@@ -8,7 +8,8 @@ import { PAGES_LONGUEUR } from "@/content/mots/longueurs";
 
 /**
  * Référencement (#113). Deux sortes de pages :
- * - publiques : indexées, dans le sitemap, avec une adresse canonique et un aperçu de partage ;
+ * - publiques : indexées, dans le sitemap, avec une adresse canonique et un aperçu de partage (sauf les pages de
+ *   mots, publiques mais en `noindex` tant que MOTS_INDEXES est faux) ;
  * - privées (compte, grilles, dictionnaires, liens reçus par e-mail) : `noindex`. Jamais de `Disallow` sur
  *   elles dans robots.txt : un robot qui ne peut pas lire la page ne voit pas son `noindex`.
  */
@@ -37,11 +38,26 @@ export type MotsPath = `/mots/${string}`;
 export type PublicPath = (typeof FIXED_PATHS)[number] | MotsPath;
 
 /**
- * Pages publiques, dans l'ordre du sitemap : les pages de mots suivent leur page d'index, les outils par longueur
- * (chacun suivi de ses pages « commençant par » et « finissant par »)
+ * Les pages de mots (`/mots` et tout ce qui est dessous) dans les moteurs ou non. Hors des moteurs depuis le
+ * 20/11/2026 (décision de l'auteur) : ces centaines de listes brouillaient pour Google ce qu'est le site (un outil pour
+ * créer et jouer des mots fléchés). Elles restent en ligne et dans le menu, en `noindex, follow` (leurs liens comptent
+ * encore), et hors du sitemap. Repasser à `true` les y remet toutes, avec leurs dates.
+ */
+export const MOTS_INDEXES = false;
+
+/** `/mots`, `/mots/cinq-lettres`, `/mots/cinq-lettres/commencant-par-a`… mais pas `/mots-fleches-ia` */
+export function estPageMots(path: string): boolean {
+  return path === "/mots" || path.startsWith("/mots/");
+}
+
+/**
+ * Pages publiques, dans l'ordre du sitemap : les pages de mots (si elles sont indexées) suivent leur page d'index,
+ * les outils par longueur (chacun suivi de ses pages « commençant par » et « finissant par »)
  */
 export const PUBLIC_PATHS: readonly PublicPath[] = FIXED_PATHS.flatMap((path): PublicPath[] =>
-  path === "/mots"
+  path === "/mots" && !MOTS_INDEXES
+    ? []
+    : path === "/mots"
     ? [
         path,
         ...PAGES_LONGUEUR.flatMap((page): MotsPath[] => [
@@ -81,6 +97,8 @@ export function publicPage({ path, title, description }: {
     alternates: { canonical: path },
     openGraph: { ...baseOpenGraph, url: path, title: shareTitle, description },
     twitter: { card: "summary_large_image", title: shareTitle, description, images: [OG_IMAGE.url] },
+    // Les pages de mots hors des moteurs (MOTS_INDEXES) : lisibles et suivies, mais pas indexées
+    ...(estPageMots(path) && !MOTS_INDEXES ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
