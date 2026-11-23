@@ -5,6 +5,7 @@
 #         tools/deploy/deploy.sh lexicon             (make deploy-lexicon : le lexique curé de ce Mac part en service)
 #         tools/deploy/deploy.sh rollback            (make rollback : l'API revient à la version précédente)
 #         tools/deploy/deploy.sh suggestions-pull    (make suggestions-pull : les suggestions de mots, pour le curateur)
+#         tools/deploy/deploy.sh maintenance         (make maintenance-serveur : l'état du serveur, en lecture seule)
 #
 # - api   : le code du commit part par SSH sur le serveur, qui construit l'image, la démarre, la vérifie et
 #           revient à la version précédente si elle échoue (tools/deploy/server.sh) ;
@@ -232,11 +233,13 @@ case "${1:-all}" in
     lexicon) deploy_lexicon ;;
     rollback) ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh rollback" ;;
     suggestions-pull) pull_suggestions ;;
+    # Lecture seule (ADR 0035) : le script part sur l'entrée standard, sans être déployé
+    maintenance) ssh_server "$REMOTE_ENV sh -s" < "$(dirname "$0")/maintenance-lecture.sh" ;;
     status) ssh_server "$REMOTE_ENV sh $REMOTE_BASE/current/tools/deploy/server.sh status" ;;
     config)
         say "Site $SITE ($PROFILE) : build NEXT_PUBLIC_SITE=$NEXT_PUBLIC_SITE, projet Pages $PAGES_PROJECT"
         say "  site $DEPLOY_SITE_URL, API $DEPLOY_API_URL"
         say "  serveur ${DEPLOY_HOST:-(DEPLOY_HOST manquant)} : projet Compose $PROJET, dossier $REMOTE_BASE"
         say "  lexique curé : $LEXIQUE_DIR" ;;
-    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|config|indexnow|suggestions-pull]" ;;
+    *) die "Usage : deploy.sh [all|api|front|lexicon|rollback|status|config|indexnow|suggestions-pull|maintenance]" ;;
 esac

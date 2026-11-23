@@ -5,6 +5,9 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Modifié
+- **La description de `/articles`** pour les moteurs : les sujets des articles publiés (le guide, les grilles des IA,
+  le jeu dans le monde), « mots fléchés » dès les premiers mots, 127 caractères ; l'ancienne annonçait des sujets
+  encore en brouillon.
 - **Les pages de mots hors des moteurs** (ADR 0036, demande du 20/11/2026) : `/mots` et toutes les listes passent en
   `noindex, follow` et sortent du sitemap ; elles restent en ligne, dans le menu et dans `llms.txt`. Un interrupteur,
   `MOTS_INDEXES` (`lib/seo.ts`), les remet.
@@ -17,6 +20,9 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
   autres), relevées par `pnpm audit`.
 
 ### Ajouté
+- **`make maintenance-serveur`** (ADR 0035) : l'état du serveur pour la séance de maintenance, en lecture seule et en
+  une connexion (version, sauvegarde, machine, minuteur, usage, totaux SEO, administrateurs, clés de l'API) ; le
+  script part sur l'entrée standard, sans déploiement. La séance planifiée finit par une notification.
 - **Le lien préparé part de `/grid`** (essai de découverte du 15/11/2026 : ChatGPT, qui avait trouvé le site, a
   donné le générateur et quatre étapes à faire à la main) :
   - `/grid?taille=moyenne&mots=eric,velo` lance la grille comme `/creer?…`, qui y mène toujours ; `llms.txt`,

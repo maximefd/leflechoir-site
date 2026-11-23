@@ -10,8 +10,13 @@ import { publicPage } from "@/lib/seo";
  * La liste des articles : créer une grille, le plaisir de jouer, les coulisses du métier,
  * le jeu dans le monde. « Articles » est un nom provisoire : l'auteur choisit le nom de la rubrique.
  */
+/**
+ * La description que montrent Google et Bing : les sujets des articles publiés (le guide, l'article sur les IA, le jeu
+ * dans le monde), « mots fléchés » dès les premiers mots, 155 caractères au plus. Jamais les sujets des brouillons :
+ * une description que la page ne tient pas, le moteur la remplace. À revoir à chaque article publié.
+ */
 const DESCRIPTION =
-  "Écrire une définition, construire une grille, jouer à plusieurs, les mots fléchés ailleurs dans le monde : les articles de ceux qui fabriquent leurs grilles.";
+  "Comment créer une grille de mots fléchés, pourquoi ChatGPT et les IA les ratent, découvrir le jeu dans le monde : nos articles.";
 
 export const metadata: Metadata = publicPage({ path: "/articles", title: "Articles sur les mots fléchés", description: DESCRIPTION });
 

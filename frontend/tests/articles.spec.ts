@@ -25,6 +25,17 @@ test("le pied de page mène à la liste, qui montre le guide et l'article publi�
   await expect(item.getByText("Brouillon")).toHaveCount(0);
 });
 
+test("la description de la liste tient sous la coupe des moteurs et parle de mots fléchés", async ({ page }) => {
+  await page.goto("/articles");
+
+  const description = (await page.locator('meta[name="description"]').getAttribute("content")) ?? "";
+  // 155 caractères au plus, « mots fléchés » dans les premiers mots, et rien des brouillons
+  expect(description.length).toBeLessThanOrEqual(155);
+  expect(description.indexOf("mots fléchés")).toBeGreaterThan(-1);
+  expect(description.indexOf("mots fléchés")).toBeLessThan(40);
+  expect(description).not.toMatch(/définition|à plusieurs/i);
+});
+
 test("un article publié est indexable, dans le sitemap, avec ses données structurées", async ({ page, request }) => {
   await page.goto(`/articles/${SLUG}`);
 
