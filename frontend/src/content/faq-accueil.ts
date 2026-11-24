@@ -47,10 +47,24 @@ export const QUESTIONS_ACCUEIL: QuestionFaq[] = [
   },
   {
     question: "Comment créer des mots fléchés avec l’IA ?",
+    // Réécrite le 23/11/2026 (elle répondait « ce n'est pas nécessaire »), puis le 24/11 : l'article sur les IA
+    // montre qu'une IA seule rate sa grille, et ses définitions prennent le style des mots croisés ; le connecteur et
+    // l'API construisent la grille et guident l'assistant pour des définitions de mots fléchés
     reponse:
-      `Ce n’est pas nécessaire. La partie difficile d’une grille, c’est de faire tenir tous les mots ensemble, chaque lettre servant à deux mots à la fois : un générateur comme celui ${site.nameAfterDe} le fait plus efficacement qu’un assistant IA, en vérifiant chaque croisement. ` +
-      `La partie personnelle, ce sont les définitions : les jeux de mots et les clins d’œil qui feront sourire celui qui jouera ta grille.`,
-    liens: [{ texte: "Générer une grille", href: "/grid" }],
+      `Seule, une IA rate presque toujours sa grille : une fois remplie, on y lit des mots qui n’existent pas, et ses définitions, dans le style des mots croisés, sont trop longues pour une case. Sur cinq assistants essayés, aucun n’a rendu une vraie grille de mots fléchés. ` +
+      `Avec le connecteur ou l’API ${site.nameAfterDe}, le moteur remplit la grille avec de vrais mots, et il guide l’assistant (ChatGPT, Claude, Le Chat) pour écrire de vraies définitions de mots fléchés : courtes, qui tiennent dans leur case.`,
+    liens: [
+      { texte: "Pourquoi les IA ratent leurs mots fléchés", href: "/articles/pourquoi-les-ia-ratent-leurs-mots-fleches" },
+      { texte: "Avec une IA", href: "/mots-fleches-ia" },
+      { texte: "L’API", href: "/developpeurs" },
+    ],
+  },
+  {
+    question: "Existe-t-il une API pour créer des mots fléchés ?",
+    reponse:
+      `Oui : l’API ouverte ${site.nameAfterDe} (${site.apiUrl}/v1) construit une grille de mots fléchés autour de tes mots, vérifie ses définitions et la dessine en SVG, PNG ou PDF. ` +
+      `Elle est gratuite, avec ou sans clé, et décrite en OpenAPI ; un programme ou un agent IA s’en sert directement.`,
+    liens: [{ texte: "L’API pour les développeurs", href: "/developpeurs" }],
   },
   {
     question: "Faut-il créer un compte ?",

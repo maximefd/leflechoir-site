@@ -104,6 +104,24 @@ test("l'accueil décrit l'application et ses questions fréquentes en données s
   expect(affichees).toContain("Comment créer des mots fléchés gratuitement ?");
 });
 
+test("l'accueil mène au connecteur et à l'API depuis son contenu, pas seulement le pied de page", async ({ page, request }) => {
+  await page.goto("/");
+
+  // Une ligne discrète, pour les assistants et les moteurs plus que pour les visiteurs
+  const main = page.getByRole("main");
+  await expect(main.getByRole("link", { name: "créer des mots fléchés avec ChatGPT, Claude ou Le Chat" })).toHaveAttribute("href", "/mots-fleches-ia");
+  await expect(main.getByRole("link", { name: "l'API pour les développeurs" })).toHaveAttribute("href", "/developpeurs");
+  // La FAQ y mène aussi, et répond à la question de l'API (dans les données structurées et llms.txt)
+  const faq = page.getByRole("region", { name: "Questions fréquentes" });
+  await expect(faq.getByText("Existe-t-il une API pour créer des mots fléchés ?")).toBeVisible();
+  await expect(faq.locator('a[href="/developpeurs"]')).toHaveCount(2);
+  await expect(faq.locator('a[href="/mots-fleches-ia"]')).toHaveCount(2);
+  // « Avec l'IA » s'appuie sur l'article qui montre qu'une IA seule rate sa grille
+  await expect(faq.locator('a[href="/articles/pourquoi-les-ia-ratent-leurs-mots-fleches"]')).toHaveCount(1);
+  await expect(faq).not.toContainText("Ce n’est pas nécessaire");
+  expect(await (await request.get("/llms.txt")).text()).toContain("### Existe-t-il une API pour créer des mots fléchés ?");
+});
+
 test("robots.txt ouvre tout le site, sauf les listes de mots aux robots d'entraînement, et donne le sitemap", async ({ request }) => {
   const body = await (await request.get("/robots.txt")).text();
 

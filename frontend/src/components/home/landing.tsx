@@ -214,6 +214,21 @@ export function Landing({ children }: { children?: ReactNode }) {
             </span>
           </Link>
         </div>
+        {/*
+          Pour les assistants et les moteurs plus que pour les visiteurs (23/11/2026) : un lien du contenu de l'accueil
+          vers le connecteur et l'API, qui n'avaient que le pied de page. Volontairement discret.
+        */}
+        <p className="mt-6 text-xs text-muted-foreground">
+          Aussi depuis une IA :{" "}
+          <Link href="/mots-fleches-ia" className="underline underline-offset-2 hover:text-foreground">
+            créer des mots fléchés avec ChatGPT, Claude ou Le Chat
+          </Link>
+          , ou{" "}
+          <Link href="/developpeurs" className="underline underline-offset-2 hover:text-foreground">
+            l&apos;API pour les développeurs
+          </Link>
+          .
+        </p>
       </section>
 
       {/* « Que se passe-t-il ensuite ? » : ce que le compte change, et ce qu'il ne change pas */}

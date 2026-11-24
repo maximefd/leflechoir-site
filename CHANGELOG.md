@@ -5,6 +5,16 @@ Toutes les évolutions notables du projet. Format inspiré de [Keep a Changelog]
 ## [Non publié]
 
 ### Modifié
+- **L'accueil mène au connecteur et à l'API** (23/11/2026 : les assistants ne trouvaient `/mots-fleches-ia` et
+  `/developpeurs` que par le pied de page) :
+  - une ligne discrète, dans le contenu de l'accueil, mène aux deux pages ;
+  - la FAQ répond autrement à « Comment créer des mots fléchés avec l'IA ? » (elle disait « ce n'est pas
+    nécessaire ») : une IA seule rate sa grille et écrit des définitions de mots croisés, d'après l'article « Pourquoi
+    les IA ratent leurs mots fléchés », vers lequel elle mène ; le connecteur et l'API construisent la grille et
+    guident l'assistant pour des définitions de mots fléchés ;
+  - nouvelle question « Existe-t-il une API pour créer des mots fléchés ? », aussi en données structurées et dans
+    `llms.txt` ;
+  - le README du dépôt public présente le connecteur et l'API.
 - **La description de `/articles`** pour les moteurs : les sujets des articles publiés (le guide, les grilles des IA,
   le jeu dans le monde), « mots fléchés » dès les premiers mots, 127 caractères ; l'ancienne annonçait des sujets
   encore en brouillon.
